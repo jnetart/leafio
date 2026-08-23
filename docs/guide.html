@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh" data-title-zh="Leafio — 使用指南" data-title-en="Leafio — Guide">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="page.title.guide">Leafio — 使用指南</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('leafio-lang');
+        var lang = (saved === 'zh' || saved === 'en') ? saved
+          : ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+        document.documentElement.lang = lang;
+        var title = document.querySelector('title');
+        if (title) {
+          title.textContent = lang === 'zh'
+            ? (document.documentElement.getAttribute('data-title-zh') || title.textContent)
+            : (document.documentElement.getAttribute('data-title-en') || title.textContent);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script defer src="assets/js/i18n.js"></script>
+  <style>
+    /* Page-specific layout for guide.html */
+    .page-intro { padding: 72px 0 16px; text-align: center; }
+    .page-intro h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
+    .page-intro p { color: var(--text-secondary); font-size: 17px; max-width: 680px; margin: 0 auto; }
+
+    .narrow { max-width: 760px; margin: 0 auto; }
+    .guide-section { padding: 40px 0; }
+    .guide-section + .guide-section { border-top: 1px solid var(--separator); }
+    .guide-section h2 { font-size: 22px; margin: 0 0 10px; }
+    .guide-section p { color: var(--text-secondary); margin: 0; }
+
+    .guide-shortcuts { padding: 56px 0; }
+    .guide-shortcuts h2 { font-size: 22px; margin: 0 0 8px; }
+    .guide-shortcuts .note { color: var(--text-secondary); font-size: 14px; margin: 0 0 20px; }
+
+    table.shortcuts { width: 100%; border-collapse: collapse; }
+    table.shortcuts th, table.shortcuts td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--separator);
+      font-size: 15px;
+    }
+    table.shortcuts thead th {
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--separator);
+    }
+    table.shortcuts tr.group th {
+      font-size: 13px;
+      color: var(--accent);
+      padding-top: 20px;
+      border-bottom: 0;
+    }
+    table.shortcuts td.kbd { width: 150px; }
+    table.shortcuts kbd { font-size: 13px; white-space: nowrap; }
+
+    @media (max-width: 560px) {
+      table.shortcuts th, table.shortcuts td { padding: 8px 10px; }
+      table.shortcuts td.kbd { width: 110px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="brand" href="index.html">
+      <img src="assets/img/logo.png" alt="Leafio" width="24" height="24">
+      <span>Leafio</span>
+    </a>
+    <nav>
+      <a href="index.html" data-i18n="nav.home">首页</a>
+      <a href="features.html" data-i18n="nav.features">功能</a>
+      <a href="guide.html" class="active" data-i18n="nav.guide">使用指南</a>
+      <a href="changelog.html" data-i18n="nav.changelog">更新日志</a>
+      <a href="download.html" data-i18n="nav.download">下载</a>
+    </nav>
+    <div class="lang-switch">
+      <button data-lang="zh" class="active">中</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page intro -->
+    <section class="page-intro">
+      <div class="container">
+        <h1 data-i18n="guide.title">使用指南</h1>
+        <p data-i18n="guide.intro">从打开工作区到导出文档,下面的步骤带你快速上手 Leafio。</p>
+      </div>
+    </section>
+
+    <!-- 工作区管理 -->
+    <section class="guide-section">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.workspace.title">工作区管理</h2>
+          <p data-i18n="guide.workspace.body">
+            在欢迎窗口点击「打开文件夹」,把任意本地文件夹作为工作区,也可以打开单个 .md 文件。左侧文件树支持新建、重命名、复制、移动、删除(移入废纸篓),右键菜单提供常用操作,本地文件变更实时同步。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 编辑器用法 -->
+    <section class="guide-section">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.editor.title">编辑器用法</h2>
+          <p data-i18n="guide.editor.body">
+            直接输入即可写作:标题(1–4 级)、引用、代码块、表格、任务列表都以语义块呈现;选中文本可应用高亮(==text==)、删除线、行内代码与链接。在空行输入 / 打开命令面板快速插入块,选中文本时弹出浮动格式条。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 三视图 -->
+    <section class="guide-section">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.views.title">三视图</h2>
+          <p data-i18n="guide.views.body">
+            工具栏的分段控件切换三种视图:编辑(所见即所得,默认)、源码(原始 Markdown,带语法高亮)、预览(渲染后的只读视图)。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 搜索 -->
+    <section class="guide-section">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.search.title">搜索</h2>
+          <p data-i18n="guide.search.body">
+            使用查找(⌘F)打开 Spotlight 风格搜索浮层,跨所有工作区检索 .md 文件名与正文,输入即搜。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主题 -->
+    <section class="guide-section">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.theme.title">主题</h2>
+          <p data-i18n="guide.theme.body">
+            在设置中选择外观模式:浅色、深色或跟随系统,界面即时切换并记住偏好。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 导入导出 -->
+    <section class="guide-section">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.importexport.title">导入导出</h2>
+          <p data-i18n="guide.importexport.body">
+            使用导出(⌘⇧E)将当前文档导出为标准 Markdown 或自包含 HTML。文件直接读写本地 .md,无私有格式,可配合 Git 与同步盘使用。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 快捷键表 -->
+    <section class="guide-shortcuts">
+      <div class="container">
+        <div class="narrow">
+          <h2 data-i18n="guide.shortcuts.title">快捷键</h2>
+          <p class="note" data-i18n="guide.shortcuts.note">快捷键以 macOS 符号显示;Windows / Linux 对应使用 Ctrl 键。</p>
+          <table class="shortcuts">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="guide.shortcuts.key">快捷键</th>
+                <th scope="col" data-i18n="guide.shortcuts.action">说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group">
+                <th colspan="2" data-i18n="guide.shortcuts.group.app">应用</th>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘N</kbd></td>
+                <td data-i18n="guide.shortcuts.new">新建文档</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘⇧O</kbd></td>
+                <td data-i18n="guide.shortcuts.openFolder">打开文件夹</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘O</kbd></td>
+                <td data-i18n="guide.shortcuts.openFile">打开文件</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘D</kbd></td>
+                <td data-i18n="guide.shortcuts.duplicate">复制文档</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘⇧E</kbd></td>
+                <td data-i18n="guide.shortcuts.export">导出</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘W</kbd></td>
+                <td data-i18n="guide.shortcuts.close">关闭文档</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘F</kbd></td>
+                <td data-i18n="guide.shortcuts.find">查找</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘\</kbd></td>
+                <td data-i18n="guide.shortcuts.toggleSidebar">切换侧栏</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘⇧I</kbd></td>
+                <td data-i18n="guide.shortcuts.toggleOutline">切换大纲</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘,</kbd></td>
+                <td data-i18n="guide.shortcuts.settings">设置</td>
+              </tr>
+              <tr class="group">
+                <th colspan="2" data-i18n="guide.shortcuts.group.editor">编辑器</th>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘B</kbd></td>
+                <td data-i18n="guide.shortcuts.bold">加粗</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘I</kbd></td>
+                <td data-i18n="guide.shortcuts.italic">斜体</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘⇧X</kbd></td>
+                <td data-i18n="guide.shortcuts.strike">删除线</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘E</kbd></td>
+                <td data-i18n="guide.shortcuts.inlineCode">行内代码</td>
+              </tr>
+              <tr>
+                <td class="kbd"><kbd>⌘K</kbd></td>
+                <td data-i18n="guide.shortcuts.link">链接</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="footer-brand">
+      <img src="assets/img/logo.png" alt="Leafio" width="16" height="16">
+      <span>Leafio</span>
+      <span class="tagline" data-i18n="footer.tagline">本地优先的 Markdown 编辑器</span>
+    </div>
+    <div class="footer-links">
+      <span data-i18n="footer.version">版本</span>
+      <span>0.8.28</span>
+      <span class="dot">·</span>
+      <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
+    </div>
+  </footer>
+</body>
+</html>

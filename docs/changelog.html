@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh" data-title-zh="Leafio — 更新日志" data-title-en="Leafio — Changelog">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="page.title.changelog">Leafio — 更新日志</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('leafio-lang');
+        var lang = (saved === 'zh' || saved === 'en') ? saved
+          : ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+        document.documentElement.lang = lang;
+        var title = document.querySelector('title');
+        if (title) {
+          title.textContent = lang === 'zh'
+            ? (document.documentElement.getAttribute('data-title-zh') || title.textContent)
+            : (document.documentElement.getAttribute('data-title-en') || title.textContent);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script defer src="assets/js/i18n.js"></script>
+  <style>
+    /* Page-specific layout for changelog.html */
+    .page-intro { padding: 72px 0 16px; text-align: center; }
+    .page-intro h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
+    .page-intro p { color: var(--text-secondary); font-size: 17px; max-width: 680px; margin: 0 auto; }
+
+    .narrow { max-width: 760px; margin: 0 auto; }
+    .changelog-section { padding: 40px 0 72px; }
+    .latest-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+    .latest-head h2 { font-size: 20px; margin: 0; }
+    .latest-version {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 0 0 20px;
+    }
+
+    ul.changelog { list-style: none; margin: 0; padding: 0; }
+    ul.changelog li {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--separator);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    ul.changelog li:last-child { border-bottom: 0; }
+    .cl-hash { color: var(--accent); font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+    .cl-date { color: var(--text-secondary); font-family: var(--font-mono); font-size: 13px; white-space: nowrap; }
+    .cl-subject { color: var(--text); }
+
+    @media (max-width: 560px) {
+      ul.changelog li { flex-wrap: wrap; gap: 4px 10px; }
+      .cl-subject { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="brand" href="index.html">
+      <img src="assets/img/logo.png" alt="Leafio" width="24" height="24">
+      <span>Leafio</span>
+    </a>
+    <nav>
+      <a href="index.html" data-i18n="nav.home">首页</a>
+      <a href="features.html" data-i18n="nav.features">功能</a>
+      <a href="guide.html" data-i18n="nav.guide">使用指南</a>
+      <a href="changelog.html" class="active" data-i18n="nav.changelog">更新日志</a>
+      <a href="download.html" data-i18n="nav.download">下载</a>
+    </nav>
+    <div class="lang-switch">
+      <button data-lang="zh" class="active">中</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page intro -->
+    <section class="page-intro">
+      <div class="container">
+        <h1 data-i18n="changelog.title">更新日志</h1>
+        <p data-i18n="changelog.intro">记录 Leafio 从 MVP 到当前版本的变更,包括功能、修复与维护。</p>
+      </div>
+    </section>
+
+    <!-- Changelog list -->
+    <section class="changelog-section">
+      <div class="container">
+        <div class="narrow">
+          <div class="latest-head">
+            <h2 data-i18n="changelog.latest">最新版本</h2>
+            <span class="latest-version">0.8.25</span>
+          </div>
+          <ul class="changelog">
+            <li>
+              <code class="cl-hash">98b0e42</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">chore: bump version to 0.8.25</span>
+            </li>
+            <li>
+              <code class="cl-hash">46bc64c</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">feat: enhance sidebar file ops, trash delete, and workspace ordering</span>
+            </li>
+            <li>
+              <code class="cl-hash">df4c480</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">feat: add folder rename and name prompt for new subfolders</span>
+            </li>
+            <li>
+              <code class="cl-hash">b9116e3</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">feat: redesign new file flow with progressive location picker</span>
+            </li>
+            <li>
+              <code class="cl-hash">f1dd548</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">feat: add localized native menu with context-aware availability</span>
+            </li>
+            <li>
+              <code class="cl-hash">a6f97f1</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">feat: prompt for filename before creating new markdown files</span>
+            </li>
+            <li>
+              <code class="cl-hash">7f666e8</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">fix: compute status bar stats from plain text content</span>
+            </li>
+            <li>
+              <code class="cl-hash">7820c3b</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">fix: align titlebar chrome with sidebar and polish source view layout</span>
+            </li>
+            <li>
+              <code class="cl-hash">3747c8c</code>
+              <time class="cl-date" datetime="2026-08-23">2026-08-23</time>
+              <span class="cl-subject">feat: refresh sidebar file tree icons and label contrast</span>
+            </li>
+            <li>
+              <code class="cl-hash">1ab2b9e</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: hide .md extension in file rename dialog</span>
+            </li>
+            <li>
+              <code class="cl-hash">febdcfa</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: replace welcome logo emoji with sketch-style leaf icon</span>
+            </li>
+            <li>
+              <code class="cl-hash">d268e72</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: show home directory paths with ~/ prefix in UI</span>
+            </li>
+            <li>
+              <code class="cl-hash">c576ade</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: move add workspace control to sidebar footer icon</span>
+            </li>
+            <li>
+              <code class="cl-hash">1a51a98</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: add multi-root workspace sidebar and simplify status bar</span>
+            </li>
+            <li>
+              <code class="cl-hash">9980419</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: add editor context menu and fix slash commands</span>
+            </li>
+            <li>
+              <code class="cl-hash">16de38e</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: redesign floating format toolbar with full markdown support</span>
+            </li>
+            <li>
+              <code class="cl-hash">bbe6a29</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: redesign outline panel and collapse by default</span>
+            </li>
+            <li>
+              <code class="cl-hash">ca2a701</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: polish source view and fix view mode floater overlay</span>
+            </li>
+            <li>
+              <code class="cl-hash">841207b</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: redesign settings as inline Cursor-style view with i18n</span>
+            </li>
+            <li>
+              <code class="cl-hash">97bf8ea</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">fix: refine titlebar layout and recent-file handling</span>
+            </li>
+            <li>
+              <code class="cl-hash">8efc035</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: polish editor chrome and add file management</span>
+            </li>
+            <li>
+              <code class="cl-hash">f2ed0d7</code>
+              <time class="cl-date" datetime="2026-08-22">2026-08-22</time>
+              <span class="cl-subject">feat: implement Leafio MVP desktop editor</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="footer-brand">
+      <img src="assets/img/logo.png" alt="Leafio" width="16" height="16">
+      <span>Leafio</span>
+      <span class="tagline" data-i18n="footer.tagline">本地优先的 Markdown 编辑器</span>
+    </div>
+    <div class="footer-links">
+      <span data-i18n="footer.version">版本</span>
+      <span>0.8.28</span>
+      <span class="dot">·</span>
+      <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
+    </div>
+  </footer>
+</body>
+</html>

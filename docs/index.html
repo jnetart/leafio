@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh" data-title-zh="Leafio — Markdown 编辑器" data-title-en="Leafio — Markdown Editor">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="page.title.index">Leafio — Markdown Editor</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('leafio-lang');
+        var lang = (saved === 'zh' || saved === 'en') ? saved
+          : ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+        document.documentElement.lang = lang;
+        var title = document.querySelector('title');
+        if (title) {
+          title.textContent = lang === 'zh'
+            ? (document.documentElement.getAttribute('data-title-zh') || title.textContent)
+            : (document.documentElement.getAttribute('data-title-en') || title.textContent);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script defer src="assets/js/i18n.js"></script>
+  <style>
+    /* Page-specific layout for the landing page (index.html) */
+    .hero { padding: 72px 0 48px; }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .hero-text h1 { font-size: 32px; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.01em; }
+    .hero-sub { color: var(--text-secondary); font-size: 18px; margin: 0 0 28px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-secondary {
+      display: inline-block;
+      padding: 12px 24px;
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      color: var(--text);
+      background: var(--paper);
+    }
+    .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text); }
+    .hero-frame { max-width: 640px; }
+    .hero-shot {
+      width: 100%;
+      height: auto;
+      display: block;
+      min-height: 380px;
+      background: var(--paper);
+    }
+
+    .selling .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .highlights .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .selling h2, .highlights h2, .cta h2 { text-align: center; margin: 0 0 40px; font-size: 26px; letter-spacing: -0.01em; }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 17px; }
+    .card p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.55; }
+
+    .cta {
+      text-align: center;
+      background: var(--paper);
+      border-top: 1px solid var(--separator);
+      border-bottom: 1px solid var(--separator);
+    }
+    .cta h2 { margin: 0 0 12px; }
+    .cta p { color: var(--text-secondary); margin: 0 0 28px; }
+
+    .footer-brand { display: inline-flex; align-items: center; gap: 8px; }
+    .footer-brand img { width: 16px; height: 16px; border-radius: 4px; }
+    .footer-brand .tagline { color: var(--text-secondary); }
+    .footer-links { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .footer-links .dot { color: var(--separator); }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .highlights .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .selling .grid, .highlights .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="brand" href="index.html">
+      <img src="assets/img/logo.png" alt="Leafio" width="24" height="24">
+      <span>Leafio</span>
+    </a>
+    <nav>
+      <a href="index.html" class="active" data-i18n="nav.home">首页</a>
+      <a href="features.html" data-i18n="nav.features">功能</a>
+      <a href="guide.html" data-i18n="nav.guide">使用指南</a>
+      <a href="changelog.html" data-i18n="nav.changelog">更新日志</a>
+      <a href="download.html" data-i18n="nav.download">下载</a>
+    </nav>
+    <div class="lang-switch">
+      <button data-lang="zh" class="active">中</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero: positioning + CTAs + CSS window frame -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <div class="hero-text">
+            <h1 data-i18n="hero.title">一款 macOS 原生风格、离线优先、直接读写本地 .md 文件的 Markdown 所见即所得桌面编辑器。</h1>
+            <p class="hero-sub" data-i18n="hero.subtitle">写 Markdown 无需记忆语法——实时渲染为语义块,文件始终是本地标准 .md。</p>
+            <div class="hero-actions">
+              <a class="btn-primary" href="download.html" data-i18n="hero.cta.download">下载</a>
+              <a class="btn-secondary" href="features.html" data-i18n="hero.cta.features">查看功能</a>
+            </div>
+          </div>
+          <div class="window-frame hero-frame">
+            <img class="hero-shot" src="assets/screenshots/editor-light.png"
+                 alt="Leafio 主界面截图(浅色)" data-i18n-alt="hero.shot.alt">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Selling points -->
+    <section class="selling">
+      <div class="container">
+        <h2 data-i18n="selling.title">核心卖点</h2>
+        <div class="grid">
+          <div class="card">
+            <h3 data-i18n="selling.1.title">所写即所得</h3>
+            <p data-i18n="selling.1.body">富文本式编辑,实时 Markdown 语义块。</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="selling.2.title">文件主权</h3>
+            <p data-i18n="selling.2.body">直接读写本地 .md,无私有格式,兼容 Git 与同步盘。</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="selling.3.title">原生优先</h3>
+            <p data-i18n="selling.3.body">macOS 原生风格:半透明侧栏、统一工具栏、居中纸张。</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="selling.4.title">离线优先</h3>
+            <p data-i18n="selling.4.body">核心编辑不依赖网络。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature highlights -->
+    <section class="highlights">
+      <div class="container">
+        <h2 data-i18n="highlights.title">功能亮点</h2>
+        <div class="grid">
+          <div class="card">
+            <h3 data-i18n="highlights.1.title">文件树与多工作区</h3>
+            <p data-i18n="highlights.1.body">多根工作区、右键菜单、废纸篓删除、实时监听本地变更。</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="highlights.2.title">三视图切换</h3>
+            <p data-i18n="highlights.2.body">编辑 / 源码 / 预览一键切换,既能所见即所得,也能精修原始 Markdown。</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="highlights.3.title">Slash 命令与全局搜索</h3>
+            <p data-i18n="highlights.3.body">输入 / 快速插入块,选中文字弹出格式条,Spotlight 风格全局搜索。</p>
+          </div>
+          <div class="card">
+            <h3 data-i18n="highlights.4.title">主题与导入导出</h3>
+            <p data-i18n="highlights.4.body">浅色 / 深色 / 跟随系统;导入导出仅 Markdown 与 HTML。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download CTA -->
+    <section class="cta">
+      <div class="container">
+        <h2 data-i18n="cta.title">开始使用 Leafio</h2>
+        <p data-i18n="cta.body">免费、开源、离线优先,把 Markdown 留在你手里。</p>
+        <a class="btn-primary" href="download.html" data-i18n="cta.button">下载 Leafio</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="footer-brand">
+      <img src="assets/img/logo.png" alt="Leafio" width="16" height="16">
+      <span>Leafio</span>
+      <span class="tagline" data-i18n="footer.tagline">本地优先的 Markdown 编辑器</span>
+    </div>
+    <div class="footer-links">
+      <span data-i18n="footer.version">版本</span>
+      <span>0.8.28</span>
+      <span class="dot">·</span>
+      <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
+    </div>
+  </footer>
+</body>
+</html>

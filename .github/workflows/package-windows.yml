@@ -1,0 +1,71 @@
+# Build Windows NSIS + MSI (x64 + ARM64) and upload artifacts.
+# MSI requires WiX and a Windows runner (cannot be cross-built from macOS).
+name: package-windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            arch: x64
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Build NSIS + MSI
+        run: npm run tauri -- build --target ${{ matrix.target }} --bundles nsis,msi
+
+      - name: Stage release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          OUT="${GITHUB_WORKSPACE}/releases/${VERSION}"
+          mkdir -p "$OUT"
+          NSIS="src-tauri/target/${{ matrix.target }}/release/bundle/nsis"
+          MSI="src-tauri/target/${{ matrix.target }}/release/bundle/msi"
+          cp -f "$NSIS"/Leafio_"${VERSION}"_*-setup.exe \
+            "$OUT/Leafio_${VERSION}_Windows_${{ matrix.arch }}-setup.exe"
+          shopt -s nullglob
+          msi=( "$MSI"/Leafio_"${VERSION}"_*.msi )
+          if ((${#msi[@]} == 0)); then
+            echo "error: no MSI under $MSI" >&2
+            ls -la "$MSI" || true
+            exit 1
+          fi
+          cp -f "${msi[0]}" "$OUT/Leafio_${VERSION}_Windows_${{ matrix.arch }}.msi"
+          ls -lh "$OUT"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}
+          path: releases/**
+          if-no-files-found: error

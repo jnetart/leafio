@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh" data-title-zh="Leafio — 下载" data-title-en="Leafio — Download">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="page.title.download">Leafio — 下载</title>
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('leafio-lang');
+        var lang = (saved === 'zh' || saved === 'en') ? saved
+          : ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en');
+        document.documentElement.lang = lang;
+        var title = document.querySelector('title');
+        if (title) {
+          title.textContent = lang === 'zh'
+            ? (document.documentElement.getAttribute('data-title-zh') || title.textContent)
+            : (document.documentElement.getAttribute('data-title-en') || title.textContent);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script defer src="assets/js/i18n.js"></script>
+  <style>
+    /* Page-specific layout for download.html */
+    .page-intro { padding: 72px 0 16px; text-align: center; }
+    .page-intro h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
+    .page-intro p { color: var(--text-secondary); font-size: 17px; max-width: 680px; margin: 0 auto; }
+
+    .download { padding: 48px 0 72px; }
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .platform-card {
+      background: var(--paper);
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .platform-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      color: #fff;
+    }
+    .platform-icon svg { width: 26px; height: 26px; fill: currentColor; display: block; }
+    .platform-icon.macos   { background: #1d1d1f; }
+    .platform-icon.windows { background: #0078d4; }
+    .platform-icon.linux   { background: #d97706; }
+    .platform-card h2 { margin: 0; font-size: 20px; }
+    .platform-file {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-sm);
+      padding: 2px 8px;
+    }
+    .platform-card p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.55; flex: 1; }
+    .platform-card .btn-primary {
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .download-note { margin: 28px 0 0; text-align: center; color: var(--text-secondary); font-size: 14px; }
+
+    @media (max-width: 900px) {
+      .download-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <a class="brand" href="index.html">
+      <img src="assets/img/logo.png" alt="Leafio" width="24" height="24">
+      <span>Leafio</span>
+    </a>
+    <nav>
+      <a href="index.html" data-i18n="nav.home">首页</a>
+      <a href="features.html" data-i18n="nav.features">功能</a>
+      <a href="guide.html" data-i18n="nav.guide">使用指南</a>
+      <a href="changelog.html" data-i18n="nav.changelog">更新日志</a>
+      <a href="download.html" class="active" data-i18n="nav.download">下载</a>
+    </nav>
+    <div class="lang-switch">
+      <button data-lang="zh" class="active">中</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page intro -->
+    <section class="page-intro">
+      <div class="container">
+        <h1 data-i18n="download.title">下载 Leafio</h1>
+        <p data-i18n="download.intro">Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。</p>
+      </div>
+    </section>
+
+    <!-- Platform cards -->
+    <section class="download">
+      <div class="container">
+        <div class="download-grid">
+          <div class="platform-card">
+            <div class="platform-icon macos" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" aria-label="macOS">
+                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
+              </svg>
+            </div>
+            <h2 data-i18n="download.macos">macOS</h2>
+            <span class="platform-file">.dmg</span>
+            <p data-i18n="download.macos.body">适用于 macOS 12 及以上,支持 Apple Silicon 与 Intel。</p>
+            <a class="btn-primary" data-release href="https://github.com/jnetart/leafio/releases" data-i18n="download.coming">即将推出</a>
+          </div>
+
+          <div class="platform-card">
+            <div class="platform-icon windows" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" aria-label="Windows">
+                <path d="M0 3.449 9.75 2.1v9.451H0m10.949-9.602 13.05-2.898V11.55H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6h13.05v9.15l-13.05-2.898"/>
+              </svg>
+            </div>
+            <h2 data-i18n="download.windows">Windows</h2>
+            <span class="platform-file">.msi</span>
+            <p data-i18n="download.windows.body">适用于 Windows 10 及以上,64 位系统。</p>
+            <a class="btn-primary" data-release href="https://github.com/jnetart/leafio/releases" data-i18n="download.coming">即将推出</a>
+          </div>
+
+          <div class="platform-card">
+            <div class="platform-icon linux" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" aria-label="Linux">
+                <path d="M22.946 18.169c.298 1.835-1.977 4.36-4.188 5.296-1.485.626-3.053.506-4.118.333-1.106-.18-2.344.181-3.405.426-1.39.322-2.864.505-4.142.371-2.593-.273-4.12-1.532-4.23-2.24-.12-.758.504-1.293 1.028-1.956.423-.535.776-1.365.832-1.915.056-.55-.319-1.125-.564-1.555-.313-.549-.529-1.211-.595-1.764-.129-1.086.646-2.345 2.006-2.484 1.185-.121 2.422.494 3.291.633.675.108 1.903-.356 2.525-.365.849-.012 1.469.272 2.116.457 1.337.383 2.091.38 2.722.4.744.024 1.366-.184 1.622-.348.33-.211.77-.553.917-1.025.283-.914.107-1.954.107-2.964 0-1.01-.143-2.274.686-2.91 1.574-1.207 4.26-.969 5.043-.866.783.104 1.71.322 2.21.686.577.419.692 1.195.692 1.954 0 .759-.194 1.56-.283 2.29-.077.63.368 1.365.155 1.94-.288.78-1.318.952-1.922 1.178-.833.312-1.775.433-2.643.687-1.092.32-2.217.965-2.222 2.046-.004.735.479 1.343.879 1.858.4.515.744 1.111.744 1.79.005.631-.545 1.23-1.364 1.542zM4.32 12.213c.162.792 1.231 1.686 2.231 1.196.469-.23.615-.919.505-1.525-.098-.55-.72-1.36-1.585-1.258-1.126.134-1.36 1.018-1.151 1.587zm5.332-4.48c.636-.617 1.75-1.186 2.66-1.032.974.164.732 1.408.192 2.145-.517.706-1.946 1.345-2.744.87-.838-.5-.474-1.599-.108-1.982zm4.337.348c1.051-.65 2.822-.533 3.19.654.39 1.26-1.044 2.163-2.158 2.214-1.214.055-2.073-1.061-2.074-1.94 0-.456.343-1.01 1.042-.928z"/>
+              </svg>
+            </div>
+            <h2 data-i18n="download.linux">Linux</h2>
+            <span class="platform-file">.AppImage</span>
+            <p data-i18n="download.linux.body">适用于主流 Linux 发行版,以 AppImage 分发。</p>
+            <a class="btn-primary" data-release href="https://github.com/jnetart/leafio/releases" data-i18n="download.coming">即将推出</a>
+          </div>
+        </div>
+
+        <p class="download-note" data-i18n="download.note">当前尚无正式发布版本,敬请关注后续更新。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="footer-brand">
+      <img src="assets/img/logo.png" alt="Leafio" width="16" height="16">
+      <span>Leafio</span>
+      <span class="tagline" data-i18n="footer.tagline">本地优先的 Markdown 编辑器</span>
+    </div>
+    <div class="footer-links">
+      <span data-i18n="footer.version">版本</span>
+      <span>0.8.28</span>
+      <span class="dot">·</span>
+      <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
+    </div>
+  </footer>
+</body>
+</html>
