@@ -27,10 +27,8 @@ resolve_bundle_dirs() {
   BUNDLE_DMG="$base/dmg"
 }
 
-copy_dmg_for_arch() {
+find_built_dmg() {
   local arch_label="$1"
-  local app="$2"
-  local dmg=""
   local cand
   for cand in \
     "$BUNDLE_DMG/Leafio_${VERSION}_${arch_label}.dmg" \
@@ -38,22 +36,35 @@ copy_dmg_for_arch() {
     "$BUNDLE_DMG/Leafio_${VERSION}_x64.dmg" \
     "$BUNDLE_DMG"/Leafio_"${VERSION}"_*.dmg; do
     if [[ -f "$cand" ]]; then
-      dmg="$cand"
-      break
+      echo "$cand"
+      return 0
     fi
   done
-  local dest="$RELEASES/Leafio_${VERSION}_${OS_LABEL}_${arch_label}.dmg"
-  if [[ -z "$dmg" ]]; then
-    echo "warn: Tauri DMG missing for ${arch_label}; creating with hdiutil"
-    local stage
-    stage="$(mktemp -d)"
-    cp -R "$app" "$stage/Leafio.app"
-    ln -sf /Applications "$stage/Applications"
-    hdiutil create -volname "Leafio" -srcfolder "$stage" -ov -format UDZO "$dest"
-    rm -rf "$stage"
-  else
-    cp -f "$dmg" "$dest"
+  return 1
+}
+
+sign_app() {
+  local app="$1"
+  if [[ ! -d "$app" ]]; then
+    echo "error: app bundle not found: $app" >&2
+    exit 1
   fi
+  echo "==> Ad-hoc signing $app"
+  codesign --force --deep --sign - "$app"
+  codesign --verify --deep --strict "$app"
+}
+
+publish_dmg() {
+  local arch_label="$1"
+  local app="$2"
+  local dest="$RELEASES/Leafio_${VERSION}_${OS_LABEL}_${arch_label}.dmg"
+  echo "==> Creating DMG for ${arch_label}"
+  local stage
+  stage="$(mktemp -d)"
+  cp -R "$app" "$stage/Leafio.app"
+  ln -sf /Applications "$stage/Applications"
+  hdiutil create -volname "Leafio" -srcfolder "$stage" -ov -format UDZO "$dest"
+  rm -rf "$stage"
   echo "Released $dest"
   ls -lh "$dest"
 }
@@ -71,32 +82,22 @@ build_one() {
 
   local dest="$RELEASES/Leafio_${VERSION}_${OS_LABEL}_${arch_label}.dmg"
   local dmg=""
-  for cand in \
-    "$BUNDLE_DMG/Leafio_${VERSION}_${arch_label}.dmg" \
-    "$BUNDLE_DMG/Leafio_${VERSION}_aarch64.dmg" \
-    "$BUNDLE_DMG/Leafio_${VERSION}_x64.dmg" \
-    "$BUNDLE_DMG"/Leafio_"${VERSION}"_*.dmg; do
-    if [[ -f "$cand" ]]; then
-      dmg="$cand"
-      break
-    fi
-  done
-
-  if [[ -n "$dmg" ]]; then
+  if dmg="$(find_built_dmg "$arch_label")"; then
     cp -f "$dmg" "$dest"
-    echo "Released $dest"
+    echo "Released $dest (ad-hoc signed during Tauri build)"
     ls -lh "$dest"
     return
   fi
 
   local app="$BUNDLE_MACOS/Leafio.app"
-  if [[ ! -d "$app" ]]; then
-    echo "error: neither DMG nor Leafio.app found under $BUNDLE_DMG / $BUNDLE_MACOS" >&2
-    exit 1
+  if [[ -d "$app" ]]; then
+    sign_app "$app"
+    publish_dmg "$arch_label" "$app"
+    return
   fi
-  codesign --force --deep --sign - "$app"
-  codesign --verify --deep --strict "$app"
-  copy_dmg_for_arch "$arch_label" "$app"
+
+  echo "error: neither DMG nor Leafio.app found under $BUNDLE_DMG / $BUNDLE_MACOS" >&2
+  exit 1
 }
 
 if ! rustup target list --installed | grep -qx x86_64-apple-darwin; then
