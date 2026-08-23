@@ -3,8 +3,11 @@
 记录 Leafio 从 MVP 到当前版本的变更(功能 / 修复 / 维护)。
 Notable changes to Leafio, from the MVP to the current release.
 
-Latest version: **0.8.25**
+Latest version: **0.8.28**
 
+- 99a1321 2026-08-23 chore: bump version to 0.8.28
+- 99a1321 2026-08-23 fix: remove close_devtools setup incompatible with production config
+- 99a1321 2026-08-23 feat: add macOS/Windows packaging scripts and GitHub Actions workflow
 - 98b0e42 2026-08-23 chore: bump version to 0.8.25
 - 46bc64c 2026-08-23 feat: enhance sidebar file ops, trash delete, and workspace ordering
 - df4c480 2026-08-23 feat: add folder rename and name prompt for new subfolders
