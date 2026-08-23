@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n="page.title.download">Leafio — 下载</title>
-  <link rel="icon" href="assets/img/favicon.png">
-  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="icon" href="../assets/img/favicon.png">
+  <link rel="stylesheet" href="../assets/css/site.css">
   <script>
     (function () {
       try {
@@ -22,7 +22,7 @@
       } catch (e) {}
     })();
   </script>
-  <script defer src="assets/js/i18n.js"></script>
+  <script defer src="../assets/js/i18n.js"></script>
   <style>
     /* Page-specific layout for download.html */
     .page-intro { padding: 72px 0 16px; text-align: center; }
@@ -67,12 +67,46 @@
       padding: 2px 8px;
     }
     .platform-card p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.55; flex: 1; }
-    .platform-card .btn-primary {
+    .download-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    .download-actions a {
       width: 100%;
       text-align: center;
       box-sizing: border-box;
     }
-    .download-note { margin: 28px 0 0; text-align: center; color: var(--text-secondary); font-size: 14px; }
+    .btn-outline {
+      display: inline-block;
+      padding: 12px 20px;
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      color: var(--text);
+      background: var(--paper);
+    }
+    .btn-outline:hover { border-color: var(--text-secondary); color: var(--text); }
+    .download-note {
+      margin: 28px 0 0;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .download-note a { color: var(--accent); font-weight: 600; }
+    .version-pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+    }
 
     @media (max-width: 900px) {
       .download-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
@@ -81,16 +115,16 @@
 </head>
 <body>
   <header class="page-header">
-    <a class="brand" href="index.html">
-      <img src="assets/img/logo.png" alt="Leafio" width="24" height="24">
+    <a class="brand" href="../">
+      <img src="../assets/img/logo.png" alt="Leafio" width="24" height="24">
       <span>Leafio</span>
     </a>
     <nav>
-      <a href="index.html" data-i18n="nav.home">首页</a>
-      <a href="features.html" data-i18n="nav.features">功能</a>
-      <a href="guide.html" data-i18n="nav.guide">使用指南</a>
-      <a href="changelog.html" data-i18n="nav.changelog">更新日志</a>
-      <a href="download.html" class="active" data-i18n="nav.download">下载</a>
+      <a href="../" data-i18n="nav.home">首页</a>
+      <a href="../features/" data-i18n="nav.features">功能</a>
+      <a href="../guide/" data-i18n="nav.guide">使用指南</a>
+      <a href="../changelog/" data-i18n="nav.changelog">更新日志</a>
+      <a href="./" class="active" data-i18n="nav.download">下载</a>
     </nav>
     <div class="lang-switch">
       <button data-lang="zh" class="active">中</button>
@@ -104,6 +138,7 @@
       <div class="container">
         <h1 data-i18n="download.title">下载 Leafio</h1>
         <p data-i18n="download.intro">Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。</p>
+        <p class="version-pill" data-i18n="download.version">当前版本 v0.8.28</p>
       </div>
     </section>
 
@@ -120,7 +155,10 @@
             <h2 data-i18n="download.macos">macOS</h2>
             <span class="platform-file">.dmg</span>
             <p data-i18n="download.macos.body">适用于 macOS 12 及以上,支持 Apple Silicon 与 Intel。</p>
-            <a class="btn-primary" data-release href="https://github.com/jnetart/leafio/releases" data-i18n="download.coming">即将推出</a>
+            <div class="download-actions">
+              <a class="btn-primary" href="https://github.com/jnetart/leafio/releases/download/v0.8.28/Leafio_0.8.28_macOS_aarch64.dmg" data-i18n="download.macos.arm">Apple Silicon</a>
+              <a class="btn-outline" href="https://github.com/jnetart/leafio/releases/download/v0.8.28/Leafio_0.8.28_macOS_x64.dmg" data-i18n="download.macos.intel">Intel</a>
+            </div>
           </div>
 
           <div class="platform-card">
@@ -130,9 +168,12 @@
               </svg>
             </div>
             <h2 data-i18n="download.windows">Windows</h2>
-            <span class="platform-file">.msi</span>
-            <p data-i18n="download.windows.body">适用于 Windows 10 及以上,64 位系统。</p>
-            <a class="btn-primary" data-release href="https://github.com/jnetart/leafio/releases" data-i18n="download.coming">即将推出</a>
+            <span class="platform-file">.exe</span>
+            <p data-i18n="download.windows.body">适用于 Windows 10 及以上,提供 x64 与 ARM64 安装程序。</p>
+            <div class="download-actions">
+              <a class="btn-primary" href="https://github.com/jnetart/leafio/releases/download/v0.8.28/Leafio_0.8.28_Windows_x64-setup.exe" data-i18n="download.windows.x64">x64</a>
+              <a class="btn-outline" href="https://github.com/jnetart/leafio/releases/download/v0.8.28/Leafio_0.8.28_Windows_arm64-setup.exe" data-i18n="download.windows.arm64">ARM64</a>
+            </div>
           </div>
 
           <div class="platform-card">
@@ -144,18 +185,25 @@
             <h2 data-i18n="download.linux">Linux</h2>
             <span class="platform-file">.AppImage</span>
             <p data-i18n="download.linux.body">适用于主流 Linux 发行版,以 AppImage 分发。</p>
-            <a class="btn-primary" data-release href="https://github.com/jnetart/leafio/releases" data-i18n="download.coming">即将推出</a>
+            <div class="download-actions">
+              <span class="btn-outline" style="opacity: 0.55; cursor: default;" data-i18n="download.coming">即将推出</span>
+            </div>
           </div>
         </div>
 
-        <p class="download-note" data-i18n="download.note">当前尚无正式发布版本,敬请关注后续更新。</p>
+        <p class="download-note">
+          <span data-i18n="download.note">查看更新日志了解 v0.8.28 的变更,或在 GitHub 浏览全部历史版本。</span>
+          <a href="../changelog/" data-i18n="download.note.changelog">更新日志</a>
+          ·
+          <a href="https://github.com/jnetart/leafio/releases" data-i18n="download.note.releases">全部版本</a>
+        </p>
       </div>
     </section>
   </main>
 
   <footer class="page-footer">
     <div class="footer-brand">
-      <img src="assets/img/logo.png" alt="Leafio" width="16" height="16">
+      <img src="../assets/img/logo.png" alt="Leafio" width="16" height="16">
       <span>Leafio</span>
       <span class="tagline" data-i18n="footer.tagline">本地优先的 Markdown 编辑器</span>
     </div>

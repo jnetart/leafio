@@ -76,6 +76,28 @@ function isFile(p) {
   }
 }
 
+function isDir(p) {
+  try {
+    return existsSync(p) && statSync(p).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function resolveLocalTarget(baseDir, clean) {
+  const target = clean.startsWith('/')
+    ? resolve(DOCS, `.${clean}`)
+    : resolve(baseDir, clean);
+  if (isFile(target)) return target;
+  if (isDir(target) && isFile(join(target, 'index.html'))) {
+    return join(target, 'index.html');
+  }
+  if (!extname(clean) && isFile(`${target}/index.html`)) {
+    return `${target}/index.html`;
+  }
+  return target;
+}
+
 const rel = (p) => relative(ROOT, p) || p;
 
 // ---------------------------------------------------------------------------
@@ -115,9 +137,7 @@ function checkBrokenLinks() {
 
         // Site-relative `/...` resolves from the docs root; otherwise relative
         // to the referencing page.
-        const target = clean.startsWith('/')
-          ? resolve(DOCS, `.${clean}`)
-          : resolve(dir, clean);
+        const target = resolveLocalTarget(dir, clean);
 
         if (!isFile(target)) {
           problem(
@@ -142,9 +162,7 @@ function checkBrokenLinks() {
         if (!clean) continue;
         refCount += 1;
         checkedCount += 1;
-        const target = clean.startsWith('/')
-          ? resolve(DOCS, `.${clean}`)
-          : resolve(dir, clean);
+        const target = resolveLocalTarget(dir, clean);
         if (!isFile(target)) {
           problem('broken-link', rel(file), `missing CSS url() target "${url}"`);
         }
