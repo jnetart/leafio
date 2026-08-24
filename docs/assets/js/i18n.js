@@ -147,7 +147,7 @@ const I18N = {
   'download.title': { zh: '下载 Leafio',  en: 'Download Leafio' },
   'download.intro': { zh: 'Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。',
                       en: 'Leafio desktop is available for macOS, Windows, and Linux — free, open source, and offline-first.' },
-  'download.version': { zh: '当前版本 v0.8.28', en: 'Current release v0.8.28' },
+  'download.version': { zh: '当前版本 v0.8.35', en: 'Current release v0.8.35' },
   'download.macos': { zh: 'macOS',        en: 'macOS' },
   'download.macos.body': { zh: '适用于 macOS 12 及以上,支持 Apple Silicon 与 Intel。',
                            en: 'For macOS 12 and later, on Apple Silicon and Intel.' },
