@@ -768,6 +768,7 @@ export default function App() {
     collapseSidebar: t('app.collapseSidebar'),
     expandSidebar: t('app.expandSidebar'),
     newFile: t('context.newFile'),
+    newFolder: t('menu.newFolder'),
     newSubfolder: t('context.newSubfolder'),
     expand: t('sidebar.expand'),
     collapse: t('sidebar.collapse'),

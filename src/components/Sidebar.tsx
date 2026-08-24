@@ -85,6 +85,7 @@ interface SidebarProps {
     collapseSidebar: string;
     expandSidebar: string;
     newFile: string;
+    newFolder: string;
     newSubfolder: string;
     expand: string;
     collapse: string;
@@ -298,6 +299,11 @@ export function Sidebar({
                 id: 'new-file',
                 label: labels.newFile,
                 onSelect: () => handleNewFileInDir(menu.root.path),
+              },
+              {
+                id: 'new-folder',
+                label: labels.newFolder,
+                onSelect: () => handleNewSubfolderInDir(menu.root.path),
               },
               {
                 id: 'rename-workspace',
