@@ -199,26 +199,26 @@ function applyLang(lang) {
 document.addEventListener('DOMContentLoaded', () => {
   const lang = detectLang();
 
-  document.querySelectorAll('.lang-switch').forEach((switcher) => {
-    const toggle = switcher.querySelector('.lang-switch-toggle');
-    switcher.querySelectorAll('.lang-switch-menu button').forEach((b) => {
+  document.querySelectorAll('.lang-switch-details').forEach((details) => {
+    const summary = details.querySelector('.lang-switch-toggle');
+    details.querySelectorAll('.lang-switch-menu button').forEach((b) => {
       b.addEventListener('click', () => {
         applyLang(b.dataset.lang);
-        switcher.classList.remove('open');
-        toggle?.setAttribute('aria-expanded', 'false');
+        details.removeAttribute('open');
+        summary?.setAttribute('aria-expanded', 'false');
       });
     });
-    toggle?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const open = switcher.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    details.addEventListener('toggle', () => {
+      summary?.setAttribute('aria-expanded', details.open ? 'true' : 'false');
     });
   });
 
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.lang-switch.open').forEach((switcher) => {
-      switcher.classList.remove('open');
-      switcher.querySelector('.lang-switch-toggle')?.setAttribute('aria-expanded', 'false');
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.lang-switch-details[open]').forEach((details) => {
+      if (!details.contains(e.target)) {
+        details.removeAttribute('open');
+        details.querySelector('.lang-switch-toggle')?.setAttribute('aria-expanded', 'false');
+      }
     });
   });
 

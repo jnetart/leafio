@@ -28,6 +28,8 @@ html.dark {
 
 * { box-sizing: border-box; }
 
+html { touch-action: manipulation; }
+
 body {
   margin: 0;
   font-family: var(--font-ui);
@@ -72,6 +74,7 @@ kbd {
 .page-header nav a.active, .page-header nav a:hover { color: var(--text); }
 
 .lang-switch { position: relative; }
+.lang-switch-details { position: relative; }
 .lang-switch-toggle {
   display: inline-flex;
   align-items: center;
@@ -84,7 +87,9 @@ kbd {
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
+  list-style: none;
 }
+.lang-switch-toggle::-webkit-details-marker { display: none; }
 .lang-switch-toggle:hover { color: var(--text); }
 .lang-switch-menu {
   position: absolute;
@@ -98,10 +103,8 @@ kbd {
   border: 1px solid var(--separator);
   border-radius: var(--radius-md);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  display: none;
   z-index: 100;
 }
-.lang-switch.open .lang-switch-menu { display: block; }
 .lang-switch-menu button {
   display: block;
   width: 100%;
