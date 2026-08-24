@@ -1,5 +1,4 @@
 import { useEditor, type Editor, type JSONContent } from '@tiptap/react';
-import CodeBlock from '@tiptap/extension-code-block';
 import Heading from '@tiptap/extension-heading';
 import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
@@ -10,6 +9,8 @@ import { TableCellWithBackground, TableHeaderWithBackground } from './extensions
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
 import { BlockGap } from './extensions/blockGap';
+import { CodeBlockTab } from './extensions/codeBlockTab';
+import { CodeBlockWithChrome } from './extensions/codeBlockWithChrome';
 import { PanelBlockBoundary } from './extensions/panelBlockBoundary';
 import { SlashCommandExtension } from './extensions/SlashCommand';
 import { TrailingNode } from './extensions/trailingNode';
@@ -20,7 +21,8 @@ export const extensions = [
     codeBlock: false,
   }),
   Heading.configure({ levels: [1, 2, 3, 4] }),
-  CodeBlock,
+  CodeBlockWithChrome,
+  CodeBlockTab,
   TaskList,
   TaskItem.configure({ nested: true }),
   Table.configure({

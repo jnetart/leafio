@@ -11,6 +11,10 @@ export function shouldShowTextFormatToolbar(editor: Editor): boolean {
     return false;
   }
 
+  if (editor.isActive('codeBlock')) {
+    return false;
+  }
+
   const { state } = editor;
   const { doc, selection } = state;
   if (selection.empty) {

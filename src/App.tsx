@@ -83,6 +83,7 @@ export default function App() {
     editorWidthMode,
     editorFontFamily,
     editorFontSize,
+    editorTabWidth,
     theme,
     language,
     launchBehavior,
@@ -90,12 +91,13 @@ export default function App() {
     setEditorWidthMode,
     setEditorFontFamily,
     setEditorFontSize,
+    setEditorTabWidth,
     setTheme,
     setLanguage,
     setLaunchBehavior,
   } = usePreferences();
   useTheme(theme);
-  useEditorTypography(editorFontFamily, editorFontSize);
+  useEditorTypography(editorFontFamily, editorFontSize, editorTabWidth);
   const { locale, t } = useI18n(language);
   const userHomeDir = useUserHomeDir();
 
@@ -973,6 +975,7 @@ export default function App() {
               editorWidthMode={editorWidthMode}
               editorFontFamily={editorFontFamily}
               editorFontSize={editorFontSize}
+              editorTabWidth={editorTabWidth}
               theme={theme}
               language={language}
               launchBehavior={launchBehavior}
@@ -980,6 +983,7 @@ export default function App() {
               onEditorWidthModeChange={setEditorWidthMode}
               onEditorFontFamilyChange={setEditorFontFamily}
               onEditorFontSizeChange={setEditorFontSize}
+              onEditorTabWidthChange={setEditorTabWidth}
               onThemeChange={setTheme}
               onLanguageChange={setLanguage}
               onLaunchBehaviorChange={setLaunchBehavior}
@@ -1000,10 +1004,15 @@ export default function App() {
                   }
                 >
                   {view === 'edit' && activeFile ? (
-                    <Editor key={activeFile.path} content={doc} onChange={handleEditorChange} />
+                    <Editor
+                      key={activeFile.path}
+                      content={doc}
+                      onChange={handleEditorChange}
+                      tabWidth={editorTabWidth}
+                    />
                   ) : null}
                   {view === 'source' && activeFile ? (
-                    <SourceView value={markdown} onChange={handleSourceChange} />
+                    <SourceView value={markdown} onChange={handleSourceChange} tabWidth={editorTabWidth} />
                   ) : null}
                   {view === 'preview' ? <PreviewView content={doc} /> : null}
                   {!activeFile ? (

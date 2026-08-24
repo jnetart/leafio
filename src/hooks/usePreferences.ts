@@ -4,6 +4,7 @@ import {
   type AppPreferences,
   type EditorFontFamily,
   type EditorFontSize,
+  type EditorTabWidth,
   type EditorWidthMode,
   type LanguageMode,
   type LaunchBehavior,
@@ -51,6 +52,13 @@ export function usePreferences() {
     [updatePreferences],
   );
 
+  const setEditorTabWidth = useCallback(
+    (editorTabWidth: EditorTabWidth) => {
+      updatePreferences((current) => ({ ...current, editorTabWidth }));
+    },
+    [updatePreferences],
+  );
+
   const setTheme = useCallback(
     (theme: ThemeMode) => {
       updatePreferences((current) => ({ ...current, theme }));
@@ -78,6 +86,7 @@ export function usePreferences() {
     setEditorWidthMode,
     setEditorFontFamily,
     setEditorFontSize,
+    setEditorTabWidth,
     setTheme,
     setLanguage,
     setLaunchBehavior,

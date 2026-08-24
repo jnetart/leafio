@@ -2,13 +2,14 @@ import { useState, type ReactNode } from 'react';
 import type { createTranslator } from '../lib/i18n';
 import type { SettingsSection } from '../lib/settings-sections';
 import { SETTINGS_SECTIONS } from '../lib/settings-sections';
-import type { EditorFontFamily, EditorFontSize, EditorWidthMode, LanguageMode, LaunchBehavior, ThemeMode } from '../lib/preferences';
+import type { EditorFontFamily, EditorFontSize, EditorTabWidth, EditorWidthMode, LanguageMode, LaunchBehavior, ThemeMode } from '../lib/preferences';
 
 interface SettingsViewProps {
   section: SettingsSection;
   editorWidthMode: EditorWidthMode;
   editorFontFamily: EditorFontFamily;
   editorFontSize: EditorFontSize;
+  editorTabWidth: EditorTabWidth;
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
@@ -16,6 +17,7 @@ interface SettingsViewProps {
   onEditorWidthModeChange: (mode: EditorWidthMode) => void;
   onEditorFontFamilyChange: (family: EditorFontFamily) => void;
   onEditorFontSizeChange: (size: EditorFontSize) => void;
+  onEditorTabWidthChange: (width: EditorTabWidth) => void;
   onThemeChange: (theme: ThemeMode) => void;
   onLanguageChange: (language: LanguageMode) => void;
   onLaunchBehaviorChange: (behavior: LaunchBehavior) => void;
@@ -26,6 +28,7 @@ export function SettingsView({
   editorWidthMode,
   editorFontFamily,
   editorFontSize,
+  editorTabWidth,
   theme,
   language,
   launchBehavior,
@@ -33,12 +36,12 @@ export function SettingsView({
   onEditorWidthModeChange,
   onEditorFontFamilyChange,
   onEditorFontSizeChange,
+  onEditorTabWidthChange,
   onThemeChange,
   onLanguageChange,
   onLaunchBehaviorChange,
 }: SettingsViewProps) {
   const [autoSaveInterval, setAutoSaveInterval] = useState('2');
-  const [tabWidth, setTabWidth] = useState('2');
   const [spellCheck, setSpellCheck] = useState('off');
   const [defaultExportFormat, setDefaultExportFormat] = useState('html');
   const [includeFrontmatter, setIncludeFrontmatter] = useState('yes');
@@ -159,8 +162,8 @@ export function SettingsView({
                       { value: '2', label: t('settings.tab.2') },
                       { value: '4', label: t('settings.tab.4') },
                     ]}
-                    value={tabWidth}
-                    onChange={setTabWidth}
+                    value={String(editorTabWidth)}
+                    onChange={(value) => onEditorTabWidthChange(Number(value) as EditorTabWidth)}
                   />
                 </SettingRow>
                 <SettingRow title={t('settings.spell.title')} description={t('settings.spell.desc')}>

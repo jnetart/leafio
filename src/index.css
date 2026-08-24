@@ -34,6 +34,7 @@
   --editor-size: 16px;
   --editor-line-height: 1.6;
   --editor-code-size: 15px;
+  --editor-tab-size: 2;
   --source-font-size: 15px;
   --source-line-height: 24px;
   --font-mono: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
@@ -42,6 +43,15 @@
   --source-token-string: #0f7b0f;
   --editor-inline-code: #c41e3a;
   --editor-inline-code-bg: rgba(196, 30, 58, 0.08);
+  --code-comment: #6e7681;
+  --code-keyword: #8250df;
+  --code-string: #0a7c42;
+  --code-number: #0550ae;
+  --code-function: #6639ba;
+  --code-type: #953800;
+  --code-variable: #24292f;
+  --code-tag: #116329;
+  --code-accent: #5b8c6f;
   --inspector-bg: rgba(252, 252, 250, 0.92);
   --inspector-rail: rgba(91, 140, 111, 0.22);
   --inspector-marker: rgba(91, 140, 111, 0.55);
@@ -74,6 +84,15 @@
   --source-token-string: #34c759;
   --editor-inline-code: #ff7b72;
   --editor-inline-code-bg: rgba(255, 123, 114, 0.14);
+  --code-comment: #8b949e;
+  --code-keyword: #d2a8ff;
+  --code-string: #7ee787;
+  --code-number: #79c0ff;
+  --code-function: #d2a8ff;
+  --code-type: #ffa657;
+  --code-variable: #e6edf3;
+  --code-tag: #7ee787;
+  --code-accent: #6baa83;
   --inspector-bg: rgba(28, 28, 30, 0.94);
   --inspector-rail: rgba(107, 170, 131, 0.28);
   --inspector-marker: rgba(107, 170, 131, 0.65);
@@ -402,17 +421,185 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .leafio-editor pre {
   margin: 0;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 0.625rem 0.75rem;
-  overflow-x: auto;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: var(--editor-code-size);
-  line-height: 1.5;
 }
 
-.dark .leafio-editor pre {
-  background: rgba(255, 255, 255, 0.06);
+.leafio-editor .leafio-code-block {
+  margin: 0;
+}
+
+.leafio-editor .leafio-code-block-shell {
+  position: relative;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.035);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.dark .leafio-editor .leafio-code-block-shell {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.leafio-editor .leafio-code-block-shell--selected {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--separator));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.leafio-editor .leafio-code-block-chrome {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.leafio-editor .leafio-code-block-chrome > * {
+  pointer-events: auto;
+}
+
+.leafio-editor .leafio-code-block-lang-trigger,
+.leafio-editor .leafio-code-block-lang-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 180px;
+  padding: 0.15rem 0.45rem;
+  border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--separator) 85%, transparent);
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+}
+
+.leafio-editor .leafio-code-block-lang-trigger {
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.leafio-editor .leafio-code-block-lang-trigger:hover,
+.leafio-editor .leafio-code-block-lang-trigger--open {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--separator));
+  background: color-mix(in srgb, var(--accent) 10%, var(--paper));
+  color: var(--accent);
+}
+
+.leafio-editor .leafio-code-block-pre {
+  margin: 0;
+  padding: 2rem 0.875rem 0.75rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--editor-code-size);
+  line-height: 1.55;
+  background: transparent;
+  border: 0;
+}
+
+.leafio-editor .leafio-code-block-shell:not(.leafio-code-block-shell--editable) .leafio-code-block-pre {
+  padding-top: 0.75rem;
+}
+
+.leafio-editor pre:not(.leafio-code-block-pre) {
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.035);
+  padding: 0.75rem 0.875rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--editor-code-size);
+  line-height: 1.55;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.dark .leafio-editor pre:not(.leafio-code-block-pre) {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.leafio-editor pre code {
+  display: block;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: var(--text);
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  tab-size: var(--editor-tab-size);
+}
+
+.leafio-editor pre .hljs-comment,
+.leafio-editor pre .hljs-quote {
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+.leafio-editor pre .hljs-keyword,
+.leafio-editor pre .hljs-selector-tag,
+.leafio-editor pre .hljs-built_in,
+.leafio-editor pre .hljs-name {
+  color: var(--code-keyword);
+}
+
+.leafio-editor pre .hljs-string,
+.leafio-editor pre .hljs-attr,
+.leafio-editor pre .hljs-attribute,
+.leafio-editor pre .hljs-template-variable,
+.leafio-editor pre .hljs-template-tag,
+.leafio-editor pre .hljs-regexp,
+.leafio-editor pre .hljs-symbol,
+.leafio-editor pre .hljs-meta {
+  color: var(--code-string);
+}
+
+.leafio-editor pre .hljs-number,
+.leafio-editor pre .hljs-literal {
+  color: var(--code-number);
+}
+
+.leafio-editor pre .hljs-title,
+.leafio-editor pre .hljs-title.function_,
+.leafio-editor pre .hljs-function .hljs-title,
+.leafio-editor pre .hljs-section {
+  color: var(--code-function);
+}
+
+.leafio-editor pre .hljs-type,
+.leafio-editor pre .hljs-class .hljs-title,
+.leafio-editor pre .hljs-variable.language_ {
+  color: var(--code-type);
+}
+
+.leafio-editor pre .hljs-variable,
+.leafio-editor pre .hljs-params,
+.leafio-editor pre .hljs-property {
+  color: var(--code-variable);
+}
+
+.leafio-editor pre .hljs-tag,
+.leafio-editor pre .hljs-selector-id,
+.leafio-editor pre .hljs-selector-class {
+  color: var(--code-tag);
+}
+
+.leafio-editor pre .hljs-subst,
+.leafio-editor pre .hljs-addition {
+  color: var(--code-accent);
+}
+
+.leafio-editor pre .hljs-deletion {
+  color: var(--editor-inline-code);
+}
+
+.leafio-editor pre .hljs-emphasis {
+  font-style: italic;
+}
+
+.leafio-editor pre .hljs-strong {
+  font-weight: 600;
 }
 
 .leafio-editor code {
@@ -1160,7 +1347,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   font-variant-ligatures: none;
   white-space: pre;
   overflow: auto;
-  tab-size: 2;
+  tab-size: var(--editor-tab-size);
   -webkit-font-smoothing: antialiased;
 }
 

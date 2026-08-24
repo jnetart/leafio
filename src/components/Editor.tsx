@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/react';
 import { useLeafioEditor } from '../editor/schema';
+import type { EditorTabWidth } from '../lib/preferences';
 import { LEAFIO_MENU_EDIT_EVENT, type LeafioMenuEditAction } from '../lib/menu-edit';
 import { useEditorContextMenuOpen } from '../lib/editor-context-menu';
 import { EditorContextMenu } from './EditorContextMenu';
@@ -11,11 +12,19 @@ import { TableBubbleMenu } from './TableBubbleMenu';
 interface EditorProps {
   content: JSONContent;
   onChange: (doc: JSONContent) => void;
+  tabWidth: EditorTabWidth;
 }
 
-export function Editor({ content, onChange }: EditorProps) {
+export function Editor({ content, onChange, tabWidth }: EditorProps) {
   const editor = useLeafioEditor(content, true, onChange);
   const { contextMenuOpen, onMenuOpenChange } = useEditorContextMenuOpen();
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.storage.codeBlockTab.tabSize = tabWidth;
+  }, [editor, tabWidth]);
 
   useEffect(() => {
     if (!editor) {

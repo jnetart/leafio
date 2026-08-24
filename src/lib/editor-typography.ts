@@ -1,4 +1,4 @@
-import type { EditorFontFamily, EditorFontSize } from './preferences';
+import type { EditorFontFamily, EditorFontSize, EditorTabWidth } from './preferences';
 
 export const EDITOR_FONT_SIZE_PX: Record<EditorFontSize, number> = {
   compact: 14,
@@ -18,7 +18,11 @@ function companionSize(px: number): number {
   return Math.max(px - 1, 12);
 }
 
-export function applyEditorTypography(family: EditorFontFamily, size: EditorFontSize): void {
+export function applyEditorTypography(
+  family: EditorFontFamily,
+  size: EditorFontSize,
+  tabWidth: EditorTabWidth,
+): void {
   const px = EDITOR_FONT_SIZE_PX[size];
   const companion = companionSize(px);
   const root = document.documentElement;
@@ -28,4 +32,5 @@ export function applyEditorTypography(family: EditorFontFamily, size: EditorFont
   root.style.setProperty('--editor-code-size', `${companion}px`);
   root.style.setProperty('--source-font-size', `${companion}px`);
   root.style.setProperty('--source-line-height', `${Math.round(companion * 1.615)}px`);
+  root.style.setProperty('--editor-tab-size', String(tabWidth));
 }

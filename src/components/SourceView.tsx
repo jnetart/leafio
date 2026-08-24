@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { tabStringForSize } from '../editor/codeBlockIndent';
+import type { EditorTabWidth } from '../lib/preferences';
 import { LEAFIO_MENU_EDIT_EVENT, type LeafioMenuEditAction } from '../lib/menu-edit';
 
 interface SourceViewProps {
   value: string;
   onChange: (value: string) => void;
+  tabWidth: EditorTabWidth;
 }
 
 function escapeHtml(text: string): string {
@@ -64,7 +67,7 @@ function highlightMarkdown(text: string): string {
     .join('\n');
 }
 
-export function SourceView({ value, onChange }: SourceViewProps) {
+export function SourceView({ value, onChange, tabWidth }: SourceViewProps) {
   const [draft, setDraft] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
@@ -125,6 +128,33 @@ export function SourceView({ value, onChange }: SourceViewProps) {
     }
   }, []);
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      event.preventDefault();
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      const tab = tabStringForSize(tabWidth);
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const nextValue = `${draft.slice(0, start)}${tab}${draft.slice(end)}`;
+      setDraft(nextValue);
+
+      const cursor = start + tab.length;
+      window.requestAnimationFrame(() => {
+        textarea.selectionStart = cursor;
+        textarea.selectionEnd = cursor;
+      });
+    },
+    [draft, tabWidth],
+  );
+
   return (
     <div className="source-editor">
       <div ref={lineNumbersRef} className="source-line-numbers" aria-hidden="true">
@@ -144,6 +174,7 @@ export function SourceView({ value, onChange }: SourceViewProps) {
           ref={textareaRef}
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={handleKeyDown}
           onBlur={() => onChange(draft)}
           onScroll={syncScroll}
           className="source-textarea"

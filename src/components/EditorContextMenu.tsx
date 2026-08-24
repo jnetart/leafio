@@ -66,6 +66,10 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
         editor.commands.focus();
       }
 
+      if (editor.isActive('codeBlock')) {
+        return;
+      }
+
       const previous = editor.getAttributes('link').href as string | undefined;
       setLinkUrl(previous ?? '');
       setShowLinkInput(false);
