@@ -381,6 +381,18 @@ function expandPathToRoot(next: Set<string>, activePath: string, root: string) {
   }
 }
 
+function setsEqual(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const value of a) {
+    if (!b.has(value)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function useExpandedPaths(activePath?: string, roots?: string[]) {
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() =>
     roots?.length ? new Set(roots) : new Set(),
@@ -395,32 +407,37 @@ export function useExpandedPaths(activePath?: string, roots?: string[]) {
   }, []);
 
   const rootsKey = roots?.join('\0') ?? '';
+  const rootList = rootsKey ? rootsKey.split('\0') : [];
 
   useEffect(() => {
-    if (!activePath || !roots?.length) {
+    if (!activePath || rootList.length === 0) {
       return;
     }
     setExpandedPaths((current) => {
       const next = new Set(current);
-      for (const root of roots) {
+      for (const root of rootList) {
         expandPathToRoot(next, activePath, root);
       }
-      return next;
+      return setsEqual(current, next) ? current : next;
     });
-  }, [activePath, rootsKey, roots]);
+  }, [activePath, rootsKey]);
 
   useEffect(() => {
-    if (!roots?.length) {
+    if (rootList.length === 0) {
       return;
     }
     setExpandedPaths((current) => {
       const next = new Set(current);
-      for (const root of roots) {
-        next.add(root);
+      let changed = false;
+      for (const root of rootList) {
+        if (!next.has(root)) {
+          next.add(root);
+          changed = true;
+        }
       }
-      return next;
+      return changed ? next : current;
     });
-  }, [rootsKey, roots]);
+  }, [rootsKey]);
 
   return [expandedPaths, setExpandedPaths, expandDir] as const;
 }

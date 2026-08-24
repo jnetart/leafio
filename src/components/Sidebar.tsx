@@ -346,7 +346,7 @@ export function Sidebar({
                 <IconSearch className="h-3.5 w-3.5 shrink-0 opacity-50" />
                 <input type="text" placeholder={t('settings.search')} readOnly tabIndex={-1} />
               </div>
-              <nav className="flex flex-1 flex-col gap-0.5 overflow-auto px-2 py-2">
+              <nav className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 py-2">
                 {SETTINGS_SECTIONS.map((item) => {
                   const active = item.id === settingsSection;
                   const Icon = item.icon;
@@ -374,7 +374,7 @@ export function Sidebar({
                 <IconSearch className="h-3.5 w-3.5 shrink-0 opacity-50" />
                 <span className="text-[12px] text-[var(--text-secondary)]">{labels.search}</span>
               </button>
-              <div className="flex flex-1 flex-col gap-0.5 overflow-auto px-2 py-2">
+              <div className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 py-2">
                 {roots.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 px-3 py-6 text-center">
                     <p className="text-[12px] leading-relaxed text-[var(--text-secondary)]">{labels.emptyHint}</p>

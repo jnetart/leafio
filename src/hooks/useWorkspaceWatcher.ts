@@ -9,8 +9,8 @@ export function useWorkspaceWatcher(workspacePaths: string[], onChange: () => vo
   const pathsKey = workspacePaths.join('\0');
 
   useEffect(() => {
-    void setWorkspaceWatchers(workspacePaths);
-  }, [pathsKey, workspacePaths]);
+    void setWorkspaceWatchers(pathsKey ? pathsKey.split('\0') : []);
+  }, [pathsKey]);
 
   useEffect(() => {
     let debounceTimer: number | undefined;

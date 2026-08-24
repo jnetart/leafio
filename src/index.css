@@ -79,6 +79,21 @@
   --inspector-item-active: rgba(107, 170, 131, 0.14);
 }
 
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+html {
+  overscroll-behavior: none;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   font-family: var(--font-ui);
@@ -905,6 +920,14 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   padding: 0 0 40px;
 }
 
+.scroll-pane {
+  overscroll-behavior: contain;
+}
+
+.editor-scroll {
+  background: var(--paper);
+}
+
 .settings-body-inner {
   max-width: 720px;
 }
@@ -1064,6 +1087,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   pointer-events: none;
   color: var(--text);
   background: transparent;
+  overflow: hidden;
 }
 
 .source-textarea {
@@ -1072,6 +1096,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   color: transparent;
   caret-color: var(--text);
   background: transparent;
+  overscroll-behavior: contain;
 }
 
 .source-token-heading {
@@ -1176,6 +1201,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 .outline-tree {
   flex: 1;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 0 10px 16px 12px;
 }
 

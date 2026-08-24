@@ -906,12 +906,12 @@ export default function App() {
   );
 
   if (!ready || !workspaceReady) {
-    return <div className="flex h-screen items-center justify-center bg-[var(--window-bg)]" />;
+    return <div className="flex h-full items-center justify-center bg-[var(--window-bg)]" />;
   }
 
   if (!hasSidebar && !activeFile) {
     return (
-      <div className="relative flex h-screen flex-col bg-[var(--window-bg)] font-ui text-[var(--text)]">
+      <div className="relative flex h-full flex-col overflow-hidden bg-[var(--window-bg)] font-ui text-[var(--text)]">
         <WindowDragBar title="Leafio" />
         {welcomeScreen}
         {appDialogs}
@@ -926,7 +926,7 @@ export default function App() {
       : 'paper';
 
   return (
-    <div className="relative flex h-screen bg-[var(--window-bg)] font-ui text-[var(--text)]">
+    <div className="relative flex h-full overflow-hidden bg-[var(--window-bg)] font-ui text-[var(--text)]">
       <Sidebar
         roots={workspace.roots}
         activePath={activeFile?.path}
@@ -985,7 +985,7 @@ export default function App() {
                   className={
                     view === 'source'
                       ? sourceContentClass
-                      : `${contentClass} flex flex-1 flex-col min-h-0 overflow-auto`
+                      : `${contentClass} editor-scroll scroll-pane flex flex-1 flex-col min-h-0 overflow-auto`
                   }
                 >
                   {view === 'edit' && activeFile ? (

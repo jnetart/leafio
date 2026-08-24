@@ -43,7 +43,7 @@ export function SettingsView({
         <h1 className="settings-title">{t(activeNav.labelKey)}</h1>
       </header>
 
-      <div className="settings-body flex-1 overflow-auto">
+      <div className="settings-body scroll-pane flex-1 overflow-auto">
         <div className="settings-body-inner">
           {section === 'general' ? (
             <SettingsGroup label={t('settings.group.startup')}>
