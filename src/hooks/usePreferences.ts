@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   DEFAULT_PREFERENCES,
   type AppPreferences,
+  type EditorFontFamily,
+  type EditorFontSize,
   type EditorWidthMode,
   type LanguageMode,
   type LaunchBehavior,
@@ -35,6 +37,20 @@ export function usePreferences() {
     [updatePreferences],
   );
 
+  const setEditorFontFamily = useCallback(
+    (editorFontFamily: EditorFontFamily) => {
+      updatePreferences((current) => ({ ...current, editorFontFamily }));
+    },
+    [updatePreferences],
+  );
+
+  const setEditorFontSize = useCallback(
+    (editorFontSize: EditorFontSize) => {
+      updatePreferences((current) => ({ ...current, editorFontSize }));
+    },
+    [updatePreferences],
+  );
+
   const setTheme = useCallback(
     (theme: ThemeMode) => {
       updatePreferences((current) => ({ ...current, theme }));
@@ -60,6 +76,8 @@ export function usePreferences() {
     ...preferences,
     ready,
     setEditorWidthMode,
+    setEditorFontFamily,
+    setEditorFontSize,
     setTheme,
     setLanguage,
     setLaunchBehavior,

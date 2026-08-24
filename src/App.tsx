@@ -20,6 +20,7 @@ import { useMenuTextFocus } from './hooks/useMenuTextFocus';
 import { useI18n } from './hooks/useI18n';
 import { computeDocumentStats } from './lib/textStats';
 import { usePreferences } from './hooks/usePreferences';
+import { useEditorTypography } from './hooks/useEditorTypography';
 import { useTheme } from './hooks/useTheme';
 import { useUserHomeDir } from './hooks/useUserHomeDir';
 import { useWorkspaceWatcher } from './hooks/useWorkspaceWatcher';
@@ -80,16 +81,21 @@ function toFileEntry(path: string): FileEntry {
 export default function App() {
   const {
     editorWidthMode,
+    editorFontFamily,
+    editorFontSize,
     theme,
     language,
     launchBehavior,
     ready,
     setEditorWidthMode,
+    setEditorFontFamily,
+    setEditorFontSize,
     setTheme,
     setLanguage,
     setLaunchBehavior,
   } = usePreferences();
   useTheme(theme);
+  useEditorTypography(editorFontFamily, editorFontSize);
   const { locale, t } = useI18n(language);
   const userHomeDir = useUserHomeDir();
 
@@ -965,11 +971,15 @@ export default function App() {
             <SettingsView
               section={settingsSection}
               editorWidthMode={editorWidthMode}
+              editorFontFamily={editorFontFamily}
+              editorFontSize={editorFontSize}
               theme={theme}
               language={language}
               launchBehavior={launchBehavior}
               t={t}
               onEditorWidthModeChange={setEditorWidthMode}
+              onEditorFontFamilyChange={setEditorFontFamily}
+              onEditorFontSizeChange={setEditorFontSize}
               onThemeChange={setTheme}
               onLanguageChange={setLanguage}
               onLaunchBehaviorChange={setLaunchBehavior}

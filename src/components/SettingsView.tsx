@@ -2,16 +2,20 @@ import { useState, type ReactNode } from 'react';
 import type { createTranslator } from '../lib/i18n';
 import type { SettingsSection } from '../lib/settings-sections';
 import { SETTINGS_SECTIONS } from '../lib/settings-sections';
-import type { EditorWidthMode, LanguageMode, LaunchBehavior, ThemeMode } from '../lib/preferences';
+import type { EditorFontFamily, EditorFontSize, EditorWidthMode, LanguageMode, LaunchBehavior, ThemeMode } from '../lib/preferences';
 
 interface SettingsViewProps {
   section: SettingsSection;
   editorWidthMode: EditorWidthMode;
+  editorFontFamily: EditorFontFamily;
+  editorFontSize: EditorFontSize;
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
   t: ReturnType<typeof createTranslator>;
   onEditorWidthModeChange: (mode: EditorWidthMode) => void;
+  onEditorFontFamilyChange: (family: EditorFontFamily) => void;
+  onEditorFontSizeChange: (size: EditorFontSize) => void;
   onThemeChange: (theme: ThemeMode) => void;
   onLanguageChange: (language: LanguageMode) => void;
   onLaunchBehaviorChange: (behavior: LaunchBehavior) => void;
@@ -20,11 +24,15 @@ interface SettingsViewProps {
 export function SettingsView({
   section,
   editorWidthMode,
+  editorFontFamily,
+  editorFontSize,
   theme,
   language,
   launchBehavior,
   t,
   onEditorWidthModeChange,
+  onEditorFontFamilyChange,
+  onEditorFontSizeChange,
   onThemeChange,
   onLanguageChange,
   onLaunchBehaviorChange,
@@ -96,6 +104,32 @@ export function SettingsView({
                     ]}
                     value={editorWidthMode}
                     onChange={(value) => onEditorWidthModeChange(value as EditorWidthMode)}
+                  />
+                </SettingRow>
+              </SettingsGroup>
+
+              <SettingsGroup label={t('settings.group.typography')}>
+                <SettingRow title={t('settings.font.title')} description={t('settings.font.desc')}>
+                  <SegmentedControl
+                    options={[
+                      { value: 'sans', label: t('settings.font.sans') },
+                      { value: 'serif', label: t('settings.font.serif') },
+                      { value: 'mono', label: t('settings.font.mono') },
+                    ]}
+                    value={editorFontFamily}
+                    onChange={(value) => onEditorFontFamilyChange(value as EditorFontFamily)}
+                  />
+                </SettingRow>
+                <SettingRow title={t('settings.fontSize.title')} description={t('settings.fontSize.desc')}>
+                  <SegmentedControl
+                    options={[
+                      { value: 'compact', label: t('settings.fontSize.compact') },
+                      { value: 'medium', label: t('settings.fontSize.medium') },
+                      { value: 'large', label: t('settings.fontSize.large') },
+                      { value: 'xlarge', label: t('settings.fontSize.xlarge') },
+                    ]}
+                    value={editorFontSize}
+                    onChange={(value) => onEditorFontSizeChange(value as EditorFontSize)}
                   />
                 </SettingRow>
               </SettingsGroup>

@@ -31,9 +31,11 @@
   --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Helvetica Neue',
     'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   --editor-font: var(--font-ui);
-  --editor-size: 14px;
+  --editor-size: 16px;
   --editor-line-height: 1.6;
-  --editor-code-size: 13px;
+  --editor-code-size: 15px;
+  --source-font-size: 15px;
+  --source-line-height: 24px;
   --font-mono: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
   --source-token-heading: #d97706;
   --source-token-key: #0068d4;
@@ -1027,8 +1029,6 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 /* Source view — edge-to-edge code editor */
 .source-editor {
-  --source-font-size: 13px;
-  --source-line-height: 21px;
   display: flex;
   flex: 1;
   min-height: 0;
