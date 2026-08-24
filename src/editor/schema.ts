@@ -10,6 +10,7 @@ import { TableCellWithBackground, TableHeaderWithBackground } from './extensions
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
 import { SlashCommandExtension } from './extensions/SlashCommand';
+import { TrailingNode } from './extensions/trailingNode';
 
 export const extensions = [
   StarterKit.configure({
@@ -35,6 +36,7 @@ export const extensions = [
     multicolor: false,
   }),
   SlashCommandExtension,
+  TrailingNode,
 ];
 
 export const useLeafioEditor = (

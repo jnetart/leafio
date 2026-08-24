@@ -70,6 +70,18 @@ describe('markdown serialization', () => {
     expect(roundTrip).toContain('bar');
   });
 
+  it('strips trailing empty paragraphs added for editing', () => {
+    const doc = parseMarkdown('```js\nconsole.log("hi")\n```\n');
+    const withTrailing = {
+      ...doc,
+      content: [
+        ...(doc.content ?? []),
+        { type: 'paragraph', content: [] },
+      ],
+    };
+    expect(serializeMarkdown(withTrailing).trim()).toBe('```js\nconsole.log("hi")\n```');
+  });
+
   it('round-trips table cell background colors via HTML', () => {
     const doc = parseMarkdown('| A | B |\n| --- | --- |\n| 1 | 2 |\n');
     const table = doc.content?.[0];
