@@ -2,7 +2,6 @@ const I18N = {
   'nav.home':    { zh: '首页',        en: 'Home' },
   'nav.features':{ zh: '功能',        en: 'Features' },
   'nav.guide':   { zh: '使用指南',    en: 'Guide' },
-  'nav.changelog':{ zh: '更新日志',   en: 'Changelog' },
   'nav.download':{ zh: '下载',        en: 'Download' },
   'footer.source': { zh: '源码',       en: 'Source' },
   'footer.version':{ zh: '版本',       en: 'Version' },
@@ -10,7 +9,6 @@ const I18N = {
   'page.title.index':    { zh: 'Leafio — Markdown 编辑器', en: 'Leafio — Markdown Editor' },
   'page.title.features': { zh: 'Leafio — 功能',            en: 'Leafio — Features' },
   'page.title.guide':    { zh: 'Leafio — 使用指南',        en: 'Leafio — Guide' },
-  'page.title.changelog':{ zh: 'Leafio — 更新日志',        en: 'Leafio — Changelog' },
   'page.title.download': { zh: 'Leafio — 下载',            en: 'Leafio — Download' },
   // ---- 首页 (index.html) ----
   'hero.title': { zh: '一款 macOS 原生风格、离线优先、直接读写本地 .md 文件的 Markdown 所见即所得桌面编辑器。',
@@ -145,11 +143,6 @@ const I18N = {
   'guide.shortcuts.strike': { zh: '删除线',  en: 'Strikethrough' },
   'guide.shortcuts.inlineCode': { zh: '行内代码',  en: 'Inline code' },
   'guide.shortcuts.link': { zh: '链接',  en: 'Link' },
-  // ---- 更新日志 (changelog.html) ----
-  'changelog.title': { zh: '更新日志',    en: 'Changelog' },
-  'changelog.intro': { zh: '记录 Leafio 从 MVP 到当前版本的变更,包括功能、修复与维护。',
-                       en: 'Notable changes to Leafio, from the MVP to the current release — features, fixes, and maintenance.' },
-  'changelog.latest': { zh: '最新版本',   en: 'Latest version' },
   // ---- 下载页 (download/index.html) ----
   'download.title': { zh: '下载 Leafio',  en: 'Download Leafio' },
   'download.intro': { zh: 'Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。',
@@ -169,9 +162,8 @@ const I18N = {
   'download.linux.body': { zh: '适用于主流 Linux 发行版,以 AppImage 分发。',
                            en: 'For major Linux distributions, distributed as an AppImage.' },
   'download.coming': { zh: '即将推出',     en: 'Coming soon' },
-  'download.note': { zh: '查看更新日志了解 v0.8.28 的变更,或在 GitHub 浏览全部历史版本。',
-                     en: 'See the changelog for v0.8.28, or browse all releases on GitHub.' },
-  'download.note.changelog': { zh: '更新日志', en: 'Changelog' },
+  'download.note': { zh: '在 GitHub 浏览全部历史版本。',
+                     en: 'Browse all releases on GitHub.' },
   'download.note.releases': { zh: '全部版本', en: 'All releases' },
   // 后续任务在此追加各页文案
 };

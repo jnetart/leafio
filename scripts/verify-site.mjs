@@ -211,10 +211,8 @@ const SECRET_PATTERNS = [
 // not flagged.
 const ABS_HOME_RE = /\/(Users)\/[A-Za-z0-9_.-]+/g;
 
-// Home-shorthand path: `~/` must be followed by a path fragment. The changelog
-// feature line "show home directory paths with ~/ prefix in UI" (space after
-// `~/`) and the coordination docs' quoted bare `~/` are intentionally not
-// flagged.
+// Home-shorthand path: `~/` must be followed by a path fragment. The
+// coordination docs' quoted bare `~/` is intentionally not flagged.
 const HOME_SHORTHAND_RE = /~\/[A-Za-z0-9_.-]/g;
 
 function isEmailMatchAllowed(match) {
