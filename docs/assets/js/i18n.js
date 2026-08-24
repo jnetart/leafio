@@ -1,8 +1,8 @@
 const I18N = {
-  'nav.home':    { zh: '首页',        en: 'Home' },
   'nav.features':{ zh: '功能',        en: 'Features' },
   'nav.guide':   { zh: '使用指南',    en: 'Guide' },
   'nav.download':{ zh: '下载',        en: 'Download' },
+  'lang.switch': { zh: '切换语言',    en: 'Switch language' },
   'footer.source': { zh: '源码',       en: 'Source' },
   'footer.version':{ zh: '版本',       en: 'Version' },
   // ---- 页面标题 (page titles) ----
@@ -186,16 +186,41 @@ function applyLang(lang) {
     const key = el.getAttribute('data-i18n-alt');
     if (I18N[key] && I18N[key][lang]) el.setAttribute('alt', I18N[key][lang]);
   });
-  document.querySelectorAll('.lang-switch button').forEach((b) => {
+  document.querySelectorAll('.lang-switch-menu button').forEach((b) => {
     b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  document.querySelectorAll('.lang-switch-toggle[data-i18n-aria]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-aria');
+    if (I18N[key] && I18N[key][lang]) el.setAttribute('aria-label', I18N[key][lang]);
   });
   localStorage.setItem('leafio-lang', lang);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const lang = detectLang();
-  document.querySelectorAll('.lang-switch button').forEach((b) => {
-    b.addEventListener('click', () => applyLang(b.dataset.lang));
+
+  document.querySelectorAll('.lang-switch').forEach((switcher) => {
+    const toggle = switcher.querySelector('.lang-switch-toggle');
+    switcher.querySelectorAll('.lang-switch-menu button').forEach((b) => {
+      b.addEventListener('click', () => {
+        applyLang(b.dataset.lang);
+        switcher.classList.remove('open');
+        toggle?.setAttribute('aria-expanded', 'false');
+      });
+    });
+    toggle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = switcher.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
   });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.lang-switch.open').forEach((switcher) => {
+      switcher.classList.remove('open');
+      switcher.querySelector('.lang-switch-toggle')?.setAttribute('aria-expanded', 'false');
+    });
+  });
+
   applyLang(lang);
 });
