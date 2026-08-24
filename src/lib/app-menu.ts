@@ -102,7 +102,7 @@ async function localizedPredefined(
 async function localizedAbout(text: string) {
   const predefined = await PredefinedMenuItem.new({
     text,
-    item: { About: { name: 'Leafio', version: '0.8.35' } },
+    item: { About: { name: 'Leafio', version: '0.8.39' } },
   });
   PREDEFINED_LABEL_KEYS[predefined.id] = 'menu.about';
   return predefined;
