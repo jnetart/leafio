@@ -3,8 +3,10 @@ import { EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/react';
 import { useLeafioEditor } from '../editor/schema';
 import { LEAFIO_MENU_EDIT_EVENT, type LeafioMenuEditAction } from '../lib/menu-edit';
+import { useEditorContextMenuOpen } from '../lib/editor-context-menu';
 import { EditorContextMenu } from './EditorContextMenu';
 import { FloatingToolbar } from './FloatingToolbar';
+import { TableBubbleMenu } from './TableBubbleMenu';
 
 interface EditorProps {
   content: JSONContent;
@@ -13,6 +15,7 @@ interface EditorProps {
 
 export function Editor({ content, onChange }: EditorProps) {
   const editor = useLeafioEditor(content, true, onChange);
+  const { contextMenuOpen, onMenuOpenChange } = useEditorContextMenuOpen();
 
   useEffect(() => {
     if (!editor) {
@@ -48,7 +51,8 @@ export function Editor({ content, onChange }: EditorProps) {
   return (
     <div className="relative">
       <FloatingToolbar editor={editor} />
-      <EditorContextMenu editor={editor} />
+      <TableBubbleMenu editor={editor} suppressed={contextMenuOpen} />
+      <EditorContextMenu editor={editor} onMenuOpenChange={onMenuOpenChange} />
       <EditorContent editor={editor} className="leafio-editor" />
     </div>
   );

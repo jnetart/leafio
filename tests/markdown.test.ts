@@ -69,4 +69,24 @@ describe('markdown serialization', () => {
     expect(roundTrip).toContain('foo');
     expect(roundTrip).toContain('bar');
   });
+
+  it('round-trips table cell background colors via HTML', () => {
+    const doc = parseMarkdown('| A | B |\n| --- | --- |\n| 1 | 2 |\n');
+    const table = doc.content?.[0];
+    expect(table?.type).toBe('table');
+
+    const cell = table?.content?.[1]?.content?.[0];
+    if (cell) {
+      cell.type = 'tableCell';
+      cell.attrs = { backgroundColor: 'rgba(91, 140, 111, 0.18)' };
+    }
+
+    const serialized = serializeMarkdown(doc);
+    expect(serialized).toContain('<table>');
+    expect(serialized).toContain('background-color: rgba(91, 140, 111, 0.18)');
+
+    const roundTrip = parseMarkdown(serialized);
+    const roundTripCell = roundTrip.content?.[0]?.content?.[1]?.content?.[0];
+    expect(roundTripCell?.attrs?.backgroundColor).toBe('rgba(91, 140, 111, 0.18)');
+  });
 });

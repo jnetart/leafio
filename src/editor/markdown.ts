@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
+import { parseHtmlTable, serializeTableAsHtml, tableHasCellBackground } from './tableHtml';
 
 type MdastNode = {
   type: string;
@@ -79,6 +80,10 @@ function convertBlock(node: MdastNode): JSONContent | null {
       return convertTable(node);
     case 'thematicBreak':
       return { type: 'horizontalRule' };
+    case 'html': {
+      const table = parseHtmlTable(node.value ?? '');
+      return table ?? null;
+    }
     default:
       return null;
   }
@@ -290,6 +295,13 @@ function convertTiptapBlock(node: JSONContent): MdastNode | null {
 }
 
 function convertTiptapTable(node: JSONContent): MdastNode {
+  if (tableHasCellBackground(node)) {
+    return {
+      type: 'html',
+      value: serializeTableAsHtml(node),
+    };
+  }
+
   return {
     type: 'table',
     align: [] as Array<'left' | 'right' | 'center' | null>,

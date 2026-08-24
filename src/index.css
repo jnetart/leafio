@@ -375,12 +375,22 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   font-size: 0.928571em;
 }
 
+.leafio-editor .tableWrapper {
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+
+.leafio-editor .tableWrapper table {
+  margin: 0;
+}
+
 .leafio-editor th,
 .leafio-editor td {
   border: 1px solid var(--separator);
   padding: 0.4rem 0.6rem;
   text-align: left;
   vertical-align: top;
+  position: relative;
 }
 
 .leafio-editor th {
@@ -390,6 +400,15 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .dark .leafio-editor th {
   background: rgba(255, 255, 255, 0.05);
+}
+
+.leafio-editor .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(91, 140, 111, 0.12);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .leafio-editor .selectedCell {

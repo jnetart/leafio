@@ -5,9 +5,8 @@ import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 import Table from '@tiptap/extension-table';
-import TableCell from '@tiptap/extension-table-cell';
-import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
+import { TableCellWithBackground, TableHeaderWithBackground } from './extensions/tableCellBackground';
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
 import { SlashCommandExtension } from './extensions/SlashCommand';
@@ -25,8 +24,8 @@ export const extensions = [
     resizable: false,
   }),
   TableRow,
-  TableHeader,
-  TableCell,
+  TableHeaderWithBackground,
+  TableCellWithBackground,
   Link.configure({
     openOnClick: false,
     autolink: true,

@@ -571,3 +571,112 @@ export function IconExportNav({ className = 'h-4 w-4' }: IconProps) {
     </svg>
   );
 }
+
+export function IconTableRowInsertAbove({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="6.5" width="10" height="7" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M3 9h10M7 6.5v7M11 6.5v7" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <path d="M3 4.5h10" stroke="currentColor" strokeWidth="1.1" strokeDasharray="1.6 1.4" />
+      <path d="M8 2v2.8M6.4 3.4 8 2l1.6 1.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconTableRowInsertBelow({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="2.5" width="10" height="7" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M3 5h10M7 2.5v7M11 2.5v7" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <path d="M3 11.5h10" stroke="currentColor" strokeWidth="1.1" strokeDasharray="1.6 1.4" />
+      <path d="M8 11.2v2.8M6.4 12.6 8 14l1.6-1.4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconTableRowDelete({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="2.5" width="10" height="9" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M3 5.5h10M3 8.5h10M7 2.5v9M11 2.5v9" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <rect x="3.5" y="6.25" width="9" height="2.5" rx="0.6" fill="currentColor" opacity="0.22" />
+      <path d="M5.5 7.5h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconTableColumnInsertLeft({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="6.5" y="3" width="7" height="10" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M9.5 3v10M12.5 3v10M6.5 6h7M6.5 10h7" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <path d="M4.5 3v10" stroke="currentColor" strokeWidth="1.1" strokeDasharray="1.6 1.4" />
+      <path d="M2 8h2.8M3.4 6.4 2 8l1.4 1.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconTableColumnInsertRight({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.5" y="3" width="7" height="10" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M5.5 3v10M8.5 3v10M2.5 6h7M2.5 10h7" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <path d="M11.5 3v10" stroke="currentColor" strokeWidth="1.1" strokeDasharray="1.6 1.4" />
+      <path d="M11.2 8h2.8M12.6 6.4 14 8l-1.4 1.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconTableColumnDelete({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.5" y="3" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M2.5 6h11M2.5 10h11M5.5 3v10M9.5 3v10M13.5 3v10" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <rect x="6.25" y="3.5" width="2.5" height="9" rx="0.6" fill="currentColor" opacity="0.22" />
+      <path d="M7.5 5.5v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconTableHeaderRow({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.5" y="3" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <rect x="3" y="3.5" width="10" height="2.8" rx="0.5" fill="currentColor" opacity="0.28" />
+      <path d="M2.5 6.5h11M7 3v10M11 3v10" stroke="currentColor" strokeWidth="0.9" />
+      <path d="M4.2 4.8h4.2M4.2 5.8h2.6" stroke="currentColor" strokeWidth="0.95" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconTableHeaderColumn({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.5" y="3" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <rect x="3" y="3.5" width="2.8" height="9" rx="0.5" fill="currentColor" opacity="0.28" />
+      <path d="M2.5 6.5h11M2.5 10h11M7 3v10M11 3v10" stroke="currentColor" strokeWidth="0.9" />
+      <path d="M3.8 5.2v3.6M4.8 5.8v1.4" stroke="currentColor" strokeWidth="0.95" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconTableRemove({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="10" height="8" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M3 6.5h10M7 4v8M11 4v8" stroke="currentColor" strokeWidth="0.9" opacity="0.55" />
+      <path d="M5.5 11.5h5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+      <path d="m6.2 7.2 3.6 3.6M9.8 7.2l-3.6 3.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconTableCellFill({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2.5" y="3" width="11" height="10" rx="1" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M2.5 6.5h11M7 3v10M11 3v10" stroke="currentColor" strokeWidth="0.9" opacity="0.45" />
+      <rect x="7.2" y="6.8" width="3.6" height="3.6" rx="0.5" fill="currentColor" opacity="0.35" stroke="currentColor" strokeWidth="0.9" />
+    </svg>
+  );
+}

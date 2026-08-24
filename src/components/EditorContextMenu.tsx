@@ -7,6 +7,8 @@ import {
   type BlockActionSection,
   type EditorBlockAction,
 } from '../editor/blockActions';
+import { TABLE_STRUCTURE_ACTIONS, type TableAction } from '../editor/tableActions';
+import { useNotifyContextMenuOpen } from '../lib/editor-context-menu';
 
 interface EditorContextMenuState {
   x: number;
@@ -15,11 +17,12 @@ interface EditorContextMenuState {
 
 interface EditorContextMenuProps {
   editor: Editor;
+  onMenuOpenChange?: (open: boolean) => void;
 }
 
 const SECTION_ORDER: BlockActionSection[] = ['convert', 'list', 'insert'];
 
-export function EditorContextMenu({ editor }: EditorContextMenuProps) {
+export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMenuProps) {
   const [menu, setMenu] = useState<EditorContextMenuState | null>(null);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -33,6 +36,10 @@ export function EditorContextMenu({ editor }: EditorContextMenuProps) {
       items: EDITOR_BLOCK_ACTIONS.filter((action) => action.section === section),
     })).filter((group) => group.items.length > 0);
   }, []);
+
+  const isInTable = editor.isActive('table');
+
+  useNotifyContextMenuOpen(menu !== null, onMenuOpenChange);
 
   const closeMenu = useCallback(() => {
     setMenu(null);
@@ -124,6 +131,14 @@ export function EditorContextMenu({ editor }: EditorContextMenuProps) {
     return () => window.cancelAnimationFrame(frame);
   }, [showLinkInput]);
 
+  const runTableAction = useCallback(
+    (action: TableAction) => {
+      action.run(editor);
+      closeMenu();
+    },
+    [closeMenu, editor],
+  );
+
   const runAction = useCallback(
     (action: EditorBlockAction) => {
       if (action.id === 'link') {
@@ -151,38 +166,57 @@ export function EditorContextMenu({ editor }: EditorContextMenuProps) {
       className="fixed z-[10000] min-w-[188px] overflow-hidden rounded-lg border border-[var(--separator)] bg-[var(--paper)] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
       style={{ left: menu.x, top: menu.y }}
       role="menu"
-      aria-label="编辑器格式菜单"
+      aria-label={isInTable ? '表格菜单' : '编辑器格式菜单'}
     >
-      {groupedActions.map((group, groupIndex) => (
-        <div key={group.section}>
-          {groupIndex > 0 ? <div className="my-1 h-px bg-[var(--separator)]" aria-hidden="true" /> : null}
+      {isInTable ? (
+        <div>
           <div className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-            {group.label}
+            表格
           </div>
-          {group.items.map((action) => (
+          {TABLE_STRUCTURE_ACTIONS.map((action) => (
             <button
               key={action.id}
               type="button"
               role="menuitem"
-              onClick={() => runAction(action)}
-              className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] transition-colors hover:bg-black/5 dark:hover:bg-white/[0.08] ${
-                action.active?.(editor)
-                  ? 'font-semibold text-[#3B6B4E] dark:text-[#6baa83]'
-                  : 'text-[var(--text)]'
-              }`}
+              onClick={() => runTableAction(action)}
+              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text)] transition-colors hover:bg-black/5 dark:hover:bg-white/[0.08]"
             >
               <span>{action.title}</span>
-              {action.id.startsWith('heading-') ? (
-                <span className="text-[10px] text-[var(--text-secondary)]">
-                  H{action.id.replace('heading-', '')}
-                </span>
-              ) : null}
             </button>
           ))}
         </div>
-      ))}
+      ) : (
+        groupedActions.map((group, groupIndex) => (
+          <div key={group.section}>
+            {groupIndex > 0 ? <div className="my-1 h-px bg-[var(--separator)]" aria-hidden="true" /> : null}
+            <div className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+              {group.label}
+            </div>
+            {group.items.map((action) => (
+              <button
+                key={action.id}
+                type="button"
+                role="menuitem"
+                onClick={() => runAction(action)}
+                className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] transition-colors hover:bg-black/5 dark:hover:bg-white/[0.08] ${
+                  action.active?.(editor)
+                    ? 'font-semibold text-[#3B6B4E] dark:text-[#6baa83]'
+                    : 'text-[var(--text)]'
+                }`}
+              >
+                <span>{action.title}</span>
+                {action.id.startsWith('heading-') ? (
+                  <span className="text-[10px] text-[var(--text-secondary)]">
+                    H{action.id.replace('heading-', '')}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+        ))
+      )}
 
-      {showLinkInput ? (
+      {!isInTable && showLinkInput ? (
         <div className="border-t border-[var(--separator)] px-2 py-2">
           <div className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
             链接地址

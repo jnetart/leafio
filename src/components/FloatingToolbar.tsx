@@ -21,6 +21,7 @@ import {
   IconUnlink,
 } from './icons';
 import type { IconProps } from './icons';
+import { shouldShowTextFormatToolbar } from '../editor/tableSelection';
 
 interface FloatingToolbarProps {
   editor: Editor;
@@ -113,6 +114,7 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
         moveTransition: 'transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1)',
         onHide: () => closeMenus(),
       }}
+      shouldShow={({ editor: ed }) => shouldShowTextFormatToolbar(ed)}
     >
       <div
         className="w-max max-w-[calc(100vw-32px)] rounded-lg border border-[var(--separator)] bg-[var(--paper)]/95 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-md"
