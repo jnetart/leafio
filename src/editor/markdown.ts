@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
+import { stripEditorSpacingParagraphs } from './blockSpacing';
 import { parseHtmlTable, serializeTableAsHtml, tableHasCellBackground } from './tableHtml';
 
 type MdastNode = {
@@ -27,24 +28,8 @@ export function parseMarkdown(md: string): JSONContent {
   return remarkToTiptap(tree);
 }
 
-function isEmptyParagraph(node: JSONContent): boolean {
-  if (node.type !== 'paragraph') {
-    return false;
-  }
-  const content = node.content ?? [];
-  return content.length === 0 || content.every((child) => child.type === 'hardBreak');
-}
-
-function stripTrailingEmptyParagraphs(doc: JSONContent): JSONContent {
-  const content = [...(doc.content ?? [])];
-  while (content.length > 0 && isEmptyParagraph(content[content.length - 1]!)) {
-    content.pop();
-  }
-  return { ...doc, content };
-}
-
 export function serializeMarkdown(doc: JSONContent): string {
-  const tree = tiptapToRemark(stripTrailingEmptyParagraphs(doc));
+  const tree = tiptapToRemark(stripEditorSpacingParagraphs(doc));
   return unified()
     .use(remarkGfm)
     .use(remarkStringify, {

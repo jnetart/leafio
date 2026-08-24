@@ -9,6 +9,8 @@ import TableRow from '@tiptap/extension-table-row';
 import { TableCellWithBackground, TableHeaderWithBackground } from './extensions/tableCellBackground';
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
+import { BlockGap } from './extensions/blockGap';
+import { PanelBlockBoundary } from './extensions/panelBlockBoundary';
 import { SlashCommandExtension } from './extensions/SlashCommand';
 import { TrailingNode } from './extensions/trailingNode';
 
@@ -36,6 +38,8 @@ export const extensions = [
     multicolor: false,
   }),
   SlashCommandExtension,
+  BlockGap,
+  PanelBlockBoundary,
   TrailingNode,
 ];
 

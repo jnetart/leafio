@@ -82,6 +82,26 @@ describe('markdown serialization', () => {
     expect(serializeMarkdown(withTrailing).trim()).toBe('```js\nconsole.log("hi")\n```');
   });
 
+  it('strips empty paragraphs between adjacent block nodes', () => {
+    const table = parseMarkdown('| A | B |\n| --- | --- |\n| 1 | 2 |\n').content?.[0];
+    const codeBlock = parseMarkdown('```js\nconsole.log("hi")\n```\n').content?.[0];
+    const withGap = {
+      type: 'doc',
+      content: [table, { type: 'paragraph', content: [] }, codeBlock],
+    } as const;
+
+    const serialized = serializeMarkdown(withGap);
+    expect(serialized).toContain('| A | B |');
+    expect(serialized).toContain('```js');
+    expect(serialized).not.toMatch(/\n\n\n/);
+  });
+
+  it('keeps intentional blank lines between paragraphs', () => {
+    const doc = parseMarkdown('First line.\n\nSecond line.\n');
+    expect(serializeMarkdown(doc)).toContain('First line.');
+    expect(serializeMarkdown(doc)).toContain('Second line.');
+  });
+
   it('round-trips table cell background colors via HTML', () => {
     const doc = parseMarkdown('| A | B |\n| --- | --- |\n| 1 | 2 |\n');
     const table = doc.content?.[0];
