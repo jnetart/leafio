@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # Build macOS Apple Silicon + Intel releases into `releases/<version>/`.
-# Output: Leafio_<version>_macOS_<arch>.dmg
+# Output: Leafio_<version>_macOS_<arch>.dmg + updater .app.tar.gz(+.sig)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=signing-env.sh
+source "$ROOT/scripts/signing-env.sh"
+set_tauri_signing_env "$ROOT"
+
 VERSION="$(node -p "require('$ROOT/package.json').version")"
 RELEASES="$ROOT/releases/$VERSION"
 OS_LABEL="macOS"
@@ -69,6 +73,34 @@ publish_dmg() {
   ls -lh "$dest"
 }
 
+publish_updater_archive() {
+  local arch_label="$1"
+  local tar_src=""
+  local cand
+  for cand in \
+    "$BUNDLE_MACOS/Leafio.app.tar.gz" \
+    "$BUNDLE_MACOS"/Leafio*.app.tar.gz; do
+    if [[ -f "$cand" ]]; then
+      tar_src="$cand"
+      break
+    fi
+  done
+  if [[ -z "$tar_src" ]]; then
+    echo "error: updater archive Leafio.app.tar.gz not found under $BUNDLE_MACOS" >&2
+    echo "  Ensure createUpdaterArtifacts is enabled and TAURI_SIGNING_PRIVATE_KEY is set." >&2
+    exit 1
+  fi
+  if [[ ! -f "${tar_src}.sig" ]]; then
+    echo "error: missing signature ${tar_src}.sig" >&2
+    exit 1
+  fi
+  local dest="$RELEASES/Leafio_${VERSION}_${OS_LABEL}_${arch_label}.app.tar.gz"
+  cp -f "$tar_src" "$dest"
+  cp -f "${tar_src}.sig" "${dest}.sig"
+  echo "Released updater $dest"
+  ls -lh "$dest" "${dest}.sig"
+}
+
 build_one() {
   local target="$1"
   local arch_label="$2"
@@ -79,6 +111,7 @@ build_one() {
     npm run tauri -- build --bundles dmg
   fi
   resolve_bundle_dirs "$target"
+  publish_updater_archive "$arch_label"
 
   local dest="$RELEASES/Leafio_${VERSION}_${OS_LABEL}_${arch_label}.dmg"
   local dmg=""
@@ -109,5 +142,7 @@ fi
 build_one "" aarch64
 build_one x86_64-apple-darwin x64
 
+bash "$ROOT/scripts/build-latest-json.sh" "$RELEASES" || true
+
 echo "Released to $RELEASES:"
-ls -lh "$RELEASES"/Leafio_"${VERSION}"_"${OS_LABEL}"_*.dmg
+ls -lh "$RELEASES"/Leafio_"${VERSION}"_"${OS_LABEL}"_*

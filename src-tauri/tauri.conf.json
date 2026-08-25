@@ -34,6 +34,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "macOS": {
       "signingIdentity": "-"
     },
@@ -44,5 +45,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERBMTI5OUM5RTBGNERBN0MKUldSODJ2VGd5WmtTMmcvNkxIbW9ZeVoyTllxNWxVdTFHNDVVdjNiWHBrLzFZUzU2OXoySm9EVVEK",
+      "endpoints": [
+        "https://github.com/jnetart/leafio/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

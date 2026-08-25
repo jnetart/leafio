@@ -3,9 +3,14 @@
 # Output:
 #   Leafio_<version>_Windows_<arch>-setup.exe  (NSIS)
 #   Leafio_<version>_Windows_<arch>.msi        (WiX; Windows host only)
+#   Matching .sig files for the updater
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=signing-env.sh
+source "$ROOT/scripts/signing-env.sh"
+set_tauri_signing_env "$ROOT"
+
 VERSION="$(node -p "require('$ROOT/package.json').version")"
 RELEASES="$ROOT/releases/$VERSION"
 OS_LABEL="Windows"
@@ -129,6 +134,14 @@ copy_nsis() {
   cp -f "$setup" "$dest"
   echo "Released $dest"
   ls -lh "$dest"
+
+  if [[ -f "${setup}.sig" ]]; then
+    cp -f "${setup}.sig" "${dest}.sig"
+    echo "Released ${dest}.sig"
+  else
+    echo "error: missing updater signature ${setup}.sig" >&2
+    exit 1
+  fi
 }
 
 copy_msi() {
@@ -177,6 +190,8 @@ build_one() {
 
 build_one x86_64-pc-windows-msvc x64
 build_one aarch64-pc-windows-msvc arm64
+
+bash "$ROOT/scripts/build-latest-json.sh" "$RELEASES" || true
 
 echo
 echo "Windows packages in $RELEASES:"

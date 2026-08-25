@@ -9,6 +9,7 @@ import {
   type LanguageMode,
   type LaunchBehavior,
   type ThemeMode,
+  type UpdateCheckInterval,
 } from '../lib/preferences';
 import { loadPreferences, savePreferences } from '../lib/preferences-store';
 
@@ -80,6 +81,20 @@ export function usePreferences() {
     [updatePreferences],
   );
 
+  const setUpdateCheckInterval = useCallback(
+    (updateCheckInterval: UpdateCheckInterval) => {
+      updatePreferences((current) => ({ ...current, updateCheckInterval }));
+    },
+    [updatePreferences],
+  );
+
+  const setLastUpdateCheckAt = useCallback(
+    (lastUpdateCheckAt: string) => {
+      updatePreferences((current) => ({ ...current, lastUpdateCheckAt }));
+    },
+    [updatePreferences],
+  );
+
   return {
     ...preferences,
     ready,
@@ -90,6 +105,8 @@ export function usePreferences() {
     setTheme,
     setLanguage,
     setLaunchBehavior,
+    setUpdateCheckInterval,
+    setLastUpdateCheckAt,
     setPreferences: updatePreferences,
   };
 }

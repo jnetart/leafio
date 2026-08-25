@@ -2,7 +2,17 @@ import { useState, type ReactNode } from 'react';
 import type { createTranslator } from '../lib/i18n';
 import type { SettingsSection } from '../lib/settings-sections';
 import { SETTINGS_SECTIONS } from '../lib/settings-sections';
-import type { EditorFontFamily, EditorFontSize, EditorTabWidth, EditorWidthMode, LanguageMode, LaunchBehavior, ThemeMode } from '../lib/preferences';
+import type {
+  EditorFontFamily,
+  EditorFontSize,
+  EditorTabWidth,
+  EditorWidthMode,
+  LanguageMode,
+  LaunchBehavior,
+  ThemeMode,
+  UpdateCheckInterval,
+} from '../lib/preferences';
+import type { UpdateStatus } from '../hooks/useAppUpdate';
 
 interface SettingsViewProps {
   section: SettingsSection;
@@ -13,6 +23,12 @@ interface SettingsViewProps {
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
+  updateCheckInterval: UpdateCheckInterval;
+  appVersion: string;
+  updateStatus: UpdateStatus;
+  availableVersion: string | null;
+  updateError: string | null;
+  downloadRatio: number | null;
   t: ReturnType<typeof createTranslator>;
   onEditorWidthModeChange: (mode: EditorWidthMode) => void;
   onEditorFontFamilyChange: (family: EditorFontFamily) => void;
@@ -21,6 +37,9 @@ interface SettingsViewProps {
   onThemeChange: (theme: ThemeMode) => void;
   onLanguageChange: (language: LanguageMode) => void;
   onLaunchBehaviorChange: (behavior: LaunchBehavior) => void;
+  onUpdateCheckIntervalChange: (interval: UpdateCheckInterval) => void;
+  onCheckForUpdates: () => void;
+  onInstallUpdate: () => void;
 }
 
 export function SettingsView({
@@ -32,6 +51,12 @@ export function SettingsView({
   theme,
   language,
   launchBehavior,
+  updateCheckInterval,
+  appVersion,
+  updateStatus,
+  availableVersion,
+  updateError,
+  downloadRatio,
   t,
   onEditorWidthModeChange,
   onEditorFontFamilyChange,
@@ -40,6 +65,9 @@ export function SettingsView({
   onThemeChange,
   onLanguageChange,
   onLaunchBehaviorChange,
+  onUpdateCheckIntervalChange,
+  onCheckForUpdates,
+  onInstallUpdate,
 }: SettingsViewProps) {
   const [autoSaveInterval, setAutoSaveInterval] = useState('2');
   const [spellCheck, setSpellCheck] = useState('off');
@@ -57,29 +85,69 @@ export function SettingsView({
       <div className="settings-body scroll-pane flex-1 overflow-auto">
         <div className="settings-body-inner">
           {section === 'general' ? (
-            <SettingsGroup label={t('settings.group.startup')}>
-              <SettingRow title={t('settings.language.title')} description={t('settings.language.desc')}>
-                <SegmentedControl
-                  options={[
-                    { value: 'system', label: t('language.system') },
-                    { value: 'zh-CN', label: t('language.zh') },
-                    { value: 'en', label: t('language.en') },
-                  ]}
-                  value={language}
-                  onChange={(value) => onLanguageChange(value as LanguageMode)}
-                />
-              </SettingRow>
-              <SettingRow title={t('settings.launch.title')} description={t('settings.launch.desc')}>
-                <SegmentedControl
-                  options={[
-                    { value: 'welcome', label: t('settings.launch.welcome') },
-                    { value: 'last', label: t('settings.launch.last') },
-                  ]}
-                  value={launchBehavior}
-                  onChange={(value) => onLaunchBehaviorChange(value as LaunchBehavior)}
-                />
-              </SettingRow>
-            </SettingsGroup>
+            <>
+              <SettingsGroup label={t('settings.group.startup')}>
+                <SettingRow title={t('settings.language.title')} description={t('settings.language.desc')}>
+                  <SegmentedControl
+                    options={[
+                      { value: 'system', label: t('language.system') },
+                      { value: 'zh-CN', label: t('language.zh') },
+                      { value: 'en', label: t('language.en') },
+                    ]}
+                    value={language}
+                    onChange={(value) => onLanguageChange(value as LanguageMode)}
+                  />
+                </SettingRow>
+                <SettingRow title={t('settings.launch.title')} description={t('settings.launch.desc')}>
+                  <SegmentedControl
+                    options={[
+                      { value: 'welcome', label: t('settings.launch.welcome') },
+                      { value: 'last', label: t('settings.launch.last') },
+                    ]}
+                    value={launchBehavior}
+                    onChange={(value) => onLaunchBehaviorChange(value as LaunchBehavior)}
+                  />
+                </SettingRow>
+              </SettingsGroup>
+
+              <SettingsGroup label={t('settings.group.updates')}>
+                <SettingRow title={t('settings.version.title')} description={t('settings.version.desc')}>
+                  <span className="settings-version-badge">v{appVersion}</span>
+                </SettingRow>
+                <SettingRow
+                  title={t('settings.updateCheck.title')}
+                  description={t('settings.updateCheck.desc')}
+                >
+                  <SegmentedControl
+                    options={[
+                      { value: 'off', label: t('settings.updateCheck.off') },
+                      { value: 'daily', label: t('settings.updateCheck.daily') },
+                      { value: '3days', label: t('settings.updateCheck.3days') },
+                      { value: 'weekly', label: t('settings.updateCheck.weekly') },
+                    ]}
+                    value={updateCheckInterval}
+                    onChange={(value) => onUpdateCheckIntervalChange(value as UpdateCheckInterval)}
+                  />
+                </SettingRow>
+                <SettingRow
+                  title={t('settings.updateAction.title')}
+                  description={
+                    updateStatus === 'error' && updateError
+                      ? updateError
+                      : t('settings.updateAction.desc')
+                  }
+                >
+                  <UpdateActionControl
+                    status={updateStatus}
+                    availableVersion={availableVersion}
+                    downloadRatio={downloadRatio}
+                    t={t}
+                    onCheck={onCheckForUpdates}
+                    onInstall={onInstallUpdate}
+                  />
+                </SettingRow>
+              </SettingsGroup>
+            </>
           ) : null}
 
           {section === 'appearance' ? (
@@ -209,6 +277,69 @@ export function SettingsView({
           ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+function UpdateActionControl({
+  status,
+  availableVersion,
+  downloadRatio,
+  t,
+  onCheck,
+  onInstall,
+}: {
+  status: UpdateStatus;
+  availableVersion: string | null;
+  downloadRatio: number | null;
+  t: ReturnType<typeof createTranslator>;
+  onCheck: () => void;
+  onInstall: () => void;
+}) {
+  if (status === 'downloading') {
+    const pct = downloadRatio == null ? null : `${Math.round(downloadRatio * 100)}%`;
+    return (
+      <div className="settings-update-actions">
+        <span className="settings-update-status">
+          {t('settings.updateAction.downloading')}
+          {pct ? ` ${pct}` : ''}
+        </span>
+      </div>
+    );
+  }
+
+  if (status === 'available' && availableVersion) {
+    return (
+      <div className="settings-update-actions">
+        <span className="settings-update-status">
+          {t('settings.updateAction.available').replace('{version}', availableVersion)}
+        </span>
+        <button type="button" className="settings-action-btn" onClick={onInstall}>
+          {t('settings.updateAction.install')}
+        </button>
+      </div>
+    );
+  }
+
+  const busy = status === 'checking';
+
+  return (
+    <div className="settings-update-actions">
+      {status === 'up-to-date' || status === 'error' ? (
+        <span className="settings-update-status">
+          {status === 'up-to-date'
+            ? t('settings.updateAction.upToDate')
+            : t('settings.updateAction.error')}
+        </span>
+      ) : null}
+      <button
+        type="button"
+        className="settings-action-btn"
+        onClick={onCheck}
+        disabled={busy}
+      >
+        {busy ? t('settings.updateAction.checking') : t('settings.updateAction.check')}
+      </button>
     </div>
   );
 }

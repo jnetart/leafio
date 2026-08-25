@@ -11,7 +11,7 @@ import { ContextMenu, type ContextMenuItem } from './ContextMenu';
 import { FolderRow, useExpandedPaths, WorkspaceRootTree } from './FileTree';
 import { useWindowDrag } from '../hooks/useWindowDrag';
 import { basename } from '../lib/paths';
-import { IconAddWorkspace, IconPanelLeft, IconSearch, IconSettings } from './icons';
+import { IconAddWorkspace, IconPanelLeft, IconSearch, IconSettings, IconUpdate } from './icons';
 
 const WORKSPACE_ROOT_DEPTH = 0;
 
@@ -100,9 +100,14 @@ interface SidebarProps {
     export: string;
     openInFileManager: string;
     openInTerminal: string;
+    update?: string;
+    updateInstalling?: string;
   };
+  updateAvailable?: boolean;
+  updateInstalling?: boolean;
   onSelect?: (file: FileEntry) => void;
   onOpenSettings?: () => void;
+  onInstallUpdate?: () => void;
   onSettingsSectionChange?: (section: SettingsSection) => void;
   onToggle?: () => void;
   onSearch?: () => void;
@@ -130,8 +135,11 @@ export function Sidebar({
   settingsSection = 'general',
   t,
   labels,
+  updateAvailable = false,
+  updateInstalling = false,
   onSelect,
   onOpenSettings,
+  onInstallUpdate,
   onSettingsSectionChange,
   onToggle,
   onSearch,
@@ -457,15 +465,37 @@ export function Sidebar({
                 <IconAddWorkspace className="h-4 w-4" />
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              className={`sidebar-settings-btn ${settingsActive ? 'sidebar-settings-btn--active' : ''}`}
-              aria-label={labels.settings}
-              title={labels.settings}
-            >
-              <IconSettings className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-0.5">
+              {updateAvailable ? (
+                <button
+                  type="button"
+                  onClick={onInstallUpdate}
+                  disabled={updateInstalling}
+                  className="sidebar-settings-btn sidebar-update-btn"
+                  aria-label={
+                    updateInstalling
+                      ? labels.updateInstalling ?? labels.update
+                      : labels.update
+                  }
+                  title={
+                    updateInstalling
+                      ? labels.updateInstalling ?? labels.update
+                      : labels.update
+                  }
+                >
+                  <IconUpdate className="h-4 w-4" />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className={`sidebar-settings-btn ${settingsActive ? 'sidebar-settings-btn--active' : ''}`}
+                aria-label={labels.settings}
+                title={labels.settings}
+              >
+                <IconSettings className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </aside>
         </div>

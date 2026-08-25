@@ -20,7 +20,10 @@ pub fn get_recent_files(app: AppHandle) -> Result<Vec<String>, String> {
         .collect();
 
     if existing.len() != files.len() {
-        store.set(KEY, serde_json::to_value(&existing).map_err(|e| e.to_string())?);
+        store.set(
+            KEY,
+            serde_json::to_value(&existing).map_err(|e| e.to_string())?,
+        );
         store.save().map_err(|e| e.to_string())?;
     }
 
@@ -43,7 +46,10 @@ pub fn add_recent_file(app: AppHandle, path: String) -> Result<(), String> {
     files.insert(0, path);
     files.truncate(20);
 
-    store.set(KEY, serde_json::to_value(&files).map_err(|e| e.to_string())?);
+    store.set(
+        KEY,
+        serde_json::to_value(&files).map_err(|e| e.to_string())?,
+    );
     store.save().map_err(|e| e.to_string())
 }
 
@@ -57,12 +63,19 @@ pub fn remove_recent_file(app: AppHandle, path: String) -> Result<(), String> {
 
     files.retain(|p| p != &path);
 
-    store.set(KEY, serde_json::to_value(&files).map_err(|e| e.to_string())?);
+    store.set(
+        KEY,
+        serde_json::to_value(&files).map_err(|e| e.to_string())?,
+    );
     store.save().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn replace_recent_file(app: AppHandle, old_path: String, new_path: String) -> Result<(), String> {
+pub fn replace_recent_file(
+    app: AppHandle,
+    old_path: String,
+    new_path: String,
+) -> Result<(), String> {
     if !Path::new(&new_path).is_file() {
         return remove_recent_file(app, old_path);
     }
@@ -83,6 +96,9 @@ pub fn replace_recent_file(app: AppHandle, old_path: String, new_path: String) -
 
     files.truncate(20);
 
-    store.set(KEY, serde_json::to_value(&files).map_err(|e| e.to_string())?);
+    store.set(
+        KEY,
+        serde_json::to_value(&files).map_err(|e| e.to_string())?,
+    );
     store.save().map_err(|e| e.to_string())
 }

@@ -735,6 +735,19 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   color: var(--text);
 }
 
+.sidebar-update-btn {
+  color: var(--accent);
+}
+
+.sidebar-update-btn:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.sidebar-update-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .sidebar-settings-search {
   display: flex;
   align-items: center;
@@ -1256,6 +1269,56 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .settings-row-control {
   flex-shrink: 0;
+}
+
+.settings-version-badge {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dark .settings-version-badge {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.settings-update-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-update-status {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.settings-action-btn {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--settings-border);
+  background: var(--settings-card-bg);
+  color: var(--text);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.settings-action-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dark .settings-action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.settings-action-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 /* Status bar width control */

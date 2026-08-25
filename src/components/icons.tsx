@@ -213,6 +213,26 @@ export function IconSettings({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+export function IconUpdate({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M8 2.5v7.5M5.5 7.5 8 10l2.5-2.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M3.5 11.5v1a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-1"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconGeneral({ className = 'h-4 w-4' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">

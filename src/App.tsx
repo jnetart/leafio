@@ -20,6 +20,7 @@ import { useMenuTextFocus } from './hooks/useMenuTextFocus';
 import { useI18n } from './hooks/useI18n';
 import { computeDocumentStats } from './lib/textStats';
 import { usePreferences } from './hooks/usePreferences';
+import { useAppUpdate } from './hooks/useAppUpdate';
 import { useEditorTypography } from './hooks/useEditorTypography';
 import { useTheme } from './hooks/useTheme';
 import { useUserHomeDir } from './hooks/useUserHomeDir';
@@ -87,6 +88,8 @@ export default function App() {
     theme,
     language,
     launchBehavior,
+    updateCheckInterval,
+    lastUpdateCheckAt,
     ready,
     setEditorWidthMode,
     setEditorFontFamily,
@@ -95,10 +98,26 @@ export default function App() {
     setTheme,
     setLanguage,
     setLaunchBehavior,
+    setUpdateCheckInterval,
+    setLastUpdateCheckAt,
   } = usePreferences();
   useTheme(theme);
   useEditorTypography(editorFontFamily, editorFontSize, editorTabWidth);
   const { locale, t } = useI18n(language);
+  const {
+    appVersion,
+    status: updateStatus,
+    availableVersion,
+    errorMessage: updateError,
+    downloadRatio,
+    checkForUpdates,
+    installUpdate,
+  } = useAppUpdate({
+    ready,
+    updateCheckInterval,
+    lastUpdateCheckAt,
+    onLastCheckAtChange: setLastUpdateCheckAt,
+  });
   const userHomeDir = useUserHomeDir();
 
   const [workspace, setWorkspace] = useState<WorkspaceState>(EMPTY_WORKSPACE);
@@ -791,6 +810,10 @@ export default function App() {
     export: t('context.export'),
     openInFileManager: t('context.openInFileManager'),
     openInTerminal: t('context.openInTerminal'),
+    update: availableVersion
+      ? t('sidebar.update').replace('{version}', availableVersion)
+      : t('settings.updateAction.install'),
+    updateInstalling: t('sidebar.update.installing'),
   };
 
   const welcomeScreen = (
@@ -950,8 +973,11 @@ export default function App() {
           void loadFile(file.path);
         }}
         onOpenSettings={() => setSettingsOpen((value) => !value)}
+        onInstallUpdate={() => void installUpdate()}
         onSettingsSectionChange={setSettingsSection}
         labels={sidebarLabels}
+        updateAvailable={Boolean(availableVersion) || updateStatus === 'available'}
+        updateInstalling={updateStatus === 'downloading'}
         onSearch={() => setSearchOpen(true)}
         onExport={handleExportFile}
         onToggle={() => setSidebarOpen((value) => !value)}
@@ -979,6 +1005,12 @@ export default function App() {
               theme={theme}
               language={language}
               launchBehavior={launchBehavior}
+              updateCheckInterval={updateCheckInterval}
+              appVersion={appVersion}
+              updateStatus={updateStatus}
+              availableVersion={availableVersion}
+              updateError={updateError}
+              downloadRatio={downloadRatio}
               t={t}
               onEditorWidthModeChange={setEditorWidthMode}
               onEditorFontFamilyChange={setEditorFontFamily}
@@ -987,6 +1019,9 @@ export default function App() {
               onThemeChange={setTheme}
               onLanguageChange={setLanguage}
               onLaunchBehaviorChange={setLaunchBehavior}
+              onUpdateCheckIntervalChange={setUpdateCheckInterval}
+              onCheckForUpdates={() => void checkForUpdates()}
+              onInstallUpdate={() => void installUpdate()}
             />
           ) : showWelcomeScreen ? (
             welcomeScreen

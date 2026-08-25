@@ -40,6 +40,9 @@ jobs:
         run: npm ci
 
       - name: Build NSIS + MSI
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: npm run tauri -- build --target ${{ matrix.target }} --bundles nsis,msi
 
       - name: Stage release files
@@ -51,8 +54,16 @@ jobs:
           mkdir -p "$OUT"
           NSIS="src-tauri/target/${{ matrix.target }}/release/bundle/nsis"
           MSI="src-tauri/target/${{ matrix.target }}/release/bundle/msi"
-          cp -f "$NSIS"/Leafio_"${VERSION}"_*-setup.exe \
-            "$OUT/Leafio_${VERSION}_Windows_${{ matrix.arch }}-setup.exe"
+          setup_src=$(ls "$NSIS"/Leafio_"${VERSION}"_*-setup.exe | head -n 1)
+          dest_setup="$OUT/Leafio_${VERSION}_Windows_${{ matrix.arch }}-setup.exe"
+          cp -f "$setup_src" "$dest_setup"
+          if [[ -f "${setup_src}.sig" ]]; then
+            cp -f "${setup_src}.sig" "${dest_setup}.sig"
+          else
+            echo "error: missing updater signature ${setup_src}.sig" >&2
+            echo "  Set repository secret TAURI_SIGNING_PRIVATE_KEY to the contents of .tauri/leafio.key" >&2
+            exit 1
+          fi
           shopt -s nullglob
           msi=( "$MSI"/Leafio_"${VERSION}"_*.msi )
           if ((${#msi[@]} == 0)); then

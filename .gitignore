@@ -1,3 +1,6 @@
+# Tauri updater signing private key (never commit)
+.tauri/
+
 # Logs
 logs
 *.log
