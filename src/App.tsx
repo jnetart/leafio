@@ -1048,13 +1048,13 @@ export default function App() {
           }
           wordCount={stats.words}
           lineCount={stats.lines}
-          modeLabel={
-            editorWidthMode === 'wide'
-              ? t('status.wideMode')
-              : view === 'source'
-                ? t('status.sourceMode')
-                : undefined
-          }
+          modeLabel={view === 'source' ? t('status.sourceMode') : undefined}
+          editorWidthMode={editorWidthMode}
+          onEditorWidthModeChange={setEditorWidthMode}
+          widthLabels={{
+            centered: t('settings.width.centered'),
+            wide: t('settings.width.wide'),
+          }}
           labels={{
             saved: t('status.saved'),
             unsaved: t('status.unsaved'),

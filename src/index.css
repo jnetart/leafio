@@ -1258,6 +1258,50 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   flex-shrink: 0;
 }
 
+/* Status bar width control */
+.status-width-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  height: 16px;
+  padding: 1px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+}
+
+.status-width-btn {
+  height: 14px;
+  padding: 0 6px;
+  border-radius: 3px;
+  border: none;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-secondary);
+  background: transparent;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.status-width-btn:hover:not(.status-width-btn--active) {
+  color: var(--text);
+}
+
+.status-width-btn:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 1px;
+}
+
+.status-width-btn--active {
+  background: var(--paper);
+  color: var(--text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--separator) 80%, transparent);
+}
+
+.dark .status-width-btn--active {
+  background: color-mix(in srgb, var(--paper) 88%, white);
+}
+
 /* Segmented control */
 .segmented-control {
   display: inline-flex;
