@@ -16,7 +16,7 @@
     "package:mac": "bash scripts/package-mac.sh",
     "package:win": "bash scripts/package-windows.sh",
     "package:all": "bash scripts/package-mac.sh && bash scripts/package-windows.sh",
-    "package:latest-json": "bash scripts/build-latest-json.sh"
+    "package:latest-json": "node scripts/build-latest-json.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

@@ -105,10 +105,11 @@ build_one() {
   local target="$1"
   local arch_label="$2"
   echo "==> Building macOS ${arch_label}${target:+ (${target})}"
+  # `app` is required for updater .app.tar.gz(+.sig); `dmg` is the installable package.
   if [[ -n "$target" ]]; then
-    npm run tauri -- build --target "$target" --bundles dmg
+    npm run tauri -- build --target "$target" --bundles app,dmg
   else
-    npm run tauri -- build --bundles dmg
+    npm run tauri -- build --bundles app,dmg
   fi
   resolve_bundle_dirs "$target"
   publish_updater_archive "$arch_label"
