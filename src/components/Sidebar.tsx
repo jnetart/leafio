@@ -356,11 +356,13 @@ export function Sidebar({
           <aside className="mt-[var(--titlebar-height)] flex h-[calc(100%-var(--titlebar-height))] w-full flex-col bg-[var(--sidebar-bg)] backdrop-blur-xl">
           {settingsActive ? (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <div className="sidebar-settings-search">
-                <IconSearch className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                <input type="text" placeholder={t('settings.search')} readOnly tabIndex={-1} />
-              </div>
-              <nav className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 py-2">
+              <nav className="shrink-0 px-2 pt-2">
+                <div className="sidebar-nav-item sidebar-search-item pointer-events-none" aria-hidden="true">
+                  <IconSearch className="h-4 w-4 shrink-0 opacity-70" />
+                  <span>{t('settings.search')}</span>
+                </div>
+              </nav>
+              <nav className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 pb-2">
                 {SETTINGS_SECTIONS.map((item) => {
                   const active = item.id === settingsSection;
                   const Icon = item.icon;
@@ -380,15 +382,18 @@ export function Sidebar({
             </div>
           ) : (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <button
-                type="button"
-                className="sidebar-settings-search mx-3 mt-2 shrink-0"
-                onClick={onSearch}
-              >
-                <IconSearch className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                <span className="text-[12px] text-[var(--text-secondary)]">{labels.search}</span>
-              </button>
-              <div className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 py-2">
+              <nav className="shrink-0 px-2 pt-2">
+                <button
+                  type="button"
+                  className="sidebar-nav-item sidebar-search-item"
+                  onClick={onSearch}
+                  aria-label={labels.search}
+                >
+                  <IconSearch className="h-4 w-4 shrink-0 opacity-70" />
+                  {labels.search}
+                </button>
+              </nav>
+              <div className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 pb-2">
                 {roots.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 px-3 py-6 text-center">
                     <p className="text-[12px] leading-relaxed text-[var(--text-secondary)]">{labels.emptyHint}</p>

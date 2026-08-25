@@ -8,9 +8,10 @@ import { IconChevronDown, IconChevronRight, IconLayers, IconMarkdownFile, IconPl
 import { clearTextSelection, preventContextMenuSelection } from '../lib/filename-input';
 
 const INDENT_PX = 14;
+const BASE_INDENT_PX = 8;
 
 export function treeRowStyle(depth: number): CSSProperties {
-  return { paddingLeft: `${depth * INDENT_PX}px` };
+  return { paddingLeft: `${depth * INDENT_PX + BASE_INDENT_PX}px` };
 }
 
 interface TreeCallbacks {

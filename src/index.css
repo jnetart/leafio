@@ -748,57 +748,13 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   cursor: default;
 }
 
-.sidebar-settings-search {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 10px 12px 6px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--separator);
-  background: rgba(255, 255, 255, 0.45);
-  color: var(--text-secondary);
-  width: calc(100% - 24px);
-  text-align: left;
-  transition: background-color 120ms ease, border-color 120ms ease;
-}
-
-.sidebar-settings-search:hover {
-  background: rgba(255, 255, 255, 0.65);
-  border-color: rgba(0, 0, 0, 0.12);
-}
-
-.dark .sidebar-settings-search:hover {
-  background: rgba(0, 0, 0, 0.28);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.dark .sidebar-settings-search {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.sidebar-settings-search input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  font-size: 12px;
-  color: var(--text);
-  outline: none;
-}
-
-.sidebar-settings-search input::placeholder {
-  color: var(--text-secondary);
-  opacity: 0.7;
-}
-
 .sidebar-nav-item {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 5px 8px;
-  border-radius: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
   text-align: left;
   font-size: 13px;
   line-height: 1.4;
