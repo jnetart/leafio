@@ -400,7 +400,7 @@ async function openSlashMenu(page) {
 
 async function openSearchDialog(page) {
   await page.locator('.sidebar-search-item').first().click();
-  const input = page.getByPlaceholder('搜索工作区中的 Markdown 文件…');
+  const input = page.getByPlaceholder('搜索 Markdown 文件…');
   await input.waitFor({ state: 'visible', timeout: 8000 });
   await input.fill('markdown');
   await page.waitForTimeout(700);

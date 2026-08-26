@@ -930,6 +930,17 @@ export default function App() {
       <SearchDialog
         open={searchOpen}
         hasWorkspace={hasSidebar}
+        homeDir={userHomeDir}
+        labels={{
+          placeholder: t('search.placeholder'),
+          noWorkspace: t('search.noWorkspace'),
+          loading: t('search.loading'),
+          noResults: t('search.noResults'),
+          hint: t('search.hint'),
+          navigate: t('search.navigate'),
+          open: t('search.open'),
+          close: t('search.close'),
+        }}
         onClose={() => setSearchOpen(false)}
         onSearch={handleSearch}
         onSelect={(path) => void loadFile(path)}
