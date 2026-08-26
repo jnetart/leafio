@@ -8,7 +8,12 @@ export const ImageBlock = Image.extend({
   group: 'block',
   draggable: true,
   addStorage() {
-    return { notePath: '' };
+    return {
+      notePath: '',
+      compress: false,
+      maxEdge: 1920,
+      onNotice: undefined as ((key: string) => void) | undefined,
+    };
   },
   addAttributes() {
     return {

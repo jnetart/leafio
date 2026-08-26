@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { JSONContent } from '@tiptap/react';
 import { Editor } from './components/Editor';
 import { ExportSheet } from './components/ExportSheet';
+import { ExternalChangeBar } from './components/ExternalChangeBar';
+import { ExternalChangeCompare } from './components/ExternalChangeCompare';
 import { Inspector } from './components/Inspector';
 import { PreviewView } from './components/PreviewView';
 import { NewFileDialog } from './components/NewFileDialog';
@@ -15,6 +17,7 @@ import { ViewModeFloater } from './components/ViewModeFloater';
 import { WindowDragBar } from './components/WindowDragBar';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { parseMarkdown, serializeMarkdown } from './editor/markdown';
+import type { ImageNoticeKey } from './editor/insertImage';
 import { useActiveOutlineHeading } from './hooks/useActiveOutlineHeading';
 import { useAppMenu } from './hooks/useAppMenu';
 import { useMenuTextFocus } from './hooks/useMenuTextFocus';
@@ -30,7 +33,9 @@ import type { AppMenuAction } from './lib/app-menu';
 import { deriveAppMenuState, type TreeFocusTarget } from './lib/app-menu-state';
 import { dispatchMenuEditAction } from './lib/menu-edit';
 import { pickFolder, pickMarkdownFile, confirmTrash } from './lib/dialog';
+import { classifyExternalChange } from './lib/external-change';
 import { documentToHtml, exportFile } from './lib/export';
+import { alignMarkdownDiff, countChangedRows } from './lib/line-diff';
 import {
   addRecentFile,
   createMarkdownFile,
@@ -134,6 +139,13 @@ export default function App() {
   const [doc, setDoc] = useState<JSONContent>({ type: 'doc', content: [] });
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(true);
+  const [imageNotice, setImageNotice] = useState<string | null>(null);
+  const [editorEpoch, setEditorEpoch] = useState(0);
+  const [conflict, setConflict] = useState<{
+    path: string;
+    diskContent: string;
+    comparing: boolean;
+  } | null>(null);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSection, setSettingsSection] = useState<SettingsSection>('general');
@@ -173,6 +185,34 @@ export default function App() {
     [textFocus, treeFocus, activeFile, hasSidebar, settingsOpen, showWelcomeScreen],
   );
   const restoredRef = useRef(false);
+  const imageNoticeTimerRef = useRef<number | null>(null);
+  const handleImageNotice = useCallback(
+    (key: ImageNoticeKey) => {
+      const messageKey = {
+        unsupported: 'status.image.unsupported',
+        'too-large': 'status.image.too-large',
+        'write-failed': 'status.image.write-failed',
+        'saved-original': 'status.image.saved-original',
+      } as const;
+      setImageNotice(t(messageKey[key]));
+      if (imageNoticeTimerRef.current !== null) {
+        window.clearTimeout(imageNoticeTimerRef.current);
+      }
+      imageNoticeTimerRef.current = window.setTimeout(() => setImageNotice(null), 3000);
+    },
+    [t],
+  );
+  const diskBaselineRef = useRef('');
+  const writingRef = useRef(false);
+  const checkGenerationRef = useRef(0);
+  const activeFileRef = useRef(activeFile);
+  const markdownRef = useRef(markdown);
+  const dirtyRef = useRef(dirty);
+  const conflictRef = useRef(conflict);
+  activeFileRef.current = activeFile;
+  markdownRef.current = markdown;
+  dirtyRef.current = dirty;
+  conflictRef.current = conflict;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -238,7 +278,73 @@ export default function App() {
     setTreeRefreshKey((key) => key + 1);
   }, []);
 
-  useWorkspaceWatcher(workspaceRootPaths(workspace), refreshTree);
+  const applyDiskContent = useCallback((content: string) => {
+    diskBaselineRef.current = content;
+    setMarkdown(content);
+    setDoc(parseMarkdown(content));
+    setDirty(false);
+    setSaved(true);
+    setConflict(null);
+    setEditorEpoch((value) => value + 1);
+  }, []);
+
+  const checkExternalChange = useCallback(async () => {
+    const file = activeFileRef.current;
+    if (!file || writingRef.current) {
+      return;
+    }
+    const generation = checkGenerationRef.current;
+    let diskContent: string;
+    try {
+      diskContent = await readFile(file.path);
+    } catch {
+      return;
+    }
+    if (
+      generation !== checkGenerationRef.current ||
+      writingRef.current ||
+      activeFileRef.current?.path !== file.path
+    ) {
+      return;
+    }
+
+    const action = classifyExternalChange({
+      diskContent,
+      baseline: diskBaselineRef.current,
+      editorContent: markdownRef.current,
+      dirty: dirtyRef.current || conflictRef.current !== null,
+    });
+
+    if (action === 'ignore') {
+      if (conflictRef.current) {
+        setConflict(null);
+      }
+      return;
+    }
+    if (action === 'sync') {
+      diskBaselineRef.current = diskContent;
+      setDirty(false);
+      setSaved(true);
+      setConflict(null);
+      return;
+    }
+    if (action === 'reload') {
+      applyDiskContent(diskContent);
+      return;
+    }
+
+    setConflict((current) => {
+      if (current && current.path === file.path) {
+        return { ...current, diskContent };
+      }
+      return { path: file.path, diskContent, comparing: false };
+    });
+  }, [applyDiskContent]);
+
+  useWorkspaceWatcher(workspaceRootPaths(workspace), () => {
+    refreshTree();
+    void checkExternalChange();
+  });
 
   const ensureRootForPath = useCallback(
     (filePath: string): WorkspaceState => {
@@ -270,6 +376,20 @@ export default function App() {
 
   const loadFile = useCallback(
     async (path: string) => {
+      const previous = activeFileRef.current;
+      const openConflict = conflictRef.current;
+      if (openConflict && previous && previous.path !== path) {
+        checkGenerationRef.current += 1;
+        writingRef.current = true;
+        try {
+          await writeFile(previous.path, markdownRef.current);
+        } catch {
+          // keep going to the requested file
+        } finally {
+          writingRef.current = false;
+        }
+      }
+
       ensureRootForPath(path);
       const content = await readFile(path);
       const entry = toFileEntry(path);
@@ -280,6 +400,9 @@ export default function App() {
       setDirty(false);
       setSaved(true);
       setView('edit');
+      diskBaselineRef.current = content;
+      setConflict(null);
+      setEditorEpoch((value) => value + 1);
       await addRecentFile(path);
       await refreshRecentFiles();
     },
@@ -301,6 +424,8 @@ export default function App() {
           setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
           setDirty(false);
           setSaved(true);
+          setConflict(null);
+          diskBaselineRef.current = '';
         }
       }
     },
@@ -354,6 +479,8 @@ export default function App() {
         setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
         setDirty(false);
         setSaved(true);
+        setConflict(null);
+        diskBaselineRef.current = '';
       }
     },
     [workspace, applyWorkspace, refreshTree, activeFile],
@@ -487,6 +614,8 @@ export default function App() {
           setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
           setDirty(false);
           setSaved(true);
+          setConflict(null);
+          diskBaselineRef.current = '';
         }
         await refreshRecentFiles();
       } catch {
@@ -666,6 +795,14 @@ export default function App() {
   }, [addFolderToWorkspace]);
 
   const handleCloseDocument = useCallback(() => {
+    const file = activeFileRef.current;
+    if (conflictRef.current && file) {
+      checkGenerationRef.current += 1;
+      writingRef.current = true;
+      void writeFile(file.path, markdownRef.current).finally(() => {
+        writingRef.current = false;
+      });
+    }
     setSettingsOpen(false);
     setActiveFile(null);
     setTreeFocus(null);
@@ -674,6 +811,8 @@ export default function App() {
     setDirty(false);
     setSaved(true);
     setView('edit');
+    setConflict(null);
+    diskBaselineRef.current = '';
   }, []);
 
   const handleMenuAction = useCallback(
@@ -770,17 +909,63 @@ export default function App() {
 
   useAppMenu(ready && workspaceReady, t, menuState, handleMenuAction);
 
+  const handleReloadExternal = useCallback(() => {
+    const openConflict = conflictRef.current;
+    if (!openConflict) {
+      return;
+    }
+    checkGenerationRef.current += 1;
+    applyDiskContent(openConflict.diskContent);
+  }, [applyDiskContent]);
+
+  const handleKeepLocal = useCallback(async () => {
+    const file = activeFileRef.current;
+    if (!file) {
+      return;
+    }
+    checkGenerationRef.current += 1;
+    writingRef.current = true;
+    try {
+      await writeFile(file.path, markdownRef.current);
+      diskBaselineRef.current = markdownRef.current;
+      setDirty(false);
+      setSaved(true);
+      setConflict(null);
+    } finally {
+      writingRef.current = false;
+    }
+  }, []);
+
+  const handleToggleCompare = useCallback(() => {
+    setConflict((current) =>
+      current ? { ...current, comparing: !current.comparing } : current,
+    );
+  }, []);
+
   useEffect(() => {
-    if (!activeFile || !dirty) {
+    if (!activeFile || !dirty || conflict) {
       return;
     }
     const timer = window.setTimeout(async () => {
-      await writeFile(activeFile.path, markdown);
-      setDirty(false);
-      setSaved(true);
+      writingRef.current = true;
+      try {
+        await writeFile(activeFile.path, markdown);
+        diskBaselineRef.current = markdown;
+        setDirty(false);
+        setSaved(true);
+      } finally {
+        writingRef.current = false;
+      }
     }, 2000);
     return () => window.clearTimeout(timer);
-  }, [activeFile, dirty, markdown]);
+  }, [activeFile, dirty, markdown, conflict]);
+
+  const conflictChangedCount = useMemo(() => {
+    if (!conflict) {
+      return 0;
+    }
+    return countChangedRows(alignMarkdownDiff(markdown, conflict.diskContent));
+  }, [conflict, markdown]);
 
   const welcomeLabels = {
     workspace: t('sidebar.workspace'),
@@ -1050,41 +1235,91 @@ export default function App() {
                 className="relative flex flex-1 flex-col overflow-hidden bg-[var(--paper)]"
                 onMouseMove={() => setEditorActivityAt(Date.now())}
               >
-                <div
-                  className={
-                    view === 'source'
-                      ? sourceContentClass
-                      : `${contentClass} editor-scroll scroll-pane flex flex-1 flex-col min-h-0 overflow-auto`
-                  }
-                >
-                  {view === 'edit' && activeFile ? (
-                    <Editor
-                      key={activeFile.path}
-                      content={doc}
-                      notePath={activeFile.path}
-                      onChange={handleEditorChange}
-                      tabWidth={editorTabWidth}
-                    />
-                  ) : null}
-                  {view === 'source' && activeFile ? (
-                    <SourceView value={markdown} onChange={handleSourceChange} tabWidth={editorTabWidth} />
-                  ) : null}
-                  {view === 'preview' ? (
-                    <PreviewView content={doc} notePath={activeFile?.path ?? ''} />
-                  ) : null}
-                  {!activeFile ? (
-                    <p className="text-sm text-[var(--text-secondary)]">{t('app.noFileSelected')}</p>
-                  ) : null}
-                </div>
-                <div className={`pointer-events-none absolute inset-x-0 top-0 z-20 ${floaterAnchorClass}`}>
-                  <div className="flex justify-end pt-4">
-                    <ViewModeFloater
-                      view={view}
-                      onViewChange={handleViewChange}
-                      activityAt={editorActivityAt}
-                    />
-                  </div>
-                </div>
+                {conflict && activeFile && conflict.path === activeFile.path ? (
+                  <ExternalChangeBar
+                    labels={{
+                      title: t('external.title'),
+                      message: t('external.message').replace(
+                        '{name}',
+                        displayFileName(activeFile.name),
+                      ),
+                      reload: t('external.reload'),
+                      keep: t('external.keep'),
+                      compare: t('external.compare'),
+                      closeCompare: t('external.closeCompare'),
+                      reloadHint: t('external.reloadHint'),
+                      keepHint: t('external.keepHint'),
+                      compareHint: t('external.compareHint'),
+                      changedCount: t('external.changedCount'),
+                    }}
+                    comparing={conflict.comparing}
+                    changedCount={conflictChangedCount}
+                    onReload={handleReloadExternal}
+                    onKeep={() => void handleKeepLocal()}
+                    onToggleCompare={handleToggleCompare}
+                  />
+                ) : null}
+                {conflict?.comparing ? (
+                  <ExternalChangeCompare
+                    localContent={markdown}
+                    diskContent={conflict.diskContent}
+                    localLabel={t('external.local')}
+                    diskLabel={t('external.disk')}
+                  />
+                ) : (
+                  <>
+                    <div
+                      className={
+                        view === 'source'
+                          ? sourceContentClass
+                          : `${contentClass} editor-scroll scroll-pane flex flex-1 flex-col min-h-0 overflow-auto`
+                      }
+                    >
+                      {view === 'edit' && activeFile ? (
+                        <Editor
+                          key={`${activeFile.path}:${editorEpoch}`}
+                          content={doc}
+                          notePath={activeFile.path}
+                          onChange={handleEditorChange}
+                          tabWidth={editorTabWidth}
+                          onImageNotice={handleImageNotice}
+                        />
+                      ) : null}
+                      {view === 'source' && activeFile ? (
+                        <SourceView
+                          value={markdown}
+                          onChange={handleSourceChange}
+                          tabWidth={editorTabWidth}
+                        />
+                      ) : null}
+                      {view === 'preview' && activeFile ? (
+                        <PreviewView
+                          key={`${activeFile.path}:${editorEpoch}`}
+                          content={doc}
+                          notePath={activeFile.path}
+                        />
+                      ) : null}
+                      {!activeFile ? (
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {t('app.noFileSelected')}
+                        </p>
+                      ) : null}
+                    </div>
+                    {conflict ? null : (
+                      <div
+                        className={`pointer-events-none absolute inset-x-0 top-0 z-20 ${floaterAnchorClass}`}
+                      >
+                        <div className="flex justify-end pt-4">
+                          <ViewModeFloater
+                            view={view}
+                            onViewChange={handleViewChange}
+                            activityAt={editorActivityAt}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </main>
               <Inspector
                 headings={headings}

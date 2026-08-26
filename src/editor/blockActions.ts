@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core';
+import { insertImagesFromPicker } from './insertImage';
 
 export type SlashRange = { from: number; to: number };
 
@@ -168,6 +169,16 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
         editor.chain().focus().deleteRange(range).run();
       }
       insertPlaceholderLink(editor);
+    },
+  },
+  {
+    id: 'image',
+    title: '图片',
+    keywords: ['image', 'img', '图片'],
+    section: 'insert',
+    active: (editor) => editor.isActive('image'),
+    run: (editor, range) => {
+      void insertImagesFromPicker(editor, range);
     },
   },
 ];

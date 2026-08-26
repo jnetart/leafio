@@ -5,6 +5,17 @@ export async function pickFolder(): Promise<string | null> {
   return typeof result === 'string' ? result : null;
 }
 
+export async function pickImageFiles(): Promise<string[]> {
+  const result = await open({
+    multiple: true,
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }],
+  });
+  if (Array.isArray(result)) {
+    return result.filter((path): path is string => typeof path === 'string');
+  }
+  return typeof result === 'string' ? [result] : [];
+}
+
 export async function pickMarkdownFile(): Promise<string | null> {
   const result = await open({
     multiple: false,

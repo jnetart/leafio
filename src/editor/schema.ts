@@ -15,6 +15,7 @@ import { PanelBlockBoundary } from './extensions/panelBlockBoundary';
 import { SlashCommandExtension } from './extensions/SlashCommand';
 import { TrailingNode } from './extensions/trailingNode';
 import { ImageBlock } from './extensions/imageBlock';
+import { ImageIngest } from './extensions/imageIngest';
 
 export const extensions = [
   StarterKit.configure({
@@ -45,6 +46,7 @@ export const extensions = [
   PanelBlockBoundary,
   TrailingNode,
   ImageBlock,
+  ImageIngest,
 ];
 
 export const useLeafioEditor = (
