@@ -65,6 +65,42 @@ pub async fn write_file(path: String, content: String) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+pub async fn path_exists(path: String) -> bool {
+    Path::new(&path).exists()
+}
+
+#[tauri::command]
+pub async fn read_binary_file(path: String) -> Result<Vec<u8>, String> {
+    tokio::fs::read(&path).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn write_binary_file(path: String, contents: Vec<u8>) -> Result<(), String> {
+    if let Some(parent) = Path::new(&path).parent() {
+        tokio::fs::create_dir_all(parent)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+    tokio::fs::write(&path, contents)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn copy_path(from: String, to: String) -> Result<(), String> {
+    let dest = Path::new(&to);
+    if let Some(parent) = dest.parent() {
+        tokio::fs::create_dir_all(parent)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+    tokio::fs::copy(&from, dest)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn suggest_markdown_filename_in_dir(dir_path: &Path) -> Result<String, String> {
     if dir_path.exists() && !dir_path.is_dir() {
         return Err("目标路径不是文件夹".to_string());

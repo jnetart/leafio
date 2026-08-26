@@ -37,6 +37,18 @@ export const readFile = (path: string): Promise<string> =>
 export const writeFile = (path: string, content: string): Promise<void> =>
   invoke('write_file', { path, content });
 
+export const pathExists = (path: string): Promise<boolean> =>
+  invoke('path_exists', { path });
+
+export const readBinaryFile = (path: string): Promise<number[]> =>
+  invoke('read_binary_file', { path });
+
+export const writeBinaryFile = (path: string, contents: number[]): Promise<void> =>
+  invoke('write_binary_file', { path, contents });
+
+export const copyPath = (from: string, to: string): Promise<void> =>
+  invoke('copy_path', { from, to });
+
 export const getRecentFiles = (): Promise<string[]> =>
   invoke('get_recent_files');
 
