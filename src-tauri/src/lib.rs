@@ -1,5 +1,6 @@
 mod fs;
 mod recent;
+mod search;
 mod shell;
 mod watch;
 

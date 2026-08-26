@@ -207,14 +207,19 @@ function installMock(env) {
   let ridCounter = 0;
   let cbCounter = 0;
 
-  const searchWorkspace = (_path, query) => {
-    const q = String(query || '').trim().toLowerCase();
-    if (!q) {
+  const searchWorkspace = (_path, args = {}) => {
+    const terms = (args.terms || []).map((term) => String(term).toLowerCase());
+    const paths = (args.paths || []).map((fragment) => String(fragment).toLowerCase());
+    if (terms.length === 0 && !(args.tags || []).length && paths.length === 0) {
       return [];
     }
-    return SEARCH_INDEX.filter((row) =>
-      `${row.name} ${row.snippet}`.toLowerCase().includes(q),
-    );
+    return SEARCH_INDEX.filter((row) => {
+      if (paths.some((fragment) => !row.path.toLowerCase().includes(fragment))) {
+        return false;
+      }
+      const haystack = `${row.name} ${row.snippet}`.toLowerCase();
+      return terms.every((term) => haystack.includes(term));
+    });
   };
 
   const invoke = async (cmd, args = {}) => {
@@ -281,7 +286,7 @@ function installMock(env) {
       case 'set_workspace_watchers':
         return null;
       case 'search_workspace':
-        return searchWorkspace(args.path, args.query);
+        return searchWorkspace(args.path, args);
       case 'suggest_markdown_filename':
         return 'untitled.md';
       case 'suggest_subdirectory_name':
@@ -400,7 +405,7 @@ async function openSlashMenu(page) {
 
 async function openSearchDialog(page) {
   await page.locator('.sidebar-search-item').first().click();
-  const input = page.getByPlaceholder('搜索 Markdown 文件…');
+  const input = page.getByPlaceholder('搜索，或 tag:会议 path:notes');
   await input.waitFor({ state: 'visible', timeout: 8000 });
   await input.fill('markdown');
   await page.waitForTimeout(700);

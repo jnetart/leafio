@@ -1,3 +1,4 @@
+use crate::search::{search_documents, SearchQuery, SearchResult};
 use serde::Serialize;
 use std::path::Path;
 
@@ -6,13 +7,6 @@ pub struct FileEntry {
     pub name: String,
     pub path: String,
     pub is_dir: bool,
-}
-
-#[derive(Serialize)]
-pub struct SearchResult {
-    pub name: String,
-    pub path: String,
-    pub snippet: String,
 }
 
 #[tauri::command]
@@ -29,40 +23,27 @@ pub async fn list_markdown_files(path: String) -> Result<Vec<FileEntry>, String>
 }
 
 #[tauri::command]
-pub async fn search_workspace(path: String, query: String) -> Result<Vec<SearchResult>, String> {
-    let query = query.trim().to_lowercase();
+pub async fn search_workspace(
+    path: String,
+    terms: Vec<String>,
+    tags: Vec<String>,
+    paths: Vec<String>,
+) -> Result<Vec<SearchResult>, String> {
+    let query = SearchQuery::from_parts(terms, tags, paths);
     if query.is_empty() {
         return Ok(Vec::new());
     }
 
     let files = list_markdown_files(path).await?;
-    let mut results = Vec::new();
-
+    let mut documents = Vec::new();
     for file in files {
         let content = tokio::fs::read_to_string(&file.path)
             .await
             .map_err(|e| e.to_string())?;
-        let haystack = content.to_lowercase();
-        if !haystack.contains(&query) {
-            continue;
-        }
-
-        let snippet = content
-            .lines()
-            .find(|line| line.to_lowercase().contains(&query))
-            .unwrap_or("")
-            .chars()
-            .take(120)
-            .collect();
-
-        results.push(SearchResult {
-            name: file.name,
-            path: file.path,
-            snippet,
-        });
+        documents.push((file.name, file.path, content));
     }
 
-    Ok(results)
+    Ok(search_documents(&documents, &query))
 }
 
 #[tauri::command]

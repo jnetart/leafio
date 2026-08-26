@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import type { ParsedSearchQuery } from './searchQuery';
 import { storageFileName } from './workspace';
 
 export interface FileEntry {
@@ -19,8 +20,16 @@ export const listWorkspace = (path: string): Promise<FileEntry[]> =>
 export const listMarkdownFiles = (path: string): Promise<FileEntry[]> =>
   invoke('list_markdown_files', { path });
 
-export const searchWorkspace = (path: string, query: string): Promise<SearchResult[]> =>
-  invoke('search_workspace', { path, query });
+export const searchWorkspace = (
+  path: string,
+  query: ParsedSearchQuery,
+): Promise<SearchResult[]> =>
+  invoke('search_workspace', {
+    path,
+    terms: query.terms,
+    tags: query.tags,
+    paths: query.paths,
+  });
 
 export const readFile = (path: string): Promise<string> =>
   invoke('read_file', { path });

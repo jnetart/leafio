@@ -15,6 +15,7 @@ import { ViewModeFloater } from './components/ViewModeFloater';
 import { WindowDragBar } from './components/WindowDragBar';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { parseMarkdown, serializeMarkdown } from './editor/markdown';
+import { useActiveOutlineHeading } from './hooks/useActiveOutlineHeading';
 import { useAppMenu } from './hooks/useAppMenu';
 import { useMenuTextFocus } from './hooks/useMenuTextFocus';
 import { useI18n } from './hooks/useI18n';
@@ -51,7 +52,8 @@ import {
   writeFile,
   type FileEntry,
 } from './lib/fs';
-import { extractHeadings } from './lib/headings';
+import type { ParsedSearchQuery } from './lib/searchQuery';
+import { extractHeadings, OUTLINE_HEADING_SELECTOR } from './lib/headings';
 import { basename, dirname, expandUserPath, formatDisplayPath, replacePathPrefix } from './lib/paths';
 import type { SettingsSection } from './lib/settings-sections';
 import type { ViewMode } from './lib/view-mode';
@@ -203,15 +205,17 @@ export default function App() {
   );
 
   const headings = useMemo(() => extractHeadings(doc), [doc]);
+  const { activeIndex: activeHeadingIndex, setActiveIndex: setActiveHeadingIndex } =
+    useActiveOutlineHeading(headings, view, activeFile?.path ?? '');
 
   const handleHeadingClick = useCallback((index: number) => {
-    const selector = '.leafio-editor h1, .leafio-editor h2, .leafio-editor h3, .leafio-editor h4';
-    const elements = document.querySelectorAll(selector);
+    setActiveHeadingIndex(index);
+    const elements = document.querySelectorAll(OUTLINE_HEADING_SELECTOR);
     const target = elements[index];
     if (target instanceof HTMLElement) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, []);
+  }, [setActiveHeadingIndex]);
 
   const refreshRecentFiles = useCallback(async () => {
     setRecentFiles(await getRecentFiles());
@@ -642,7 +646,7 @@ export default function App() {
   }, []);
 
   const handleSearch = useCallback(
-    async (query: string) => {
+    async (query: ParsedSearchQuery) => {
       if (!hasWorkspace(workspace)) {
         return [];
       }
@@ -937,6 +941,10 @@ export default function App() {
           loading: t('search.loading'),
           noResults: t('search.noResults'),
           hint: t('search.hint'),
+          hintTag: t('search.hintTag'),
+          hintPath: t('search.hintPath'),
+          exampleTag: t('search.exampleTag'),
+          examplePath: t('search.examplePath'),
           navigate: t('search.navigate'),
           open: t('search.open'),
           close: t('search.close'),
@@ -1078,6 +1086,8 @@ export default function App() {
               <Inspector
                 headings={headings}
                 open={inspectorOpen}
+                documentKey={activeFile?.path ?? ''}
+                activeIndex={activeHeadingIndex}
                 onOpenChange={setInspectorOpen}
                 onHeadingClick={handleHeadingClick}
               />
