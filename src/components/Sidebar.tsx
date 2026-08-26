@@ -353,10 +353,10 @@ export function Sidebar({
             }}
             onToggle={onToggle}
           />
-          <aside className="mt-[var(--titlebar-height)] flex h-[calc(100%-var(--titlebar-height))] w-full flex-col bg-[var(--sidebar-bg)] backdrop-blur-xl">
+          <aside className="sidebar-body flex w-full flex-col bg-[var(--sidebar-bg)] backdrop-blur-xl">
           {settingsActive ? (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <nav className="shrink-0 px-2 pt-2">
+              <nav className="sidebar-top-nav">
                 <div className="sidebar-nav-item sidebar-search-item pointer-events-none" aria-hidden="true">
                   <IconSearch className="h-4 w-4 shrink-0 opacity-70" />
                   <span>{t('settings.search')}</span>
@@ -382,7 +382,7 @@ export function Sidebar({
             </div>
           ) : (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <nav className="shrink-0 px-2 pt-2">
+              <nav className="sidebar-top-nav">
                 <button
                   type="button"
                   className="sidebar-nav-item sidebar-search-item"

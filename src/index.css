@@ -15,6 +15,7 @@
   --accent: #5b8c6f;
   --titlebar-height: 52px;
   --sidebar-width: 240px;
+  --sidebar-content-gap: 4px;
   --traffic-light-offset: 78px;
   --sidebar-chrome-padding-left: 0px;
   --settings-bg: #f3f3f3;
@@ -137,6 +138,16 @@ html[data-platform='linux'] {
   position: relative;
   width: var(--sidebar-width);
   height: 100%;
+}
+
+.sidebar-body {
+  margin-top: var(--titlebar-height);
+  height: calc(100% - var(--titlebar-height));
+}
+
+.sidebar-top-nav {
+  flex-shrink: 0;
+  padding: var(--sidebar-content-gap) 8px 0;
 }
 
 .traffic-light-drag-zone {
