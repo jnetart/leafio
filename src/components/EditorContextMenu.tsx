@@ -9,6 +9,7 @@ import {
 } from '../editor/blockActions';
 import { TABLE_STRUCTURE_ACTIONS, type TableAction } from '../editor/tableActions';
 import { useNotifyContextMenuOpen } from '../lib/editor-context-menu';
+import { scrollChildIntoNearestView } from '../lib/scroll-into-view';
 
 interface EditorContextMenuState {
   x: number;
@@ -22,12 +23,25 @@ interface EditorContextMenuProps {
 
 const SECTION_ORDER: BlockActionSection[] = ['convert', 'list', 'insert'];
 
+function menuItemClassName(selected: boolean, active = false): string {
+  const tone = selected
+    ? 'bg-[rgba(91,140,111,0.12)] text-[#3B6B4E] dark:text-[#6baa83]'
+    : active
+      ? 'font-semibold text-[#3B6B4E] dark:text-[#6baa83]'
+      : 'text-[var(--text)]';
+  return `flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] transition-colors ${tone} ${
+    selected ? '' : 'hover:bg-black/5 dark:hover:bg-white/[0.08]'
+  }`;
+}
+
 export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMenuProps) {
   const [menu, setMenu] = useState<EditorContextMenuState | null>(null);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const groupedActions = useMemo(() => {
     return SECTION_ORDER.map((section) => ({
@@ -38,6 +52,9 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
   }, []);
 
   const isInTable = editor.isActive('table');
+  const selectableCount = isInTable
+    ? TABLE_STRUCTURE_ACTIONS.length
+    : groupedActions.reduce((count, group) => count + group.items.length, 0);
 
   useNotifyContextMenuOpen(menu !== null, onMenuOpenChange);
 
@@ -73,6 +90,7 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
       const previous = editor.getAttributes('link').href as string | undefined;
       setLinkUrl(previous ?? '');
       setShowLinkInput(false);
+      setSelectedIndex(0);
       setMenu({ x: event.clientX, y: event.clientY });
     },
     [editor],
@@ -86,54 +104,6 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
     dom.addEventListener('contextmenu', openMenu);
     return () => dom.removeEventListener('contextmenu', openMenu);
   }, [editor, openMenu]);
-
-  useEffect(() => {
-    if (!menu) {
-      return;
-    }
-    const onPointerDown = (event: MouseEvent) => {
-      if (event.button !== 0) {
-        return;
-      }
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        closeMenu();
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeMenu();
-      }
-    };
-    window.addEventListener('mousedown', onPointerDown);
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('mousedown', onPointerDown);
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [closeMenu, menu]);
-
-  useEffect(() => {
-    const menuElement = menuRef.current;
-    if (!menu || !menuElement) {
-      return;
-    }
-    const rect = menuElement.getBoundingClientRect();
-    const maxX = window.innerWidth - rect.width - 8;
-    const maxY = window.innerHeight - rect.height - 8;
-    menuElement.style.left = `${Math.min(menu.x, maxX)}px`;
-    menuElement.style.top = `${Math.min(menu.y, maxY)}px`;
-  }, [menu, showLinkInput]);
-
-  useEffect(() => {
-    if (!showLinkInput) {
-      return;
-    }
-    const frame = window.requestAnimationFrame(() => {
-      linkInputRef.current?.focus();
-      linkInputRef.current?.select();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [showLinkInput]);
 
   const runTableAction = useCallback(
     (action: TableAction) => {
@@ -160,6 +130,107 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
     closeMenu();
   }, [closeMenu, editor, linkUrl]);
 
+  useEffect(() => {
+    if (!menu) {
+      return;
+    }
+    const onPointerDown = (event: MouseEvent) => {
+      if (event.button !== 0) {
+        return;
+      }
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        closeMenu();
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+        return;
+      }
+      if (showLinkInput || selectableCount === 0) {
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelectedIndex((index) => (index + selectableCount - 1) % selectableCount);
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelectedIndex((index) => (index + 1) % selectableCount);
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (isInTable) {
+          const action = TABLE_STRUCTURE_ACTIONS[selectedIndex];
+          if (action) {
+            runTableAction(action);
+          }
+          return;
+        }
+        const action = groupedActions.flatMap((group) => group.items)[selectedIndex];
+        if (action) {
+          runAction(action);
+        }
+      }
+    };
+    window.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown, true);
+    };
+  }, [
+    closeMenu,
+    groupedActions,
+    isInTable,
+    menu,
+    runAction,
+    runTableAction,
+    selectableCount,
+    selectedIndex,
+    showLinkInput,
+  ]);
+
+  useEffect(() => {
+    const menuElement = menuRef.current;
+    if (!menu || !menuElement) {
+      return;
+    }
+    const rect = menuElement.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width - 8;
+    const maxY = window.innerHeight - rect.height - 8;
+    menuElement.style.left = `${Math.min(menu.x, maxX)}px`;
+    menuElement.style.top = `${Math.min(menu.y, maxY)}px`;
+  }, [menu, showLinkInput]);
+
+  useEffect(() => {
+    if (!menu) {
+      return;
+    }
+    const list = menuRef.current;
+    const item = itemRefs.current[selectedIndex];
+    if (!list || !item) {
+      return;
+    }
+    scrollChildIntoNearestView(list, item);
+  }, [menu, selectedIndex, showLinkInput, selectableCount]);
+
+  useEffect(() => {
+    if (!showLinkInput) {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      linkInputRef.current?.focus();
+      linkInputRef.current?.select();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [showLinkInput]);
+
   if (!menu) {
     return null;
   }
@@ -167,7 +238,7 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
   return (
     <div
       ref={menuRef}
-      className="fixed z-[10000] min-w-[188px] overflow-hidden rounded-lg border border-[var(--separator)] bg-[var(--paper)] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
+      className="fixed z-[10000] max-h-[min(320px,50vh)] min-w-[188px] overflow-y-auto overscroll-contain rounded-lg border border-[var(--separator)] bg-[var(--paper)] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
       style={{ left: menu.x, top: menu.y }}
       role="menu"
       aria-label={isInTable ? '表格菜单' : '编辑器格式菜单'}
@@ -177,47 +248,59 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
           <div className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
             表格
           </div>
-          {TABLE_STRUCTURE_ACTIONS.map((action) => (
+          {TABLE_STRUCTURE_ACTIONS.map((action, index) => (
             <button
               key={action.id}
+              ref={(element) => {
+                itemRefs.current[index] = element;
+              }}
               type="button"
               role="menuitem"
               onClick={() => runTableAction(action)}
-              className="flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] text-[var(--text)] transition-colors hover:bg-black/5 dark:hover:bg-white/[0.08]"
+              onMouseEnter={() => setSelectedIndex(index)}
+              className={menuItemClassName(index === selectedIndex)}
             >
               <span>{action.title}</span>
             </button>
           ))}
         </div>
       ) : (
-        groupedActions.map((group, groupIndex) => (
-          <div key={group.section}>
-            {groupIndex > 0 ? <div className="my-1 h-px bg-[var(--separator)]" aria-hidden="true" /> : null}
-            <div className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-              {group.label}
+        groupedActions.map((group, groupIndex) => {
+          const groupStart = groupedActions
+            .slice(0, groupIndex)
+            .reduce((count, current) => count + current.items.length, 0);
+          return (
+            <div key={group.section}>
+              {groupIndex > 0 ? <div className="my-1 h-px bg-[var(--separator)]" aria-hidden="true" /> : null}
+              <div className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+                {group.label}
+              </div>
+              {group.items.map((action, offset) => {
+                const index = groupStart + offset;
+                return (
+                  <button
+                    key={action.id}
+                    ref={(element) => {
+                      itemRefs.current[index] = element;
+                    }}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => runAction(action)}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    className={menuItemClassName(index === selectedIndex, Boolean(action.active?.(editor)))}
+                  >
+                    <span>{action.title}</span>
+                    {action.id.startsWith('heading-') ? (
+                      <span className="text-[10px] text-[var(--text-secondary)]">
+                        H{action.id.replace('heading-', '')}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
-            {group.items.map((action) => (
-              <button
-                key={action.id}
-                type="button"
-                role="menuitem"
-                onClick={() => runAction(action)}
-                className={`flex w-full items-center justify-between px-3 py-1.5 text-left text-[13px] transition-colors hover:bg-black/5 dark:hover:bg-white/[0.08] ${
-                  action.active?.(editor)
-                    ? 'font-semibold text-[#3B6B4E] dark:text-[#6baa83]'
-                    : 'text-[var(--text)]'
-                }`}
-              >
-                <span>{action.title}</span>
-                {action.id.startsWith('heading-') ? (
-                  <span className="text-[10px] text-[var(--text-secondary)]">
-                    H{action.id.replace('heading-', '')}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        ))
+          );
+        })
       )}
 
       {!isInTable && showLinkInput ? (

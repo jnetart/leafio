@@ -4,6 +4,7 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   type BlockActionSection,
   type EditorBlockAction,
 } from '../editor/blockActions';
+import { scrollChildIntoNearestView } from '../lib/scroll-into-view';
 
 export interface SlashCommandListProps {
   editor: Editor;
@@ -27,6 +29,8 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
   function SlashCommandList({ query, command }, ref) {
     const items = useMemo(() => filterBlockActions(query), [query]);
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const listRef = useRef<HTMLDivElement>(null);
+    const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
     useEffect(() => {
       setSelectedIndex(0);
@@ -37,6 +41,15 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
         setSelectedIndex(Math.max(0, items.length - 1));
       }
     }, [items.length, selectedIndex]);
+
+    useEffect(() => {
+      const list = listRef.current;
+      const item = itemRefs.current[selectedIndex];
+      if (!list || !item) {
+        return;
+      }
+      scrollChildIntoNearestView(list, item);
+    }, [items, selectedIndex]);
 
     useImperativeHandle(ref, () => ({
       onKeyDown: (event) => {
@@ -77,7 +90,8 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
 
     return (
       <div
-        className="max-h-[min(320px,50vh)] min-w-[196px] overflow-auto rounded-lg border border-[var(--separator)] bg-[var(--paper)] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
+        ref={listRef}
+        className="max-h-[min(320px,50vh)] min-w-[196px] overflow-auto overscroll-contain rounded-lg border border-[var(--separator)] bg-[var(--paper)] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
         role="listbox"
         aria-label="斜杠命令"
       >
@@ -92,6 +106,9 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
                 </div>
               ) : null}
               <button
+                ref={(element) => {
+                  itemRefs.current[index] = element;
+                }}
                 type="button"
                 role="option"
                 aria-selected={index === selectedIndex}
