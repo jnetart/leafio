@@ -10,7 +10,6 @@ import type {
   LanguageMode,
   LaunchBehavior,
   ThemeMode,
-  UpdateCheckInterval,
 } from '../lib/preferences';
 import type { UpdateStatus } from '../hooks/useAppUpdate';
 
@@ -23,7 +22,7 @@ interface SettingsViewProps {
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
-  updateCheckInterval: UpdateCheckInterval;
+  autoUpdateEnabled: boolean;
   appVersion: string;
   updateStatus: UpdateStatus;
   availableVersion: string | null;
@@ -37,7 +36,7 @@ interface SettingsViewProps {
   onThemeChange: (theme: ThemeMode) => void;
   onLanguageChange: (language: LanguageMode) => void;
   onLaunchBehaviorChange: (behavior: LaunchBehavior) => void;
-  onUpdateCheckIntervalChange: (interval: UpdateCheckInterval) => void;
+  onAutoUpdateEnabledChange: (enabled: boolean) => void;
   onCheckForUpdates: () => void;
   onInstallUpdate: () => void;
 }
@@ -51,7 +50,7 @@ export function SettingsView({
   theme,
   language,
   launchBehavior,
-  updateCheckInterval,
+  autoUpdateEnabled,
   appVersion,
   updateStatus,
   availableVersion,
@@ -65,7 +64,7 @@ export function SettingsView({
   onThemeChange,
   onLanguageChange,
   onLaunchBehaviorChange,
-  onUpdateCheckIntervalChange,
+  onAutoUpdateEnabledChange,
   onCheckForUpdates,
   onInstallUpdate,
 }: SettingsViewProps) {
@@ -106,44 +105,6 @@ export function SettingsView({
                     ]}
                     value={launchBehavior}
                     onChange={(value) => onLaunchBehaviorChange(value as LaunchBehavior)}
-                  />
-                </SettingRow>
-              </SettingsGroup>
-
-              <SettingsGroup label={t('settings.group.updates')}>
-                <SettingRow title={t('settings.version.title')} description={t('settings.version.desc')}>
-                  <span className="settings-version-badge">v{appVersion}</span>
-                </SettingRow>
-                <SettingRow
-                  title={t('settings.updateCheck.title')}
-                  description={t('settings.updateCheck.desc')}
-                >
-                  <SegmentedControl
-                    options={[
-                      { value: 'off', label: t('settings.updateCheck.off') },
-                      { value: 'daily', label: t('settings.updateCheck.daily') },
-                      { value: '3days', label: t('settings.updateCheck.3days') },
-                      { value: 'weekly', label: t('settings.updateCheck.weekly') },
-                    ]}
-                    value={updateCheckInterval}
-                    onChange={(value) => onUpdateCheckIntervalChange(value as UpdateCheckInterval)}
-                  />
-                </SettingRow>
-                <SettingRow
-                  title={t('settings.updateAction.title')}
-                  description={
-                    updateStatus === 'error' && updateError
-                      ? updateError
-                      : t('settings.updateAction.desc')
-                  }
-                >
-                  <UpdateActionControl
-                    status={updateStatus}
-                    availableVersion={availableVersion}
-                    downloadRatio={downloadRatio}
-                    t={t}
-                    onCheck={onCheckForUpdates}
-                    onInstall={onInstallUpdate}
                   />
                 </SettingRow>
               </SettingsGroup>
@@ -275,6 +236,41 @@ export function SettingsView({
               </SettingRow>
             </SettingsGroup>
           ) : null}
+
+          {section === 'updates' ? (
+            <SettingsGroup label={t('settings.group.updates')}>
+              <SettingRow
+                title={t('settings.updateCheck.title')}
+                description={t('settings.updateCheck.desc')}
+              >
+                <Switch
+                  checked={autoUpdateEnabled}
+                  label={t('settings.updateCheck.title')}
+                  onChange={onAutoUpdateEnabledChange}
+                />
+              </SettingRow>
+              <SettingRow title={t('settings.version.title')} description={t('settings.version.desc')}>
+                <span className="settings-version-badge">v{appVersion}</span>
+              </SettingRow>
+              <SettingRow
+                title={t('settings.updateAction.title')}
+                description={
+                  updateStatus === 'error' && updateError
+                    ? updateError
+                    : t('settings.updateAction.desc')
+                }
+              >
+                <UpdateActionControl
+                  status={updateStatus}
+                  availableVersion={availableVersion}
+                  downloadRatio={downloadRatio}
+                  t={t}
+                  onCheck={onCheckForUpdates}
+                  onInstall={onInstallUpdate}
+                />
+              </SettingRow>
+            </SettingsGroup>
+          ) : null}
         </div>
       </div>
     </div>
@@ -370,6 +366,29 @@ function SettingRow({
       </div>
       <div className="settings-row-control">{children}</div>
     </div>
+  );
+}
+
+function Switch({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean;
+  label: string;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      className={`settings-switch ${checked ? 'settings-switch--on' : ''}`}
+      onClick={() => onChange(!checked)}
+    >
+      <span className="settings-switch-thumb" />
+    </button>
   );
 }
 

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Update } from '@tauri-apps/plugin-updater';
-import type { UpdateCheckInterval } from '../lib/preferences';
 import {
   checkForAppUpdate,
   downloadAndInstallUpdate,
@@ -18,14 +17,14 @@ export type UpdateStatus =
 
 interface UseAppUpdateOptions {
   ready: boolean;
-  updateCheckInterval: UpdateCheckInterval;
+  autoUpdateEnabled: boolean;
   lastUpdateCheckAt: string | null;
   onLastCheckAtChange: (iso: string) => void;
 }
 
 export function useAppUpdate({
   ready,
-  updateCheckInterval,
+  autoUpdateEnabled,
   lastUpdateCheckAt,
   onLastCheckAtChange,
 }: UseAppUpdateOptions) {
@@ -80,23 +79,23 @@ export function useAppUpdate({
     if (!ready) {
       return;
     }
-    if (!shouldAutoCheck(updateCheckInterval, lastCheckAtRef.current)) {
+    if (!shouldAutoCheck(autoUpdateEnabled, lastCheckAtRef.current)) {
       return;
     }
     void runCheck({ silent: true });
-  }, [ready, updateCheckInterval, runCheck]);
+  }, [ready, autoUpdateEnabled, runCheck]);
 
   useEffect(() => {
     if (!ready) {
       return;
     }
     const timer = window.setInterval(() => {
-      if (shouldAutoCheck(updateCheckInterval, lastCheckAtRef.current)) {
+      if (shouldAutoCheck(autoUpdateEnabled, lastCheckAtRef.current)) {
         void runCheck({ silent: true });
       }
     }, 60 * 60 * 1000);
     return () => window.clearInterval(timer);
-  }, [ready, updateCheckInterval, runCheck]);
+  }, [ready, autoUpdateEnabled, runCheck]);
 
   const installUpdate = useCallback(async () => {
     if (!availableUpdate) {

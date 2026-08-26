@@ -1,32 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { shouldAutoCheck, updateCheckIntervalMs } from './app-update';
-
-describe('updateCheckIntervalMs', () => {
-  it('treats off and daily as one day', () => {
-    expect(updateCheckIntervalMs('off')).toBe(24 * 60 * 60 * 1000);
-    expect(updateCheckIntervalMs('daily')).toBe(24 * 60 * 60 * 1000);
-  });
-
-  it('uses multi-day intervals', () => {
-    expect(updateCheckIntervalMs('3days')).toBe(3 * 24 * 60 * 60 * 1000);
-    expect(updateCheckIntervalMs('weekly')).toBe(7 * 24 * 60 * 60 * 1000);
-  });
-});
+import { shouldAutoCheck } from './app-update';
 
 describe('shouldAutoCheck', () => {
   const now = Date.parse('2026-08-25T12:00:00.000Z');
 
-  it('checks when never checked before', () => {
-    expect(shouldAutoCheck('daily', null, now)).toBe(true);
+  it('never checks when auto-update is off', () => {
+    expect(shouldAutoCheck(false, null, now)).toBe(false);
+    const old = new Date(now - 25 * 60 * 60 * 1000).toISOString();
+    expect(shouldAutoCheck(false, old, now)).toBe(false);
+  });
+
+  it('checks when enabled and never checked before', () => {
+    expect(shouldAutoCheck(true, null, now)).toBe(true);
   });
 
   it('skips when last check is recent', () => {
     const recent = new Date(now - 60 * 60 * 1000).toISOString();
-    expect(shouldAutoCheck('daily', recent, now)).toBe(false);
+    expect(shouldAutoCheck(true, recent, now)).toBe(false);
   });
 
-  it('checks when interval elapsed', () => {
+  it('checks when a day has elapsed', () => {
     const old = new Date(now - 25 * 60 * 60 * 1000).toISOString();
-    expect(shouldAutoCheck('off', old, now)).toBe(true);
+    expect(shouldAutoCheck(true, old, now)).toBe(true);
   });
 });

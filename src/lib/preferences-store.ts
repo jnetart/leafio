@@ -1,6 +1,7 @@
 import { load } from '@tauri-apps/plugin-store';
 import {
   DEFAULT_PREFERENCES,
+  resolveAutoUpdateEnabled,
   type AppPreferences,
 } from './preferences';
 
@@ -9,11 +10,18 @@ const STORE_PATH = 'preferences.json';
 export async function loadPreferences(): Promise<AppPreferences> {
   try {
     const store = await load(STORE_PATH, { autoSave: false });
-    const stored = await store.get<AppPreferences>('app');
+    const stored = await store.get<
+      Partial<AppPreferences> & { updateCheckInterval?: unknown }
+    >('app');
     if (!stored) {
       return DEFAULT_PREFERENCES;
     }
-    return { ...DEFAULT_PREFERENCES, ...stored };
+    const { updateCheckInterval, autoUpdateEnabled, ...rest } = stored;
+    return {
+      ...DEFAULT_PREFERENCES,
+      ...rest,
+      autoUpdateEnabled: resolveAutoUpdateEnabled({ autoUpdateEnabled, updateCheckInterval }),
+    };
   } catch {
     return DEFAULT_PREFERENCES;
   }

@@ -4,9 +4,10 @@ import {
   IconEditor,
   IconExportNav,
   IconGeneral,
+  IconUpdate,
 } from '../components/icons';
 
-export type SettingsSection = 'general' | 'appearance' | 'editor' | 'export';
+export type SettingsSection = 'general' | 'appearance' | 'editor' | 'export' | 'updates';
 
 export const SETTINGS_SECTIONS: Array<{
   id: SettingsSection;
@@ -17,4 +18,5 @@ export const SETTINGS_SECTIONS: Array<{
   { id: 'appearance', labelKey: 'settings.nav.appearance', icon: IconAppearance },
   { id: 'editor', labelKey: 'settings.nav.editor', icon: IconEditor },
   { id: 'export', labelKey: 'settings.nav.export', icon: IconExportNav },
+  { id: 'updates', labelKey: 'settings.nav.updates', icon: IconUpdate },
 ];

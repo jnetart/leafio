@@ -1523,6 +1523,51 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   cursor: default;
 }
 
+.settings-switch {
+  position: relative;
+  width: 40px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--text-secondary) 28%, transparent);
+  transition: background-color 160ms ease;
+}
+
+.settings-switch--on {
+  background: var(--accent);
+}
+
+.settings-switch:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.settings-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.settings-switch--on .settings-switch-thumb {
+  transform: translateX(16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-switch,
+  .settings-switch-thumb {
+    transition: none;
+  }
+}
+
 /* Status bar width control */
 .status-width-control {
   display: inline-flex;

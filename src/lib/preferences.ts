@@ -5,8 +5,6 @@ export type EditorTabWidth = 2 | 4;
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type LanguageMode = 'system' | 'zh-CN' | 'en';
 export type LaunchBehavior = 'welcome' | 'last';
-/** How often to silently check for updates. `off` still checks once per day. */
-export type UpdateCheckInterval = 'off' | 'daily' | '3days' | 'weekly';
 export type ResolvedLocale = 'zh-CN' | 'en';
 
 export interface AppPreferences {
@@ -17,7 +15,7 @@ export interface AppPreferences {
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
-  updateCheckInterval: UpdateCheckInterval;
+  autoUpdateEnabled: boolean;
   /** ISO timestamp of the last successful update check. */
   lastUpdateCheckAt: string | null;
 }
@@ -30,6 +28,20 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   theme: 'system',
   language: 'system',
   launchBehavior: 'welcome',
-  updateCheckInterval: 'daily',
+  autoUpdateEnabled: true,
   lastUpdateCheckAt: null,
 };
+
+/** Maps stored prefs, including the old interval field, onto a boolean. */
+export function resolveAutoUpdateEnabled(stored: {
+  autoUpdateEnabled?: unknown;
+  updateCheckInterval?: unknown;
+}): boolean {
+  if (typeof stored.autoUpdateEnabled === 'boolean') {
+    return stored.autoUpdateEnabled;
+  }
+  if (stored.updateCheckInterval === 'off') {
+    return false;
+  }
+  return true;
+}

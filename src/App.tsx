@@ -88,7 +88,7 @@ export default function App() {
     theme,
     language,
     launchBehavior,
-    updateCheckInterval,
+    autoUpdateEnabled,
     lastUpdateCheckAt,
     ready,
     setEditorWidthMode,
@@ -98,7 +98,7 @@ export default function App() {
     setTheme,
     setLanguage,
     setLaunchBehavior,
-    setUpdateCheckInterval,
+    setAutoUpdateEnabled,
     setLastUpdateCheckAt,
   } = usePreferences();
   useTheme(theme);
@@ -114,7 +114,7 @@ export default function App() {
     installUpdate,
   } = useAppUpdate({
     ready,
-    updateCheckInterval,
+    autoUpdateEnabled,
     lastUpdateCheckAt,
     onLastCheckAtChange: setLastUpdateCheckAt,
   });
@@ -1016,7 +1016,7 @@ export default function App() {
               theme={theme}
               language={language}
               launchBehavior={launchBehavior}
-              updateCheckInterval={updateCheckInterval}
+              autoUpdateEnabled={autoUpdateEnabled}
               appVersion={appVersion}
               updateStatus={updateStatus}
               availableVersion={availableVersion}
@@ -1030,7 +1030,7 @@ export default function App() {
               onThemeChange={setTheme}
               onLanguageChange={setLanguage}
               onLaunchBehaviorChange={setLaunchBehavior}
-              onUpdateCheckIntervalChange={setUpdateCheckInterval}
+              onAutoUpdateEnabledChange={setAutoUpdateEnabled}
               onCheckForUpdates={() => void checkForUpdates()}
               onInstallUpdate={() => void installUpdate()}
             />
