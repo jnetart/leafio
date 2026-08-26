@@ -21,6 +21,7 @@ interface StatusBarProps {
     words: string;
     lines: string;
   };
+  notice?: string | null;
 }
 
 export function StatusBar({
@@ -43,6 +44,7 @@ export function StatusBar({
     words: '字',
     lines: '行',
   },
+  notice = null,
 }: StatusBarProps) {
   const saveTitle = saved ? labels.saved : labels.unsaved;
   const displayPath = filePath ? formatDisplayPath(filePath, homeDir) : null;
@@ -69,6 +71,7 @@ export function StatusBar({
           </span>
         ) : null}
         {modeLabel ? <span className="shrink-0 opacity-70">· {modeLabel}</span> : null}
+        {notice ? <span className="shrink-0 opacity-80">· {notice}</span> : null}
       </span>
       <span className="flex shrink-0 items-center gap-2">
         {onEditorWidthModeChange ? (

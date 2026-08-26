@@ -3,6 +3,8 @@ import { EditorContent } from '@tiptap/react';
 import type { JSONContent } from '@tiptap/react';
 import { useLeafioEditor } from '../editor/schema';
 import type { EditorTabWidth } from '../lib/preferences';
+import { DEFAULT_COMPRESS_MAX_EDGE } from '../lib/image-assets';
+import type { ImageNoticeKey } from '../editor/insertImage';
 import { LEAFIO_MENU_EDIT_EVENT, type LeafioMenuEditAction } from '../lib/menu-edit';
 import { useEditorContextMenuOpen } from '../lib/editor-context-menu';
 import { EditorContextMenu } from './EditorContextMenu';
@@ -14,9 +16,20 @@ interface EditorProps {
   notePath: string;
   onChange: (doc: JSONContent) => void;
   tabWidth: EditorTabWidth;
+  compressImages?: boolean;
+  compressMaxEdge?: number;
+  onImageNotice?: (key: ImageNoticeKey) => void;
 }
 
-export function Editor({ content, onChange, notePath, tabWidth }: EditorProps) {
+export function Editor({
+  content,
+  onChange,
+  notePath,
+  tabWidth,
+  compressImages = false,
+  compressMaxEdge = DEFAULT_COMPRESS_MAX_EDGE,
+  onImageNotice,
+}: EditorProps) {
   const editor = useLeafioEditor(content, true, onChange);
   const { contextMenuOpen, onMenuOpenChange } = useEditorContextMenuOpen();
 
@@ -32,7 +45,10 @@ export function Editor({ content, onChange, notePath, tabWidth }: EditorProps) {
       return;
     }
     editor.storage.imageBlock.notePath = notePath;
-  }, [editor, notePath]);
+    editor.storage.imageBlock.compress = compressImages;
+    editor.storage.imageBlock.maxEdge = compressMaxEdge;
+    editor.storage.imageBlock.onNotice = onImageNotice;
+  }, [editor, notePath, compressImages, compressMaxEdge, onImageNotice]);
 
   useEffect(() => {
     if (!editor) {
