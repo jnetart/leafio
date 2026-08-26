@@ -4,8 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n="page.title.download">Leafio — 下载</title>
+  <meta name="description" data-i18n-content="download.intro" content="Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Leafio">
+  <meta property="og:title" data-i18n-content="page.title.download" content="Leafio — 下载">
+  <meta property="og:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
+  <meta property="og:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
+  <meta property="og:image:alt" data-i18n-content="hero.shot.alt.light" content="Leafio 主界面截图(浅色)">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" data-i18n-content="page.title.download" content="Leafio — 下载">
+  <meta name="twitter:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
   <link rel="icon" href="../assets/img/favicon.png">
-  <link rel="stylesheet" href="../assets/css/site.css?v=3">
+  <link rel="stylesheet" href="../assets/css/site.css?v=5">
   <script>
     (function () {
       try {
@@ -20,14 +31,24 @@
             : (document.documentElement.getAttribute('data-title-en') || title.textContent);
         }
       } catch (e) {}
+      try {
+        var theme = localStorage.getItem('leafio-theme');
+        var dark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      } catch (e) {}
     })();
   </script>
-  <script defer src="../assets/js/i18n.js?v=3"></script>
+  <script defer src="../assets/js/i18n.js?v=5"></script>
+  <script type="module" src="../assets/js/site.js?v=5"></script>
   <style>
     /* Page-specific layout for download.html */
     .page-intro { padding: 72px 0 16px; text-align: center; }
     .page-intro h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.01em; }
     .page-intro p { color: var(--text-secondary); font-size: 17px; max-width: 680px; margin: 0 auto; }
+    .page-intro .version-pill { margin-top: 16px; }
+    .page-intro .smart-download { margin: 28px auto 0; }
+    .smart-download[hidden] { display: none; }
+    .smart-download .btn-primary { padding: 14px 28px; font-size: 16px; }
 
     .download { padding: 48px 0 72px; }
     .download-grid {
@@ -45,6 +66,26 @@
       align-items: flex-start;
       gap: 14px;
     }
+    .platform-card.is-detected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .platform-heading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .detected-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+    .detected-badge[hidden] { display: none; }
     .platform-icon {
       width: 48px;
       height: 48px;
@@ -124,20 +165,31 @@
       <a href="../guide/" data-i18n="nav.guide">使用指南</a>
       <a href="./" class="active" data-i18n="nav.download">下载</a>
     </nav>
-    <div class="lang-switch">
-      <details class="lang-switch-details">
-        <summary class="lang-switch-toggle" data-i18n-aria="lang.switch" aria-label="Switch language" aria-expanded="false">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-        </summary>
-        <ul class="lang-switch-menu" role="listbox">
-          <li role="presentation"><button type="button" data-lang="zh" role="option">中文</button></li>
-          <li role="presentation"><button type="button" data-lang="en" role="option">English</button></li>
-        </ul>
-      </details>
+    <div class="header-tools">
+      <button type="button" class="theme-toggle" data-i18n-aria="theme.toggle" aria-label="切换外观">
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3z"/>
+        </svg>
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
+      <div class="lang-switch">
+        <details class="lang-switch-details">
+          <summary class="lang-switch-toggle" data-i18n-aria="lang.switch" aria-label="Switch language" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </summary>
+          <ul class="lang-switch-menu" role="listbox">
+            <li role="presentation"><button type="button" data-lang="zh" role="option">中文</button></li>
+            <li role="presentation"><button type="button" data-lang="en" role="option">English</button></li>
+          </ul>
+        </details>
+      </div>
     </div>
   </header>
 
@@ -147,7 +199,10 @@
       <div class="container">
         <h1 data-i18n="download.title">下载 Leafio</h1>
         <p data-i18n="download.intro">Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。</p>
-        <p class="version-pill" data-i18n="download.version">当前版本 v0.8.43</p>
+        <p class="version-pill"><span data-i18n="download.version.label">当前版本</span> v<span class="js-app-version">0.8.43</span></p>
+        <p class="smart-download" hidden>
+          <a class="btn-primary" data-smart-cta data-i18n="download.smart" data-i18n-dynamic href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_macOS_aarch64.dmg">下载 macOS · Apple Silicon</a>
+        </p>
       </div>
     </section>
 
@@ -155,43 +210,52 @@
     <section class="download">
       <div class="container">
         <div class="download-grid">
-          <div class="platform-card">
+          <div class="platform-card" data-platform="macos">
             <div class="platform-icon macos" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img" aria-label="macOS">
                 <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
               </svg>
             </div>
-            <h2 data-i18n="download.macos">macOS</h2>
+            <div class="platform-heading">
+              <h2 data-i18n="download.macos">macOS</h2>
+              <span class="detected-badge" hidden data-i18n="download.detected">当前设备</span>
+            </div>
             <span class="platform-file">.dmg</span>
             <p data-i18n="download.macos.body">适用于 macOS 12 及以上,支持 Apple Silicon 与 Intel。</p>
             <div class="download-actions">
-              <a class="btn-primary" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_macOS_aarch64.dmg" data-i18n="download.macos.arm">Apple Silicon</a>
-              <a class="btn-outline" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_macOS_x64.dmg" data-i18n="download.macos.intel">Intel</a>
+              <a class="btn-primary" data-asset="macos-arm" data-arch="arm" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_macOS_aarch64.dmg" data-i18n="download.macos.arm">Apple Silicon</a>
+              <a class="btn-outline" data-asset="macos-x64" data-arch="x64" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_macOS_x64.dmg" data-i18n="download.macos.intel">Intel</a>
             </div>
           </div>
 
-          <div class="platform-card">
+          <div class="platform-card" data-platform="windows">
             <div class="platform-icon windows" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img" aria-label="Windows">
                 <path d="M0 3.449 9.75 2.1v9.451H0m10.949-9.602 13.05-2.898V11.55H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6h13.05v9.15l-13.05-2.898"/>
               </svg>
             </div>
-            <h2 data-i18n="download.windows">Windows</h2>
+            <div class="platform-heading">
+              <h2 data-i18n="download.windows">Windows</h2>
+              <span class="detected-badge" hidden data-i18n="download.detected">当前设备</span>
+            </div>
             <span class="platform-file">.exe</span>
             <p data-i18n="download.windows.body">适用于 Windows 10 及以上,提供 x64 与 ARM64 安装程序。</p>
             <div class="download-actions">
-              <a class="btn-primary" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_Windows_x64-setup.exe" data-i18n="download.windows.x64">x64</a>
-              <a class="btn-outline" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_Windows_arm64-setup.exe" data-i18n="download.windows.arm64">ARM64</a>
+              <a class="btn-primary" data-asset="windows-x64" data-arch="x64" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_Windows_x64-setup.exe" data-i18n="download.windows.x64">x64</a>
+              <a class="btn-outline" data-asset="windows-arm" data-arch="arm" href="https://github.com/jnetart/leafio/releases/download/v0.8.43/Leafio_0.8.43_Windows_arm64-setup.exe" data-i18n="download.windows.arm64">ARM64</a>
             </div>
           </div>
 
-          <div class="platform-card">
+          <div class="platform-card" data-platform="linux">
             <div class="platform-icon linux" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img" aria-label="Linux">
                 <path d="M22.946 18.169c.298 1.835-1.977 4.36-4.188 5.296-1.485.626-3.053.506-4.118.333-1.106-.18-2.344.181-3.405.426-1.39.322-2.864.505-4.142.371-2.593-.273-4.12-1.532-4.23-2.24-.12-.758.504-1.293 1.028-1.956.423-.535.776-1.365.832-1.915.056-.55-.319-1.125-.564-1.555-.313-.549-.529-1.211-.595-1.764-.129-1.086.646-2.345 2.006-2.484 1.185-.121 2.422.494 3.291.633.675.108 1.903-.356 2.525-.365.849-.012 1.469.272 2.116.457 1.337.383 2.091.38 2.722.4.744.024 1.366-.184 1.622-.348.33-.211.77-.553.917-1.025.283-.914.107-1.954.107-2.964 0-1.01-.143-2.274.686-2.91 1.574-1.207 4.26-.969 5.043-.866.783.104 1.71.322 2.21.686.577.419.692 1.195.692 1.954 0 .759-.194 1.56-.283 2.29-.077.63.368 1.365.155 1.94-.288.78-1.318.952-1.922 1.178-.833.312-1.775.433-2.643.687-1.092.32-2.217.965-2.222 2.046-.004.735.479 1.343.879 1.858.4.515.744 1.111.744 1.79.005.631-.545 1.23-1.364 1.542zM4.32 12.213c.162.792 1.231 1.686 2.231 1.196.469-.23.615-.919.505-1.525-.098-.55-.72-1.36-1.585-1.258-1.126.134-1.36 1.018-1.151 1.587zm5.332-4.48c.636-.617 1.75-1.186 2.66-1.032.974.164.732 1.408.192 2.145-.517.706-1.946 1.345-2.744.87-.838-.5-.474-1.599-.108-1.982zm4.337.348c1.051-.65 2.822-.533 3.19.654.39 1.26-1.044 2.163-2.158 2.214-1.214.055-2.073-1.061-2.074-1.94 0-.456.343-1.01 1.042-.928z"/>
               </svg>
             </div>
-            <h2 data-i18n="download.linux">Linux</h2>
+            <div class="platform-heading">
+              <h2 data-i18n="download.linux">Linux</h2>
+              <span class="detected-badge" hidden data-i18n="download.detected">当前设备</span>
+            </div>
             <span class="platform-file">.AppImage</span>
             <p data-i18n="download.linux.body">适用于主流 Linux 发行版,以 AppImage 分发。</p>
             <div class="download-actions">
@@ -216,7 +280,7 @@
     </div>
     <div class="footer-links">
       <span data-i18n="footer.version">版本</span>
-      <span>0.8.43</span>
+      <span class="js-app-version">0.8.43</span>
       <span class="dot">·</span>
       <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
     </div>

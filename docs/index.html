@@ -4,8 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n="page.title.index">Leafio — Markdown Editor</title>
+  <meta name="description" data-i18n-content="hero.subtitle" content="写 Markdown 无需记忆语法——实时渲染为语义块,文件始终是本地标准 .md。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Leafio">
+  <meta property="og:title" data-i18n-content="page.title.index" content="Leafio — Markdown 编辑器">
+  <meta property="og:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
+  <meta property="og:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
+  <meta property="og:image:alt" data-i18n-content="hero.shot.alt.light" content="Leafio 主界面截图(浅色)">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" data-i18n-content="page.title.index" content="Leafio — Markdown 编辑器">
+  <meta name="twitter:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
   <link rel="icon" href="assets/img/favicon.png">
-  <link rel="stylesheet" href="assets/css/site.css?v=3">
+  <link rel="stylesheet" href="assets/css/site.css?v=5">
   <script>
     (function () {
       try {
@@ -20,9 +31,15 @@
             : (document.documentElement.getAttribute('data-title-en') || title.textContent);
         }
       } catch (e) {}
+      try {
+        var theme = localStorage.getItem('leafio-theme');
+        var dark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      } catch (e) {}
     })();
   </script>
-  <script defer src="assets/js/i18n.js?v=3"></script>
+  <script defer src="assets/js/i18n.js?v=5"></script>
+  <script type="module" src="assets/js/site.js?v=5"></script>
   <style>
     /* Page-specific layout for the landing page (index.html) */
     .hero { padding: 72px 0 48px; }
@@ -46,6 +63,8 @@
     }
     .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text); }
     .hero-frame { max-width: 640px; }
+    .hero-media { display: grid; }
+    .hero-media > * { grid-area: 1 / 1; }
     .hero-shot {
       width: 100%;
       height: auto;
@@ -53,6 +72,9 @@
       min-height: 380px;
       background: var(--paper);
     }
+    .hero-shot.shot-dark { visibility: hidden; }
+    html.dark .hero-shot.shot-light { visibility: hidden; }
+    html.dark .hero-shot.shot-dark { visibility: visible; }
 
     .selling .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
     .highlights .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -101,20 +123,31 @@
       <a href="guide/" data-i18n="nav.guide">使用指南</a>
       <a href="download/" data-i18n="nav.download">下载</a>
     </nav>
-    <div class="lang-switch">
-      <details class="lang-switch-details">
-        <summary class="lang-switch-toggle" data-i18n-aria="lang.switch" aria-label="Switch language" aria-expanded="false">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-        </summary>
-        <ul class="lang-switch-menu" role="listbox">
-          <li role="presentation"><button type="button" data-lang="zh" role="option">中文</button></li>
-          <li role="presentation"><button type="button" data-lang="en" role="option">English</button></li>
-        </ul>
-      </details>
+    <div class="header-tools">
+      <button type="button" class="theme-toggle" data-i18n-aria="theme.toggle" aria-label="切换外观">
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3z"/>
+        </svg>
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
+      <div class="lang-switch">
+        <details class="lang-switch-details">
+          <summary class="lang-switch-toggle" data-i18n-aria="lang.switch" aria-label="Switch language" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </summary>
+          <ul class="lang-switch-menu" role="listbox">
+            <li role="presentation"><button type="button" data-lang="zh" role="option">中文</button></li>
+            <li role="presentation"><button type="button" data-lang="en" role="option">English</button></li>
+          </ul>
+        </details>
+      </div>
     </div>
   </header>
 
@@ -132,8 +165,14 @@
             </div>
           </div>
           <div class="window-frame hero-frame">
-            <img class="hero-shot" src="assets/screenshots/editor-light.png"
-                 alt="Leafio 主界面截图(浅色)" data-i18n-alt="hero.shot.alt">
+            <div class="hero-media">
+              <img class="hero-shot shot-light" src="assets/screenshots/editor-light.png"
+                   srcset="assets/screenshots/editor-light.png 1x, assets/screenshots/editor-light@2x.png 2x"
+                   alt="Leafio 主界面截图(浅色)" data-i18n-alt="hero.shot.alt.light">
+              <img class="hero-shot shot-dark" src="assets/screenshots/editor-dark.png"
+                   srcset="assets/screenshots/editor-dark.png 1x, assets/screenshots/editor-dark@2x.png 2x"
+                   alt="Leafio 主界面截图(深色)" data-i18n-alt="hero.shot.alt.dark" aria-hidden="true">
+            </div>
           </div>
         </div>
       </div>
@@ -207,7 +246,7 @@
     </div>
     <div class="footer-links">
       <span data-i18n="footer.version">版本</span>
-      <span>0.8.43</span>
+      <span class="js-app-version">0.8.43</span>
       <span class="dot">·</span>
       <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
     </div>

@@ -333,11 +333,16 @@ function checkI18n() {
 
     for (const file of htmlFiles) {
       const html = readFileSync(file, 'utf8');
-      for (const m of html.matchAll(/data-i18n(?:-alt)?="([^"]+)"/g)) {
+      for (const m of html.matchAll(/data-i18n(?:-alt|-aria|-content)?="([^"]+)"/g)) {
         const key = m[1];
-        const attrName = /data-i18n-alt/.test(html.slice(m.index - 20, m.index))
+        const matched = m[0];
+        const attrName = matched.startsWith('data-i18n-alt')
           ? 'data-i18n-alt'
-          : 'data-i18n';
+          : matched.startsWith('data-i18n-aria')
+            ? 'data-i18n-aria'
+            : matched.startsWith('data-i18n-content')
+              ? 'data-i18n-content'
+              : 'data-i18n';
         if (!referenced.has(key)) referenced.set(key, []);
         referenced.get(key).push({ file, attr: attrName });
       }

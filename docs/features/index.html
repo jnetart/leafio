@@ -4,8 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n="page.title.features">Leafio — 功能</title>
+  <meta name="description" data-i18n-content="features.intro" content="本地优先、所见即所得——以下均为已实现的功能。">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Leafio">
+  <meta property="og:title" data-i18n-content="page.title.features" content="Leafio — 功能">
+  <meta property="og:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
+  <meta property="og:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
+  <meta property="og:image:alt" data-i18n-content="hero.shot.alt.light" content="Leafio 主界面截图(浅色)">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" data-i18n-content="page.title.features" content="Leafio — 功能">
+  <meta name="twitter:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
   <link rel="icon" href="../assets/img/favicon.png">
-  <link rel="stylesheet" href="../assets/css/site.css?v=3">
+  <link rel="stylesheet" href="../assets/css/site.css?v=5">
   <script>
     (function () {
       try {
@@ -20,9 +31,15 @@
             : (document.documentElement.getAttribute('data-title-en') || title.textContent);
         }
       } catch (e) {}
+      try {
+        var theme = localStorage.getItem('leafio-theme');
+        var dark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      } catch (e) {}
     })();
   </script>
-  <script defer src="../assets/js/i18n.js?v=3"></script>
+  <script defer src="../assets/js/i18n.js?v=5"></script>
+  <script type="module" src="../assets/js/site.js?v=5"></script>
   <style>
     /* Page-specific layout for features.html */
     .page-intro { padding: 72px 0 16px; text-align: center; }
@@ -36,7 +53,12 @@
     .feature h2 { margin: 0; font-size: 24px; }
     .feature-desc { color: var(--text-secondary); max-width: 760px; margin: 0 0 24px; }
 
-    .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .shots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 20px;
+      max-width: 880px;
+    }
     .shot { margin: 0; }
     .shot img {
       width: 100%;
@@ -47,11 +69,7 @@
       background: var(--paper);
       min-height: 200px;
     }
-    .shot figcaption { text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 8px; }
-
-    @media (max-width: 720px) {
-      .shots { grid-template-columns: 1fr; }
-    }
+    .shot figcaption { display: none; }
   </style>
 </head>
 <body>
@@ -65,20 +83,31 @@
       <a href="../guide/" data-i18n="nav.guide">使用指南</a>
       <a href="../download/" data-i18n="nav.download">下载</a>
     </nav>
-    <div class="lang-switch">
-      <details class="lang-switch-details">
-        <summary class="lang-switch-toggle" data-i18n-aria="lang.switch" aria-label="Switch language" aria-expanded="false">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20"/>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-        </summary>
-        <ul class="lang-switch-menu" role="listbox">
-          <li role="presentation"><button type="button" data-lang="zh" role="option">中文</button></li>
-          <li role="presentation"><button type="button" data-lang="en" role="option">English</button></li>
-        </ul>
-      </details>
+    <div class="header-tools">
+      <button type="button" class="theme-toggle" data-i18n-aria="theme.toggle" aria-label="切换外观">
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 14.3A8.5 8.5 0 0 1 9.7 3 7 7 0 1 0 21 14.3z"/>
+        </svg>
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </button>
+      <div class="lang-switch">
+        <details class="lang-switch-details">
+          <summary class="lang-switch-toggle" data-i18n-aria="lang.switch" aria-label="Switch language" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </summary>
+          <ul class="lang-switch-menu" role="listbox">
+            <li role="presentation"><button type="button" data-lang="zh" role="option">中文</button></li>
+            <li role="presentation"><button type="button" data-lang="en" role="option">English</button></li>
+          </ul>
+        </details>
+      </div>
     </div>
   </header>
 
@@ -102,11 +131,11 @@
           同时打开多个文件夹作为工作区根,左侧树形目录清晰浏览;支持新建、重命名、复制、移动、删除(移入废纸篓)与右键菜单,最近打开快速回到上次工作位置,本地文件变更实时同步到树中。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/welcome-light.png" alt="文件树与多工作区(浅色)" data-i18n-alt="features.files.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/welcome-dark.png" alt="文件树与多工作区(深色)" data-i18n-alt="features.files.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -125,11 +154,11 @@
           标题 H1–H4、引用、代码块、表格、任务列表开箱即用;选中文本即可用高亮(==text==)、删除线、行内代码与链接,无需记忆 Markdown 语法,文档始终是标准 .md。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/editor-light.png" alt="所见即所得编辑器(浅色)" data-i18n-alt="features.editor.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/editor-dark.png" alt="所见即所得编辑器(深色)" data-i18n-alt="features.editor.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -148,11 +177,11 @@
           默认所见即所得编辑;一键切到源码视图精修原始 Markdown(带语法高亮);再切到预览视图检查渲染效果,导出前所见即所得。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/source-light.png" alt="三视图之源码视图(浅色)" data-i18n-alt="features.views.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/source-dark.png" alt="三视图之源码视图(深色)" data-i18n-alt="features.views.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -171,19 +200,19 @@
           在空行输入 / 调出命令面板,快速插入或转换标题、列表、引用、代码块、表格等块;选中文本时悬浮格式条即时出现,加粗、斜体、链接、行内代码一键完成。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/slash-light.png" alt="Slash 命令面板(浅色)" data-i18n-alt="features.slash.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/slash-dark.png" alt="Slash 命令面板(深色)" data-i18n-alt="features.slash.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/toolbar-light.png" alt="浮动格式条(浅色)" data-i18n-alt="features.slash.shot.toolbar-light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/toolbar-dark.png" alt="浮动格式条(深色)" data-i18n-alt="features.slash.shot.toolbar-dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -199,14 +228,14 @@
           <h2 data-i18n="features.search.title">全局搜索</h2>
         </div>
         <p class="feature-desc" data-i18n="features.search.body">
-          Spotlight 风格浮层,跨所有工作区检索 .md 文件名与正文,输入即搜,定位文件并跳转。
+          Spotlight 风格浮层,跨所有工作区检索 .md 文件名与正文。支持 tag:、path: 过滤,结果高亮匹配片段,↑↓ 选择并打开。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/search-light.png" alt="全局搜索(浅色)" data-i18n-alt="features.search.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/search-dark.png" alt="全局搜索(深色)" data-i18n-alt="features.search.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -225,11 +254,11 @@
           浅色、深色、跟随系统三种外观模式,界面随偏好即时切换。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/settings-light.png" alt="主题与外观设置(浅色)" data-i18n-alt="features.theme.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/settings-dark.png" alt="主题与外观设置(深色)" data-i18n-alt="features.theme.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -248,11 +277,11 @@
           导出为标准 Markdown 或自包含 HTML 文件,保持排版完整;文件直接读写本地 .md,无私有格式。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/editor-light.png" alt="编辑器(导出源文档,浅色)" data-i18n-alt="features.export.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/editor-dark.png" alt="编辑器(导出源文档,深色)" data-i18n-alt="features.export.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -271,11 +300,11 @@
           macOS 原生应用菜单与快捷键覆盖常用操作;右侧大纲面板按标题层级列出当前文档,点击即可跳转。
         </p>
         <div class="shots">
-          <figure class="shot">
+          <figure class="shot shot-light">
             <img src="../assets/screenshots/inspector-light.png" alt="大纲面板(浅色)" data-i18n-alt="features.native.shot.light">
             <figcaption data-i18n="common.light">浅色</figcaption>
           </figure>
-          <figure class="shot">
+          <figure class="shot shot-dark" aria-hidden="true">
             <img src="../assets/screenshots/inspector-dark.png" alt="大纲面板(深色)" data-i18n-alt="features.native.shot.dark">
             <figcaption data-i18n="common.dark">深色</figcaption>
           </figure>
@@ -292,7 +321,7 @@
     </div>
     <div class="footer-links">
       <span data-i18n="footer.version">版本</span>
-      <span>0.8.43</span>
+      <span class="js-app-version">0.8.43</span>
       <span class="dot">·</span>
       <a href="https://github.com/jnetart/leafio" data-i18n="footer.source">源码</a>
     </div>

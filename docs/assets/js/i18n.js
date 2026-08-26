@@ -17,8 +17,11 @@ const I18N = {
                      en: 'Write Markdown without memorizing syntax — rendered live as semantic blocks, always plain local .md.' },
   'hero.cta.download': { zh: '下载',       en: 'Download' },
   'hero.cta.features': { zh: '了解功能',   en: 'Learn more' },
-  'hero.shot.alt': { zh: 'Leafio 主界面截图(浅色)',
-                     en: 'Leafio editor screenshot (light)' },
+  'hero.shot.alt.light': { zh: 'Leafio 主界面截图(浅色)',
+                           en: 'Leafio editor screenshot (light)' },
+  'hero.shot.alt.dark': { zh: 'Leafio 主界面截图(深色)',
+                          en: 'Leafio editor screenshot (dark)' },
+  'theme.toggle': { zh: '切换外观', en: 'Toggle appearance' },
   'selling.title': { zh: '设计理念',       en: 'Design philosophy' },
   'selling.1.title': { zh: '所见即所得',   en: 'WYSIWYG editing' },
   'selling.1.body': { zh: '像写富文本一样自然，底层始终是标准 Markdown。',
@@ -80,8 +83,8 @@ const I18N = {
   'features.slash.shot.toolbar-light': { zh: '浮动格式条(浅色)',  en: 'Floating toolbar (light)' },
   'features.slash.shot.toolbar-dark':  { zh: '浮动格式条(深色)',  en: 'Floating toolbar (dark)' },
   'features.search.title': { zh: '全局搜索',  en: 'Global search' },
-  'features.search.body': { zh: 'Spotlight 风格浮层,跨所有工作区检索 .md 文件名与正文,输入即搜,定位文件并跳转。',
-                            en: 'A Spotlight-style overlay that searches .md filenames and content across every workspace, searching as you type.' },
+  'features.search.body': { zh: 'Spotlight 风格浮层,跨所有工作区检索 .md 文件名与正文。支持 tag:、path: 过滤,结果高亮匹配片段,↑↓ 选择并打开。',
+                            en: 'A Spotlight-style overlay that searches .md filenames and content across every workspace. Filter with tag: and path:, see highlighted snippets, and move with ↑↓.' },
   'features.search.shot.light': { zh: '全局搜索(浅色)',  en: 'Global search (light)' },
   'features.search.shot.dark':  { zh: '全局搜索(深色)',  en: 'Global search (dark)' },
   'features.theme.title': { zh: '主题与外观',  en: 'Themes & appearance' },
@@ -113,8 +116,8 @@ const I18N = {
   'guide.views.body': { zh: '工具栏的分段控件切换三种视图:编辑(所见即所得,默认)、源码(原始 Markdown,带语法高亮)、预览(渲染后的只读视图)。',
                         en: 'The toolbar segmented control switches three views: Edit (WYSIWYG, default), Source (raw Markdown with syntax highlighting), and Preview (rendered read-only).' },
   'guide.search.title': { zh: '搜索',  en: 'Search' },
-  'guide.search.body': { zh: '使用查找(⌘F)打开 Spotlight 风格搜索浮层,跨所有工作区检索 .md 文件名与正文,输入即搜。',
-                         en: 'Press Find (⌘F) to open the Spotlight-style search overlay and search .md filenames and content across all workspaces as you type.' },
+  'guide.search.body': { zh: '使用查找(⌘F)打开 Spotlight 风格搜索浮层,跨所有工作区检索 .md 文件名与正文。可用 tag:会议、path:notes 过滤,匹配片段会高亮,↑↓ 选择后回车打开。',
+                         en: 'Press Find (⌘F) to open the Spotlight-style search overlay. Search .md filenames and content across all workspaces, filter with tag: and path:, and move through highlighted matches with ↑↓.' },
   'guide.theme.title': { zh: '主题',  en: 'Theme' },
   'guide.theme.body': { zh: '在设置中选择外观模式:浅色、深色或跟随系统,界面即时切换并记住偏好。',
                         en: 'In Settings, choose an appearance: Light, Dark, or System — the interface switches instantly and remembers your preference.' },
@@ -147,7 +150,9 @@ const I18N = {
   'download.title': { zh: '下载 Leafio',  en: 'Download Leafio' },
   'download.intro': { zh: 'Leafio 桌面版支持 macOS、Windows 与 Linux,免费、开源、离线优先。',
                       en: 'Leafio desktop is available for macOS, Windows, and Linux — free, open source, and offline-first.' },
-  'download.version': { zh: '当前版本 v0.8.43', en: 'Current release v0.8.43' },
+  'download.version.label': { zh: '当前版本', en: 'Current release' },
+  'download.detected': { zh: '当前设备', en: 'This device' },
+  'download.smart': { zh: '下载 {platform} · {arch}', en: 'Download {platform} · {arch}' },
   'download.macos': { zh: 'macOS',        en: 'macOS' },
   'download.macos.body': { zh: '适用于 macOS 12 及以上,支持 Apple Silicon 与 Intel。',
                            en: 'For macOS 12 and later, on Apple Silicon and Intel.' },
@@ -177,6 +182,7 @@ function detectLang() {
 function applyLang(lang) {
   document.documentElement.lang = lang;
   document.querySelectorAll('[data-i18n]').forEach((el) => {
+    if (el.hasAttribute('data-i18n-dynamic')) return;
     const key = el.getAttribute('data-i18n');
     if (I18N[key] && I18N[key][lang]) el.textContent = I18N[key][lang];
   });
@@ -186,14 +192,19 @@ function applyLang(lang) {
     const key = el.getAttribute('data-i18n-alt');
     if (I18N[key] && I18N[key][lang]) el.setAttribute('alt', I18N[key][lang]);
   });
+  document.querySelectorAll('[data-i18n-content]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-content');
+    if (I18N[key] && I18N[key][lang]) el.setAttribute('content', I18N[key][lang]);
+  });
   document.querySelectorAll('.lang-switch-menu button').forEach((b) => {
     b.classList.toggle('active', b.dataset.lang === lang);
   });
-  document.querySelectorAll('.lang-switch-toggle[data-i18n-aria]').forEach((el) => {
+  document.querySelectorAll('.lang-switch-toggle[data-i18n-aria], .theme-toggle[data-i18n-aria]').forEach((el) => {
     const key = el.getAttribute('data-i18n-aria');
     if (I18N[key] && I18N[key][lang]) el.setAttribute('aria-label', I18N[key][lang]);
   });
   localStorage.setItem('leafio-lang', lang);
+  document.dispatchEvent(new CustomEvent('leafio:lang', { detail: { lang } }));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -224,3 +235,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyLang(lang);
 });
+
+globalThis.LeafioI18N = I18N;
