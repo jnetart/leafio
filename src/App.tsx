@@ -18,6 +18,12 @@ import { WindowDragBar } from './components/WindowDragBar';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { parseMarkdown, serializeMarkdown } from './editor/markdown';
 import type { ImageNoticeKey } from './editor/insertImage';
+import {
+  syncAssetsOnCopy,
+  syncAssetsOnDelete,
+  syncAssetsOnMove,
+  syncAssetsOnRename,
+} from './lib/note-assets';
 import { useActiveOutlineHeading } from './hooks/useActiveOutlineHeading';
 import { useAppMenu } from './hooks/useAppMenu';
 import { useMenuTextFocus } from './hooks/useMenuTextFocus';
@@ -92,6 +98,7 @@ export default function App() {
     editorFontFamily,
     editorFontSize,
     editorTabWidth,
+    compressImages,
     theme,
     language,
     launchBehavior,
@@ -102,6 +109,7 @@ export default function App() {
     setEditorFontFamily,
     setEditorFontSize,
     setEditorTabWidth,
+    setCompressImages,
     setTheme,
     setLanguage,
     setLaunchBehavior,
@@ -531,6 +539,7 @@ export default function App() {
         }
 
         const newPath = await renameFile(target.path, nextName);
+        await syncAssetsOnRename(target.path, newPath);
         await replaceRecentFile(target.path, newPath);
         refreshTree();
         if (activeFile?.path === target.path) {
@@ -547,6 +556,7 @@ export default function App() {
     async (file: FileEntry) => {
       try {
         const newPath = await copyFile(file.path);
+        await syncAssetsOnCopy(file.path, newPath);
         refreshTree();
         await loadFile(newPath);
       } catch {
@@ -564,6 +574,7 @@ export default function App() {
       }
       try {
         const newPath = await moveFile(file.path, destDir);
+        await syncAssetsOnMove(file.path, newPath);
         await replaceRecentFile(file.path, newPath);
         ensureRootForPath(newPath);
         refreshTree();
@@ -591,6 +602,9 @@ export default function App() {
       }
       try {
         await moveToTrash(entry.path);
+        if (!entry.is_dir) {
+          await syncAssetsOnDelete(entry.path);
+        }
         const recent = await getRecentFiles();
         const dirPrefix = entry.is_dir ? `${entry.path}/` : null;
         await Promise.all(
@@ -1206,6 +1220,7 @@ export default function App() {
               editorFontFamily={editorFontFamily}
               editorFontSize={editorFontSize}
               editorTabWidth={editorTabWidth}
+              compressImages={compressImages}
               theme={theme}
               language={language}
               launchBehavior={launchBehavior}
@@ -1220,6 +1235,7 @@ export default function App() {
               onEditorFontFamilyChange={setEditorFontFamily}
               onEditorFontSizeChange={setEditorFontSize}
               onEditorTabWidthChange={setEditorTabWidth}
+              onCompressImagesChange={setCompressImages}
               onThemeChange={setTheme}
               onLanguageChange={setLanguage}
               onLaunchBehaviorChange={setLaunchBehavior}
@@ -1282,6 +1298,7 @@ export default function App() {
                           notePath={activeFile.path}
                           onChange={handleEditorChange}
                           tabWidth={editorTabWidth}
+                          compressImages={compressImages}
                           onImageNotice={handleImageNotice}
                         />
                       ) : null}

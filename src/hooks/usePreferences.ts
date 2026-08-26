@@ -94,6 +94,20 @@ export function usePreferences() {
     [updatePreferences],
   );
 
+  const setCompressImages = useCallback(
+    (compressImages: boolean) => {
+      updatePreferences((current) => ({ ...current, compressImages }));
+    },
+    [updatePreferences],
+  );
+
+  const setCompressMaxEdge = useCallback(
+    (compressMaxEdge: number) => {
+      updatePreferences((current) => ({ ...current, compressMaxEdge }));
+    },
+    [updatePreferences],
+  );
+
   return {
     ...preferences,
     ready,
@@ -106,6 +120,8 @@ export function usePreferences() {
     setLaunchBehavior,
     setAutoUpdateEnabled,
     setLastUpdateCheckAt,
+    setCompressImages,
+    setCompressMaxEdge,
     setPreferences: updatePreferences,
   };
 }

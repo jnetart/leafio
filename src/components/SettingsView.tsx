@@ -19,6 +19,7 @@ interface SettingsViewProps {
   editorFontFamily: EditorFontFamily;
   editorFontSize: EditorFontSize;
   editorTabWidth: EditorTabWidth;
+  compressImages: boolean;
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
@@ -33,6 +34,7 @@ interface SettingsViewProps {
   onEditorFontFamilyChange: (family: EditorFontFamily) => void;
   onEditorFontSizeChange: (size: EditorFontSize) => void;
   onEditorTabWidthChange: (width: EditorTabWidth) => void;
+  onCompressImagesChange: (enabled: boolean) => void;
   onThemeChange: (theme: ThemeMode) => void;
   onLanguageChange: (language: LanguageMode) => void;
   onLaunchBehaviorChange: (behavior: LaunchBehavior) => void;
@@ -47,6 +49,7 @@ export function SettingsView({
   editorFontFamily,
   editorFontSize,
   editorTabWidth,
+  compressImages,
   theme,
   language,
   launchBehavior,
@@ -61,6 +64,7 @@ export function SettingsView({
   onEditorFontFamilyChange,
   onEditorFontSizeChange,
   onEditorTabWidthChange,
+  onCompressImagesChange,
   onThemeChange,
   onLanguageChange,
   onLaunchBehaviorChange,
@@ -203,6 +207,19 @@ export function SettingsView({
                     ]}
                     value={spellCheck}
                     onChange={setSpellCheck}
+                  />
+                </SettingRow>
+              </SettingsGroup>
+
+              <SettingsGroup label={t('settings.group.images')}>
+                <SettingRow
+                  title={t('settings.images.compress.title')}
+                  description={t('settings.images.compress.desc')}
+                >
+                  <Switch
+                    checked={compressImages}
+                    label={t('settings.images.compress.title')}
+                    onChange={onCompressImagesChange}
                   />
                 </SettingRow>
               </SettingsGroup>

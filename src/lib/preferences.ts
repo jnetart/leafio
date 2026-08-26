@@ -1,3 +1,5 @@
+import { DEFAULT_COMPRESS_MAX_EDGE } from './image-assets';
+
 export type EditorWidthMode = 'centered' | 'wide';
 export type EditorFontFamily = 'sans' | 'serif' | 'mono';
 export type EditorFontSize = 'compact' | 'medium' | 'large' | 'xlarge';
@@ -18,6 +20,8 @@ export interface AppPreferences {
   autoUpdateEnabled: boolean;
   /** ISO timestamp of the last successful update check. */
   lastUpdateCheckAt: string | null;
+  compressImages: boolean;
+  compressMaxEdge: number;
 }
 
 export const DEFAULT_PREFERENCES: AppPreferences = {
@@ -30,6 +34,8 @@ export const DEFAULT_PREFERENCES: AppPreferences = {
   launchBehavior: 'welcome',
   autoUpdateEnabled: true,
   lastUpdateCheckAt: null,
+  compressImages: false,
+  compressMaxEdge: DEFAULT_COMPRESS_MAX_EDGE,
 };
 
 /** Maps stored prefs, including the old interval field, onto a boolean. */

@@ -39,6 +39,8 @@ pub fn run() {
             fs::move_to_trash,
             fs::copy_file,
             fs::move_file,
+            fs::copy_dir,
+            fs::move_path,
             recent::get_recent_files,
             recent::add_recent_file,
             recent::remove_recent_file,

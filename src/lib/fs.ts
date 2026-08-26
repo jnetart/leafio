@@ -96,5 +96,11 @@ export const copyFile = (path: string): Promise<string> =>
 export const moveFile = (path: string, destDir: string): Promise<string> =>
   invoke('move_file', { path, destDir });
 
+export const copyDir = (from: string, to: string): Promise<void> =>
+  invoke('copy_dir', { from, to });
+
+export const movePath = (from: string, to: string): Promise<void> =>
+  invoke('move_path', { from, to });
+
 export const setWorkspaceWatchers = (paths: string[]): Promise<void> =>
   invoke('set_workspace_watchers', { paths });

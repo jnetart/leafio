@@ -342,6 +342,47 @@ pub async fn move_file(path: String, dest_dir: String) -> Result<String, String>
     Ok(dest_path.to_string_lossy().to_string())
 }
 
+#[tauri::command]
+pub async fn copy_dir(from: String, to: String) -> Result<(), String> {
+    let source = Path::new(&from);
+    if !source.exists() {
+        return Ok(());
+    }
+    copy_dir_recursive(source, Path::new(&to)).await
+}
+
+async fn copy_dir_recursive(from: &Path, to: &Path) -> Result<(), String> {
+    tokio::fs::create_dir_all(to)
+        .await
+        .map_err(|e| e.to_string())?;
+    let mut entries = tokio::fs::read_dir(from).await.map_err(|e| e.to_string())?;
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let dest = to.join(entry.file_name());
+        let meta = entry.metadata().await.map_err(|e| e.to_string())?;
+        if meta.is_dir() {
+            Box::pin(copy_dir_recursive(&entry.path(), &dest)).await?;
+        } else {
+            tokio::fs::copy(entry.path(), dest)
+                .await
+                .map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn move_path(from: String, to: String) -> Result<(), String> {
+    let dest = Path::new(&to);
+    if let Some(parent) = dest.parent() {
+        tokio::fs::create_dir_all(parent)
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+    tokio::fs::rename(&from, dest)
+        .await
+        .map_err(|e| e.to_string())
+}
+
 async fn list_directory(path: &Path) -> Result<Vec<FileEntry>, String> {
     let mut entries = tokio::fs::read_dir(path).await.map_err(|e| e.to_string())?;
     let mut result = Vec::new();
