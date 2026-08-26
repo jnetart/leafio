@@ -218,7 +218,7 @@ export function SearchDialog({
         </div>
 
         {showFilters ? (
-          <div className="search-palette-filters" aria-label="filters">
+          <div className="search-palette-filters" aria-hidden="true">
             {parsed.tags.map((tag) => (
               <span key={`tag:${tag}`} className="search-filter-chip">
                 <span className="search-filter-chip-op">tag</span>
