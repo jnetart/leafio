@@ -121,4 +121,58 @@ describe('markdown serialization', () => {
     const roundTripCell = roundTrip.content?.[0]?.content?.[1]?.content?.[0];
     expect(roundTripCell?.attrs?.backgroundColor).toBe('rgba(91, 140, 111, 0.18)');
   });
+
+  it('parses a standalone markdown image as a block', () => {
+    const doc = parseMarkdown('![架构](./api-guide.assets/architecture.png)\n');
+    expect(doc.content?.[0]).toEqual({
+      type: 'image',
+      attrs: {
+        src: './api-guide.assets/architecture.png',
+        alt: '架构',
+        width: null,
+      },
+    });
+  });
+
+  it('serializes unsized images as markdown and sized images as html', () => {
+    const unsized = serializeMarkdown({
+      type: 'doc',
+      content: [
+        {
+          type: 'image',
+          attrs: { src: './n.assets/a.png', alt: 'a', width: null },
+        },
+      ],
+    });
+    expect(unsized).toContain('![a](./n.assets/a.png)');
+    expect(unsized).not.toContain('<img');
+
+    const sized = serializeMarkdown({
+      type: 'doc',
+      content: [
+        {
+          type: 'image',
+          attrs: { src: './n.assets/a.png', alt: 'a', width: 480 },
+        },
+      ],
+    });
+    expect(sized).toContain('<img');
+    expect(sized).toContain('src="./n.assets/a.png"');
+    expect(sized).toContain('width="480"');
+    expect(sized).not.toContain('height=');
+  });
+
+  it('round-trips html img width', () => {
+    const md = '<img src="./n.assets/a.png" alt="shot" width="480">\n';
+    const doc = parseMarkdown(md);
+    expect(doc.content?.[0]?.type).toBe('image');
+    expect(doc.content?.[0]?.attrs?.width).toBe(480);
+    expect(serializeMarkdown(doc)).toContain('width="480"');
+  });
+
+  it('splits inline images out of paragraphs', () => {
+    const doc = parseMarkdown('see ![x](./a.png) here\n');
+    const types = (doc.content ?? []).map((node) => node.type);
+    expect(types).toEqual(['paragraph', 'image', 'paragraph']);
+  });
 });

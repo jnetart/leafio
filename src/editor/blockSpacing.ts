@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/react';
 
-export const PANEL_BLOCK_TYPES = new Set(['table', 'codeBlock', 'horizontalRule']);
+export const PANEL_BLOCK_TYPES = new Set(['table', 'codeBlock', 'horizontalRule', 'image']);
 
 const TEXTBLOCK_TYPES = new Set(['paragraph', 'heading']);
 

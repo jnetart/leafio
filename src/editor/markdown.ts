@@ -4,6 +4,7 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { stripEditorSpacingParagraphs } from './blockSpacing';
+import { parseHtmlImage, serializeHtmlImage } from './imageHtml';
 import { parseHtmlTable, serializeTableAsHtml, tableHasCellBackground } from './tableHtml';
 
 type MdastNode = {
@@ -14,6 +15,7 @@ type MdastNode = {
   checked?: boolean | null;
   lang?: string | null;
   url?: string;
+  alt?: string | null;
   align?: Array<'left' | 'right' | 'center' | null>;
   children?: MdastNode[];
 };
@@ -40,54 +42,97 @@ export function serializeMarkdown(doc: JSONContent): string {
 }
 
 function remarkToTiptap(tree: MdastRoot): JSONContent {
-  const content = tree.children
-    .flatMap((node) => {
-      const block = convertBlock(node);
-      return block ? [block] : [];
-    });
-
+  const content = tree.children.flatMap((node) => convertBlock(node));
   return { type: 'doc', content };
 }
 
-function convertBlock(node: MdastNode): JSONContent | null {
+function convertBlock(node: MdastNode): JSONContent[] {
   switch (node.type) {
     case 'heading':
-      return {
-        type: 'heading',
-        attrs: { level: node.depth ?? 1 },
-        content: inlineToTiptap(node.children ?? []),
-      };
+      return [
+        {
+          type: 'heading',
+          attrs: { level: node.depth ?? 1 },
+          content: inlineToTiptap(node.children ?? []),
+        },
+      ];
     case 'paragraph':
-      return {
-        type: 'paragraph',
-        content: inlineToTiptap(node.children ?? []),
-      };
+      return convertParagraph(node);
     case 'blockquote':
-      return {
-        type: 'blockquote',
-        content: (node.children ?? [])
-          .map((child) => convertBlock(child))
-          .filter((child): child is JSONContent => child !== null),
-      };
+      return [
+        {
+          type: 'blockquote',
+          content: (node.children ?? []).flatMap((child) => convertBlock(child)),
+        },
+      ];
     case 'code':
-      return {
-        type: 'codeBlock',
-        attrs: { language: node.lang ?? null },
-        content: node.value ? [{ type: 'text', text: node.value }] : [],
-      };
+      return [
+        {
+          type: 'codeBlock',
+          attrs: { language: node.lang ?? null },
+          content: node.value ? [{ type: 'text', text: node.value }] : [],
+        },
+      ];
     case 'list':
-      return convertList(node);
+      return [convertList(node)];
     case 'table':
-      return convertTable(node);
+      return [convertTable(node)];
     case 'thematicBreak':
-      return { type: 'horizontalRule' };
+      return [{ type: 'horizontalRule' }];
     case 'html': {
+      const img = parseHtmlImage(node.value ?? '');
+      if (img) {
+        return [img];
+      }
       const table = parseHtmlTable(node.value ?? '');
-      return table ?? null;
+      return table ? [table] : [];
     }
     default:
-      return null;
+      return [];
   }
+}
+
+function convertParagraph(node: MdastNode): JSONContent[] {
+  const blocks: JSONContent[] = [];
+  let inline: MdastNode[] = [];
+
+  const flush = () => {
+    if (inline.length === 0) {
+      return;
+    }
+    blocks.push({ type: 'paragraph', content: inlineToTiptap(inline) });
+    inline = [];
+  };
+
+  for (const child of node.children ?? []) {
+    if (child.type === 'image') {
+      flush();
+      blocks.push(imageFromMdast(child));
+      continue;
+    }
+    if (child.type === 'html') {
+      const img = parseHtmlImage(child.value ?? '');
+      if (img) {
+        flush();
+        blocks.push(img);
+        continue;
+      }
+    }
+    inline.push(child);
+  }
+  flush();
+  return blocks;
+}
+
+function imageFromMdast(node: MdastNode): JSONContent {
+  return {
+    type: 'image',
+    attrs: {
+      src: node.url ?? '',
+      alt: typeof node.alt === 'string' ? node.alt : '',
+      width: null,
+    },
+  };
 }
 
 function convertTable(node: MdastNode): JSONContent {
@@ -124,17 +169,12 @@ function convertList(node: MdastNode): JSONContent {
 }
 
 function convertListItem(node: MdastNode): JSONContent {
-  const content = (node.children ?? [])
-    .map((child) => {
-      if (child.type === 'paragraph') {
-        return {
-          type: 'paragraph',
-          content: inlineToTiptap(child.children ?? []),
-        };
-      }
-      return convertBlock(child);
-    })
-    .filter((child): child is JSONContent => child !== null);
+  const content = (node.children ?? []).flatMap((child) => {
+    if (child.type === 'paragraph') {
+      return convertParagraph(child);
+    }
+    return convertBlock(child);
+  });
 
   if (node.checked !== null && node.checked !== undefined) {
     return {
@@ -290,6 +330,21 @@ function convertTiptapBlock(node: JSONContent): MdastNode | null {
       return convertTiptapTable(node);
     case 'horizontalRule':
       return { type: 'thematicBreak' };
+    case 'image': {
+      const src = String(node.attrs?.src ?? '');
+      const alt = String(node.attrs?.alt ?? '');
+      const width = node.attrs?.width;
+      if (typeof width === 'number' && width > 0) {
+        return {
+          type: 'html',
+          value: serializeHtmlImage({ src, alt, width }),
+        };
+      }
+      return {
+        type: 'paragraph',
+        children: [{ type: 'image', url: src, alt, children: [] }],
+      };
+    }
     default:
       return null;
   }
