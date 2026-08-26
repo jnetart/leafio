@@ -1334,6 +1334,7 @@ export default function App() {
         </div>
         <StatusBar
           saved={saved}
+          notice={imageNotice}
           homeDir={userHomeDir}
           filePath={
             settingsOpen
