@@ -30,6 +30,7 @@
     "@tiptap/extension-code-block-lowlight": "^2.27.2",
     "@tiptap/extension-heading": "^2",
     "@tiptap/extension-highlight": "^2.27.2",
+    "@tiptap/extension-image": "^2.27.2",
     "@tiptap/extension-link": "^2.27.2",
     "@tiptap/extension-list-item": "^2",
     "@tiptap/extension-table": "^2.27.2",

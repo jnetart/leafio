@@ -430,6 +430,24 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   border-top: 1px solid var(--separator);
 }
 
+.leafio-editor .leafio-image-block {
+  margin: 0;
+}
+
+.leafio-editor .leafio-image-block img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  cursor: zoom-in;
+}
+
+.leafio-editor .leafio-image-missing {
+  padding: 12px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
 .leafio-editor pre {
   margin: 0;
 }

@@ -14,6 +14,7 @@ import { CodeBlockWithChrome } from './extensions/codeBlockWithChrome';
 import { PanelBlockBoundary } from './extensions/panelBlockBoundary';
 import { SlashCommandExtension } from './extensions/SlashCommand';
 import { TrailingNode } from './extensions/trailingNode';
+import { ImageBlock } from './extensions/imageBlock';
 
 export const extensions = [
   StarterKit.configure({
@@ -43,6 +44,7 @@ export const extensions = [
   BlockGap,
   PanelBlockBoundary,
   TrailingNode,
+  ImageBlock,
 ];
 
 export const useLeafioEditor = (

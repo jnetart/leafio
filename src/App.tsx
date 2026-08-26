@@ -1061,6 +1061,7 @@ export default function App() {
                     <Editor
                       key={activeFile.path}
                       content={doc}
+                      notePath={activeFile.path}
                       onChange={handleEditorChange}
                       tabWidth={editorTabWidth}
                     />
@@ -1068,7 +1069,9 @@ export default function App() {
                   {view === 'source' && activeFile ? (
                     <SourceView value={markdown} onChange={handleSourceChange} tabWidth={editorTabWidth} />
                   ) : null}
-                  {view === 'preview' ? <PreviewView content={doc} /> : null}
+                  {view === 'preview' ? (
+                    <PreviewView content={doc} notePath={activeFile?.path ?? ''} />
+                  ) : null}
                   {!activeFile ? (
                     <p className="text-sm text-[var(--text-secondary)]">{t('app.noFileSelected')}</p>
                   ) : null}

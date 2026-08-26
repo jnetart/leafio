@@ -11,11 +11,12 @@ import { TableBubbleMenu } from './TableBubbleMenu';
 
 interface EditorProps {
   content: JSONContent;
+  notePath: string;
   onChange: (doc: JSONContent) => void;
   tabWidth: EditorTabWidth;
 }
 
-export function Editor({ content, onChange, tabWidth }: EditorProps) {
+export function Editor({ content, onChange, notePath, tabWidth }: EditorProps) {
   const editor = useLeafioEditor(content, true, onChange);
   const { contextMenuOpen, onMenuOpenChange } = useEditorContextMenuOpen();
 
@@ -25,6 +26,13 @@ export function Editor({ content, onChange, tabWidth }: EditorProps) {
     }
     editor.storage.codeBlockTab.tabSize = tabWidth;
   }, [editor, tabWidth]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.storage.imageBlock.notePath = notePath;
+  }, [editor, notePath]);
 
   useEffect(() => {
     if (!editor) {
