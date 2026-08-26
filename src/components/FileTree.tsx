@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { FileEntry } from '../lib/fs';
 import { listWorkspace } from '../lib/fs';
-import { displayFileName, isMarkdownFile } from '../lib/workspace';
+import { displayFileName, isVisibleTreeEntry } from '../lib/workspace';
 import { dirname } from '../lib/paths';
 import { IconChevronDown, IconChevronRight, IconLayers, IconMarkdownFile, IconPlus, IconTreeFolder } from './icons';
 import { clearTextSelection, preventContextMenuSelection } from '../lib/filename-input';
@@ -174,7 +174,7 @@ function DirectoryNode({
 
   const loadEntries = useCallback(async () => {
     const items = await listWorkspace(dirPath);
-    const visible = items.filter((item) => item.is_dir || isMarkdownFile(item.name));
+    const visible = items.filter(isVisibleTreeEntry);
     setEntries(visible);
     setLoaded(true);
   }, [dirPath]);
@@ -337,7 +337,7 @@ export function WorkspaceRootTree({
 
   const loadEntries = useCallback(async () => {
     const items = await listWorkspace(rootPath);
-    const visible = items.filter((item) => item.is_dir || isMarkdownFile(item.name));
+    const visible = items.filter(isVisibleTreeEntry);
     setEntries(visible);
     setLoaded(true);
   }, [rootPath]);

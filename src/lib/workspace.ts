@@ -1,4 +1,5 @@
 import { basename, dirname } from './paths';
+import { isAssetsFolderName } from './image-assets';
 
 export interface WorkspaceRoot {
   path: string;
@@ -158,4 +159,11 @@ export function ancestorDirs(filePath: string, root: string): string[] {
 
 export function isMarkdownFile(name: string): boolean {
   return name.toLowerCase().endsWith('.md');
+}
+
+export function isVisibleTreeEntry(item: { name: string; is_dir: boolean }): boolean {
+  if (isAssetsFolderName(item.name)) {
+    return false;
+  }
+  return item.is_dir || isMarkdownFile(item.name);
 }

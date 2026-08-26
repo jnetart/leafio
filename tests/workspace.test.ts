@@ -8,6 +8,7 @@ import {
   findContainingRoot,
   hasWorkspace,
   isPathInWorkspace,
+  isVisibleTreeEntry,
   removeRoot,
   renameRoot,
   workspaceDisplayName,
@@ -138,5 +139,14 @@ describe('workspaceForFile', () => {
 describe('ancestorDirs', () => {
   it('returns parent directories up to root', () => {
     expect(ancestorDirs('/root/a/b/file.md', '/root')).toEqual(['/root/a/b', '/root/a']);
+  });
+});
+
+describe('isVisibleTreeEntry', () => {
+  it('hides sibling asset folders and non-markdown files', () => {
+    expect(isVisibleTreeEntry({ name: 'guide.assets', is_dir: true })).toBe(false);
+    expect(isVisibleTreeEntry({ name: 'shot.png', is_dir: false })).toBe(false);
+    expect(isVisibleTreeEntry({ name: 'guide.md', is_dir: false })).toBe(true);
+    expect(isVisibleTreeEntry({ name: 'docs', is_dir: true })).toBe(true);
   });
 });
