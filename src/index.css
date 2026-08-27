@@ -248,6 +248,173 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
+/* Editor tabs live in the titlebar: the active tab is the page itself. */
+.editor-tabbar {
+  --tab-strip-bg: color-mix(in srgb, var(--window-bg) 72%, var(--paper));
+  position: relative;
+  height: var(--titlebar-height);
+  background: var(--tab-strip-bg);
+  border-bottom: 1px solid var(--separator);
+}
+
+.editor-tabbar-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.editor-tabbar--inset .editor-tabbar-inner {
+  padding-left: calc(var(--traffic-light-offset) + 44px);
+}
+
+.editor-tabbar-list {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.editor-tabbar-list::-webkit-scrollbar {
+  display: none;
+}
+
+.editor-tabbar-rest {
+  flex: 1 1 8px;
+  min-width: 24px;
+}
+
+.editor-tab {
+  position: relative;
+  display: flex;
+  min-width: 72px;
+  max-width: 176px;
+  flex: 1 1 132px;
+  align-items: stretch;
+  color: var(--text-secondary);
+}
+
+.editor-tab + .editor-tab {
+  box-shadow: inset 1px 0 0 var(--separator);
+}
+
+.editor-tab:hover:not(.editor-tab--active) {
+  color: var(--text);
+}
+
+.editor-tab-button {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: flex-end;
+  padding: 0 4px 10px 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  -webkit-app-region: no-drag;
+}
+
+.editor-tab-close {
+  position: relative;
+  display: flex;
+  width: 22px;
+  flex: 0 0 22px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 8px 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.editor-tab-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-tab-close-icon {
+  display: none;
+}
+
+.editor-tab-dirty {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d4a017;
+}
+
+.editor-tab-close:hover {
+  color: var(--text);
+}
+
+.editor-tab:hover .editor-tab-close-icon,
+.editor-tab--active:focus-within .editor-tab-close-icon {
+  display: block;
+}
+
+.editor-tab:hover .editor-tab-dirty,
+.editor-tab--active:focus-within .editor-tab-dirty {
+  display: none;
+}
+
+.editor-tab--active {
+  z-index: 1;
+  background: var(--paper);
+  color: var(--text);
+  box-shadow:
+    inset 1px 0 0 var(--separator),
+    inset -1px 0 0 var(--separator);
+}
+
+.editor-tab--active .editor-tab-title {
+  font-weight: 600;
+}
+
+.editor-tab--active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 1px;
+  background: var(--paper);
+}
+
+.editor-tab-button:focus-visible,
+.editor-tab-close:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: -3px;
+}
+
+.dark .editor-tab-dirty {
+  background: #e6c35c;
+}
+
+html[data-platform='windows'] .editor-tab-button,
+html[data-platform='linux'] .editor-tab-button {
+  padding-bottom: 6px;
+}
+
+html[data-platform='windows'] .editor-tab-close,
+html[data-platform='linux'] .editor-tab-close {
+  padding-bottom: 4px;
+}
+
 .titlebar-btn:hover {
   background: rgba(0, 0, 0, 0.05);
   color: var(--text);

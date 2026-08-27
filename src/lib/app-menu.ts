@@ -1,7 +1,10 @@
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from '@tauri-apps/api/menu';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { AppMenuState } from './app-menu-state';
+import { SELECT_TAB_DIGITS, type SelectTabDigit } from './editor-tabs';
 import type { createTranslator, MessageKey } from './i18n';
+
+export type SelectTabAction = `select-tab-${SelectTabDigit}`;
 
 export type AppMenuAction =
   | 'settings'
@@ -23,7 +26,24 @@ export type AppMenuAction =
   | 'toggle-inspector'
   | 'view-edit'
   | 'view-source'
-  | 'view-preview';
+  | 'view-preview'
+  | SelectTabAction;
+
+function selectTabAction(digit: SelectTabDigit): SelectTabAction {
+  return `select-tab-${digit}`;
+}
+
+function selectTabMenuId(digit: SelectTabDigit): string {
+  return `menu-select-tab-${digit}`;
+}
+
+export function selectTabDigitFromAction(action: AppMenuAction): SelectTabDigit | null {
+  if (!action.startsWith('select-tab-')) {
+    return null;
+  }
+  const digit = Number(action.slice('select-tab-'.length));
+  return SELECT_TAB_DIGITS.includes(digit as SelectTabDigit) ? (digit as SelectTabDigit) : null;
+}
 
 export const MENU_ITEM_IDS = {
   settings: 'menu-settings',
@@ -47,6 +67,7 @@ export const MENU_ITEM_IDS = {
   viewSource: 'menu-view-source',
   viewPreview: 'menu-view-preview',
   quit: 'menu-quit',
+  ...Object.fromEntries(SELECT_TAB_DIGITS.map((digit) => [`selectTab${digit}`, selectTabMenuId(digit)])),
 } as const;
 
 const SUBMENU_IDS = {
@@ -323,6 +344,19 @@ export async function buildAppMenu(
     await customItem(MENU_ITEM_IDS.viewEdit, t('menu.viewEdit'), onAction, 'view-edit'),
     await customItem(MENU_ITEM_IDS.viewSource, t('menu.viewSource'), onAction, 'view-source'),
     await customItem(MENU_ITEM_IDS.viewPreview, t('menu.viewPreview'), onAction, 'view-preview'),
+    { item: 'Separator' as const },
+    ...(await Promise.all(
+      SELECT_TAB_DIGITS.map((digit) =>
+        customItem(
+          selectTabMenuId(digit),
+          t('menu.selectTab').replace('{n}', String(digit)),
+          onAction,
+          selectTabAction(digit),
+          `CmdOrCtrl+${digit}`,
+          false,
+        ),
+      ),
+    )),
   ];
 
   for (const entry of viewItemDefs) {
@@ -408,6 +442,10 @@ function enabledForItem(id: string, state: AppMenuState): boolean {
     case MENU_ITEM_IDS.viewPreview:
       return state.canViewDocument;
     default:
+      if (id.startsWith('menu-select-tab-')) {
+        const digit = Number(id.slice('menu-select-tab-'.length));
+        return Number.isFinite(digit) && state.tabCount >= digit;
+      }
       return true;
   }
 }
@@ -428,6 +466,9 @@ export async function updateAppMenu(
     const labelKey = ITEM_LABEL_KEYS[id] ?? PREDEFINED_LABEL_KEYS[id];
     if (labelKey) {
       await item.setText(t(labelKey));
+    } else if (id.startsWith('menu-select-tab-')) {
+      const digit = id.slice('menu-select-tab-'.length);
+      await item.setText(t('menu.selectTab').replace('{n}', digit));
     }
     if (item instanceof MenuItem) {
       await item.setEnabled(enabledForItem(id, state));

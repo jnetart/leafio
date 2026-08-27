@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { JSONContent } from '@tiptap/react';
 import { Editor } from './components/Editor';
+import { EditorTabBar } from './components/EditorTabBar';
 import { ExportSheet } from './components/ExportSheet';
 import { ExternalChangeBar } from './components/ExternalChangeBar';
 import { ExternalChangeCompare } from './components/ExternalChangeCompare';
@@ -35,7 +36,7 @@ import { useEditorTypography } from './hooks/useEditorTypography';
 import { useTheme } from './hooks/useTheme';
 import { useUserHomeDir } from './hooks/useUserHomeDir';
 import { useWorkspaceWatcher } from './hooks/useWorkspaceWatcher';
-import type { AppMenuAction } from './lib/app-menu';
+import { selectTabDigitFromAction, type AppMenuAction } from './lib/app-menu';
 import { deriveAppMenuState, type TreeFocusTarget } from './lib/app-menu-state';
 import { dispatchMenuEditAction } from './lib/menu-edit';
 import { pickFolder, pickMarkdownFile, confirmTrash } from './lib/dialog';
@@ -66,6 +67,27 @@ import {
 import type { ParsedSearchQuery } from './lib/searchQuery';
 import { extractHeadings, OUTLINE_HEADING_SELECTOR } from './lib/headings';
 import { basename, dirname, expandUserPath, formatDisplayPath, replacePathPrefix } from './lib/paths';
+import {
+  activateTabAt,
+  activeTab,
+  cloneJsonContent,
+  closeTab,
+  closeTabsWhere,
+  createEditorTab,
+  emptyEditorDoc,
+  emptyEditorTabs,
+  insertTab,
+  openOrActivateTab,
+  parseTabShortcut,
+  putTab,
+  renameTabPath,
+  renameTabPathsWithPrefix,
+  shouldShowTabBar,
+  snapshotActiveTab,
+  tabIndexForShortcut,
+  type EditorTabLivePatch,
+  type EditorTabsState,
+} from './lib/editor-tabs';
 import type { SettingsSection } from './lib/settings-sections';
 import type { ViewMode } from './lib/view-mode';
 import { loadWorkspace, saveWorkspace } from './lib/workspace-store';
@@ -138,7 +160,7 @@ export default function App() {
   const [workspace, setWorkspace] = useState<WorkspaceState>(EMPTY_WORKSPACE);
   const [persistedWorkspace, setPersistedWorkspace] = useState<WorkspaceState>(EMPTY_WORKSPACE);
   const [workspaceReady, setWorkspaceReady] = useState(false);
-  const [activeFile, setActiveFile] = useState<FileEntry | null>(null);
+  const [tabSession, setTabSession] = useState<EditorTabsState>(() => emptyEditorTabs());
   const [recentFiles, setRecentFiles] = useState<string[]>([]);
   const [treeRefreshKey, setTreeRefreshKey] = useState(0);
 
@@ -177,6 +199,11 @@ export default function App() {
   const [editorActivityAt, setEditorActivityAt] = useState(() => Date.now());
   const [treeFocus, setTreeFocus] = useState<TreeFocusTarget | null>(null);
 
+  const activeFile = useMemo(() => {
+    const tab = activeTab(tabSession);
+    return tab ? { name: tab.name, path: tab.path, is_dir: false } : null;
+  }, [tabSession]);
+  const showTabBar = shouldShowTabBar(tabSession);
   const hasSidebar = hasWorkspace(workspace);
   const showWelcomeScreen = !activeFile && launchBehavior === 'welcome';
   const textFocus = useMenuTextFocus();
@@ -189,8 +216,9 @@ export default function App() {
         hasWorkspace: hasSidebar,
         settingsOpen,
         welcomeScreen: showWelcomeScreen,
+        tabCount: tabSession.tabs.length,
       }),
-    [textFocus, treeFocus, activeFile, hasSidebar, settingsOpen, showWelcomeScreen],
+    [textFocus, treeFocus, activeFile, hasSidebar, settingsOpen, showWelcomeScreen, tabSession.tabs.length],
   );
   const restoredRef = useRef(false);
   const imageNoticeTimerRef = useRef<number | null>(null);
@@ -213,24 +241,121 @@ export default function App() {
   const diskBaselineRef = useRef('');
   const writingRef = useRef(false);
   const checkGenerationRef = useRef(0);
+  const loadGenerationRef = useRef(0);
+  const hydratedPathRef = useRef<string | null>(null);
+  const tabSessionRef = useRef(tabSession);
   const activeFileRef = useRef(activeFile);
   const markdownRef = useRef(markdown);
+  const docRef = useRef(doc);
   const dirtyRef = useRef(dirty);
+  const savedRef = useRef(saved);
+  const viewRef = useRef(view);
+  const editorEpochRef = useRef(editorEpoch);
   const conflictRef = useRef(conflict);
+  tabSessionRef.current = tabSession;
   activeFileRef.current = activeFile;
   markdownRef.current = markdown;
+  docRef.current = doc;
   dirtyRef.current = dirty;
+  savedRef.current = saved;
+  viewRef.current = view;
+  editorEpochRef.current = editorEpoch;
   conflictRef.current = conflict;
+
+  const livePatch = (): EditorTabLivePatch => ({
+    markdown: markdownRef.current,
+    doc: docRef.current,
+    dirty: dirtyRef.current,
+    saved: savedRef.current,
+    view: viewRef.current,
+    editorEpoch: editorEpochRef.current,
+    diskBaseline: diskBaselineRef.current,
+    conflict: conflictRef.current,
+  });
+
+  const applyTabSession = useCallback((next: EditorTabsState, options?: { force?: boolean }) => {
+    const tab = activeTab(next);
+    tabSessionRef.current = next;
+    setTabSession(next);
+    const file = tab ? { name: tab.name, path: tab.path, is_dir: false } : null;
+    activeFileRef.current = file;
+    if (!tab) {
+      hydratedPathRef.current = null;
+      checkGenerationRef.current += 1;
+      markdownRef.current = '';
+      docRef.current = emptyEditorDoc();
+      dirtyRef.current = false;
+      savedRef.current = true;
+      viewRef.current = 'edit';
+      editorEpochRef.current = 0;
+      conflictRef.current = null;
+      diskBaselineRef.current = '';
+      setMarkdown('');
+      setDoc(emptyEditorDoc());
+      setDirty(false);
+      setSaved(true);
+      setView('edit');
+      setConflict(null);
+      setEditorEpoch(0);
+      return;
+    }
+    if (!options?.force && tab.path === hydratedPathRef.current) {
+      return;
+    }
+    hydratedPathRef.current = tab.path;
+    checkGenerationRef.current += 1;
+    let nextDoc = emptyEditorDoc();
+    try {
+      nextDoc = parseMarkdown(tab.markdown);
+    } catch {
+      nextDoc = cloneJsonContent(tab.doc);
+    }
+    markdownRef.current = tab.markdown;
+    docRef.current = nextDoc;
+    dirtyRef.current = tab.dirty;
+    savedRef.current = tab.saved;
+    viewRef.current = tab.view;
+    editorEpochRef.current += 1;
+    conflictRef.current = tab.conflict;
+    diskBaselineRef.current = tab.diskBaseline;
+    setMarkdown(tab.markdown);
+    setDoc(nextDoc);
+    setDirty(tab.dirty);
+    setSaved(tab.saved);
+    setView(tab.view);
+    setConflict(tab.conflict);
+    setEditorEpoch((value) => value + 1);
+  }, []);
+
+  const focusTabFile = useCallback((path: string, name: string) => {
+    setTreeFocus({ type: 'file', file: { name, path, is_dir: false } });
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && settingsOpen) {
         setSettingsOpen(false);
       }
+      const digit = parseTabShortcut(event);
+      if (digit === null) {
+        return;
+      }
+      const index = tabIndexForShortcut(digit, tabSessionRef.current.tabs.length);
+      if (index === null) {
+        return;
+      }
+      event.preventDefault();
+      setSettingsOpen(false);
+      const next = activateTabAt(tabSessionRef.current, index, livePatch());
+      applyTabSession(next);
+      const tab = activeTab(next);
+      if (tab) {
+        focusTabFile(tab.path, tab.name);
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [settingsOpen]);
+  }, [settingsOpen, applyTabSession, focusTabFile]);
 
   const contentClass =
     editorWidthMode === 'wide'
@@ -372,49 +497,58 @@ export default function App() {
     }
     restoredRef.current = true;
     void (async () => {
-      const stored = await loadWorkspace();
-      setPersistedWorkspace(stored);
-      if (hasWorkspace(stored)) {
-        setWorkspace(stored);
+      try {
+        const stored = await loadWorkspace();
+        setPersistedWorkspace(stored);
+        if (hasWorkspace(stored)) {
+          setWorkspace(stored);
+        }
+        await refreshRecentFiles();
+      } finally {
+        setWorkspaceReady(true);
       }
-      setWorkspaceReady(true);
-      await refreshRecentFiles();
     })();
   }, [ready, launchBehavior, refreshRecentFiles]);
 
   const loadFile = useCallback(
     async (path: string) => {
-      const previous = activeFileRef.current;
-      const openConflict = conflictRef.current;
-      if (openConflict && previous && previous.path !== path) {
-        checkGenerationRef.current += 1;
-        writingRef.current = true;
-        try {
-          await writeFile(previous.path, markdownRef.current);
-        } catch {
-          // keep going to the requested file
-        } finally {
-          writingRef.current = false;
-        }
+      const existing = tabSessionRef.current.tabs.find((tab) => tab.path === path);
+      if (existing?.dirty || existing?.conflict) {
+        loadGenerationRef.current += 1;
+        setSettingsOpen(false);
+        applyTabSession(openOrActivateTab(tabSessionRef.current, existing, livePatch()));
+        focusTabFile(existing.path, existing.name);
+        return;
       }
 
+      const generation = ++loadGenerationRef.current;
       ensureRootForPath(path);
-      const content = await readFile(path);
-      const entry = toFileEntry(path);
-      setActiveFile(entry);
-      setTreeFocus({ type: 'file', file: entry });
-      setMarkdown(content);
-      setDoc(parseMarkdown(content));
-      setDirty(false);
-      setSaved(true);
-      setView('edit');
-      diskBaselineRef.current = content;
-      setConflict(null);
-      setEditorEpoch((value) => value + 1);
-      await addRecentFile(path);
-      await refreshRecentFiles();
+      try {
+        const content = await readFile(path);
+        const entry = toFileEntry(path);
+        const nextTab = createEditorTab({
+          path,
+          name: entry.name,
+          markdown: content,
+          doc: parseMarkdown(content),
+        });
+        if (generation !== loadGenerationRef.current) {
+          applyTabSession(insertTab(tabSessionRef.current, nextTab, { activate: false, live: livePatch() }));
+          await addRecentFile(path);
+          await refreshRecentFiles();
+          return;
+        }
+
+        setSettingsOpen(false);
+        applyTabSession(putTab(tabSessionRef.current, nextTab, { live: livePatch() }), { force: true });
+        focusTabFile(entry.path, entry.name);
+        await addRecentFile(path);
+        await refreshRecentFiles();
+      } catch {
+        loadGenerationRef.current += 1;
+      }
     },
-    [ensureRootForPath, refreshRecentFiles],
+    [ensureRootForPath, refreshRecentFiles, applyTabSession, focusTabFile],
   );
 
   const addFolderToWorkspace = useCallback(
@@ -426,14 +560,6 @@ export default function App() {
         const files = await listMarkdownFiles(path);
         if (files[0]) {
           await loadFile(files[0].path);
-        } else {
-          setActiveFile(null);
-          setMarkdown('');
-          setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
-          setDirty(false);
-          setSaved(true);
-          setConflict(null);
-          diskBaselineRef.current = '';
         }
       }
     },
@@ -481,17 +607,21 @@ export default function App() {
       const next = removeRoot(workspace, root.path);
       applyWorkspace(next);
       refreshTree();
-      if (activeFile && !isPathInWorkspace(activeFile.path, next)) {
-        setActiveFile(null);
-        setMarkdown('');
-        setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
-        setDirty(false);
-        setSaved(true);
-        setConflict(null);
-        diskBaselineRef.current = '';
+      applyTabSession(
+        closeTabsWhere(
+          tabSessionRef.current,
+          (tab) => !isPathInWorkspace(tab.path, next),
+          livePatch(),
+        ),
+      );
+      const remaining = activeTab(tabSessionRef.current);
+      if (remaining) {
+        focusTabFile(remaining.path, remaining.name);
+      } else {
+        setTreeFocus(null);
       }
     },
-    [workspace, applyWorkspace, refreshTree, activeFile],
+    [workspace, applyWorkspace, refreshTree, applyTabSession, focusTabFile],
   );
 
   const handleRenameRootConfirm = useCallback(
@@ -530,9 +660,16 @@ export default function App() {
             }),
           );
           refreshTree();
-          if (activeFile?.path.startsWith(`${target.path}/`)) {
-            const newActivePath = replacePathPrefix(activeFile.path, target.path, newPath);
-            await loadFile(newActivePath);
+          applyTabSession(
+            renameTabPathsWithPrefix(
+              snapshotActiveTab(tabSessionRef.current, livePatch()),
+              target.path,
+              newPath,
+            ),
+          );
+          const renamed = activeTab(tabSessionRef.current);
+          if (renamed) {
+            focusTabFile(renamed.path, renamed.name);
           }
           await refreshRecentFiles();
           return;
@@ -542,14 +679,23 @@ export default function App() {
         await syncAssetsOnRename(target.path, newPath);
         await replaceRecentFile(target.path, newPath);
         refreshTree();
-        if (activeFile?.path === target.path) {
-          await loadFile(newPath);
+        applyTabSession(
+          renameTabPath(
+            snapshotActiveTab(tabSessionRef.current, livePatch()),
+            target.path,
+            newPath,
+            basename(newPath),
+          ),
+        );
+        const renamed = activeTab(tabSessionRef.current);
+        if (renamed) {
+          focusTabFile(renamed.path, renamed.name);
         }
       } catch {
         // operation failed silently; UI state unchanged
       }
     },
-    [renameTarget, activeFile?.path, refreshTree, loadFile, refreshRecentFiles],
+    [renameTarget, refreshTree, applyTabSession, focusTabFile, refreshRecentFiles],
   );
 
   const handleCopyFile = useCallback(
@@ -578,14 +724,23 @@ export default function App() {
         await replaceRecentFile(file.path, newPath);
         ensureRootForPath(newPath);
         refreshTree();
-        if (activeFile?.path === file.path) {
-          await loadFile(newPath);
+        applyTabSession(
+          renameTabPath(
+            snapshotActiveTab(tabSessionRef.current, livePatch()),
+            file.path,
+            newPath,
+            basename(newPath),
+          ),
+        );
+        const moved = activeTab(tabSessionRef.current);
+        if (moved) {
+          focusTabFile(moved.path, moved.name);
         }
       } catch {
         // operation failed silently; UI state unchanged
       }
     },
-    [ensureRootForPath, refreshTree, activeFile?.path, loadFile],
+    [ensureRootForPath, refreshTree, applyTabSession, focusTabFile],
   );
 
   const handleDelete = useCallback(
@@ -618,25 +773,27 @@ export default function App() {
           }),
         );
         refreshTree();
-        const activeInDeletedTree =
-          activeFile &&
-          (activeFile.path === entry.path ||
-            (dirPrefix !== null && activeFile.path.startsWith(dirPrefix)));
-        if (activeInDeletedTree) {
-          setActiveFile(null);
-          setMarkdown('');
-          setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
-          setDirty(false);
-          setSaved(true);
-          setConflict(null);
-          diskBaselineRef.current = '';
+        applyTabSession(
+          closeTabsWhere(
+            tabSessionRef.current,
+            (tab) =>
+              tab.path === entry.path ||
+              (dirPrefix !== null && tab.path.startsWith(dirPrefix)),
+            livePatch(),
+          ),
+        );
+        const remaining = activeTab(tabSessionRef.current);
+        if (remaining) {
+          focusTabFile(remaining.path, remaining.name);
+        } else {
+          setTreeFocus(null);
         }
         await refreshRecentFiles();
       } catch {
         // operation failed silently; UI state unchanged
       }
     },
-    [activeFile, refreshTree, refreshRecentFiles, t],
+    [refreshTree, refreshRecentFiles, applyTabSession, focusTabFile, t],
   );
 
   const resolveNewFileDir = useCallback(async (): Promise<string> => {
@@ -762,8 +919,14 @@ export default function App() {
   };
 
   const handleEditorChange = (nextDoc: JSONContent) => {
+    let nextMarkdown: string;
+    try {
+      nextMarkdown = serializeMarkdown(nextDoc);
+    } catch {
+      return;
+    }
     setDoc(nextDoc);
-    setMarkdown(serializeMarkdown(nextDoc));
+    setMarkdown(nextMarkdown);
     setDirty(true);
     setSaved(false);
   };
@@ -808,29 +971,70 @@ export default function App() {
     }
   }, [addFolderToWorkspace]);
 
+  const closeEditorTab = useCallback(
+    (path: string) => {
+      const session = tabSessionRef.current;
+      const tab = session.tabs.find((item) => item.path === path);
+      if (!tab) {
+        return;
+      }
+      const isActive = session.activePath === path;
+      const markdownToWrite = isActive ? markdownRef.current : tab.markdown;
+      if (tab.dirty || tab.conflict || (isActive && (dirtyRef.current || conflictRef.current))) {
+        checkGenerationRef.current += 1;
+        writingRef.current = true;
+        void writeFile(path, markdownToWrite).finally(() => {
+          writingRef.current = false;
+        });
+      }
+      const next = closeTab(session, path, livePatch());
+      applyTabSession(next);
+      const remaining = activeTab(next);
+      if (remaining) {
+        focusTabFile(remaining.path, remaining.name);
+      } else {
+        setTreeFocus(null);
+      }
+    },
+    [applyTabSession, focusTabFile],
+  );
+
+  const handleSelectTabPath = useCallback(
+    (path: string) => {
+      const existing = tabSessionRef.current.tabs.find((tab) => tab.path === path);
+      if (!existing) {
+        return;
+      }
+      setSettingsOpen(false);
+      applyTabSession(openOrActivateTab(tabSessionRef.current, existing, livePatch()));
+      focusTabFile(path, existing.name);
+    },
+    [applyTabSession, focusTabFile],
+  );
+
   const handleCloseDocument = useCallback(() => {
-    const file = activeFileRef.current;
-    if (conflictRef.current && file) {
-      checkGenerationRef.current += 1;
-      writingRef.current = true;
-      void writeFile(file.path, markdownRef.current).finally(() => {
-        writingRef.current = false;
-      });
-    }
     setSettingsOpen(false);
-    setActiveFile(null);
-    setTreeFocus(null);
-    setMarkdown('');
-    setDoc({ type: 'doc', content: [{ type: 'paragraph' }] });
-    setDirty(false);
-    setSaved(true);
-    setView('edit');
-    setConflict(null);
-    diskBaselineRef.current = '';
-  }, []);
+    const file = activeFileRef.current;
+    if (!file) {
+      return;
+    }
+    closeEditorTab(file.path);
+  }, [closeEditorTab]);
 
   const handleMenuAction = useCallback(
     (action: AppMenuAction) => {
+      const tabDigit = selectTabDigitFromAction(action);
+      if (tabDigit !== null) {
+        const index = tabIndexForShortcut(tabDigit, tabSessionRef.current.tabs.length);
+        if (index === null) {
+          return;
+        }
+        const tab = tabSessionRef.current.tabs[index];
+        if (tab) {
+          handleSelectTabPath(tab.path);
+        }
+        return;
+      }
       switch (action) {
         case 'settings':
           setSettingsOpen(true);
@@ -917,6 +1121,7 @@ export default function App() {
       handleNewSubfolderInDir,
       handleCopyFile,
       handleCloseDocument,
+      handleSelectTabPath,
       handleViewChange,
     ],
   );
@@ -1156,7 +1361,11 @@ export default function App() {
   );
 
   if (!ready || !workspaceReady) {
-    return <div className="flex h-full items-center justify-center bg-[var(--window-bg)]" />;
+    return (
+      <div className="relative flex h-full flex-col overflow-hidden bg-[var(--window-bg)] font-ui text-[var(--text)]">
+        <WindowDragBar title="Leafio" />
+      </div>
+    );
   }
 
   if (!hasSidebar && !activeFile) {
@@ -1212,6 +1421,19 @@ export default function App() {
         onTreeFocus={setTreeFocus}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {showTabBar ? (
+          <EditorTabBar
+            tabs={tabSession.tabs}
+            activePath={tabSession.activePath}
+            insetForTrafficLights={!sidebarOpen}
+            labels={{
+              list: t('tabs.list'),
+              close: t('tabs.close'),
+            }}
+            onSelect={handleSelectTabPath}
+            onClose={closeEditorTab}
+          />
+        ) : null}
         <div className="flex min-h-0 flex-1 overflow-hidden">
           {settingsOpen ? (
             <SettingsView

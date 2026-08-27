@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useEffect } from 'react';
+import { getImageBlockStorage } from '../editor/insertImage';
 import { extensions } from '../editor/schema';
 
 interface PreviewViewProps {
@@ -24,7 +25,11 @@ export function PreviewView({ content, notePath }: PreviewViewProps) {
     if (!editor) {
       return;
     }
-    editor.storage.imageBlock.notePath = notePath;
+    const storage = getImageBlockStorage(editor);
+    if (!storage) {
+      return;
+    }
+    storage.notePath = notePath;
   }, [editor, notePath]);
 
   if (!editor) {

@@ -2,6 +2,7 @@ import { NodeViewWrapper } from '@tiptap/react';
 import type { ReactNodeViewProps } from '@tiptap/react';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { useMemo, useRef, useState } from 'react';
+import { getImageBlockStorage } from '../editor/insertImage';
 import { resolveImageSrc } from '../lib/image-assets';
 import { openInFileManager } from '../lib/shell';
 import { useI18n } from '../hooks/useI18n';
@@ -23,7 +24,7 @@ export function ImageBlockView({ node, editor, selected, updateAttributes }: Rea
   const src = String(node.attrs.src ?? '');
   const alt = String(node.attrs.alt ?? '');
   const width = node.attrs.width as number | null;
-  const notePath = String(editor.storage.imageBlock?.notePath ?? '');
+  const notePath = String(getImageBlockStorage(editor)?.notePath ?? '');
   const { language } = usePreferences();
   const { t } = useI18n(language);
   const [failed, setFailed] = useState(false);

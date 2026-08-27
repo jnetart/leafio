@@ -6,15 +6,22 @@ import { DEFAULT_COMPRESS_MAX_EDGE } from '../lib/image-assets';
 
 export type ImageNoticeKey = 'unsupported' | 'too-large' | 'write-failed' | 'saved-original';
 
-type ImageBlockStorage = {
+export type ImageBlockStorage = {
   notePath: string;
   compress: boolean;
   maxEdge: number;
   onNotice?: (key: ImageNoticeKey) => void;
 };
 
-function imageStorage(editor: Editor): ImageBlockStorage {
-  return editor.storage.imageBlock as ImageBlockStorage;
+type ImageStorageHost = {
+  storage: {
+    image?: ImageBlockStorage;
+    imageBlock?: ImageBlockStorage;
+  };
+};
+
+export function getImageBlockStorage(editor: ImageStorageHost): ImageBlockStorage | undefined {
+  return editor.storage.image ?? editor.storage.imageBlock;
 }
 
 export function insertImageBlocks(
@@ -57,9 +64,9 @@ export async function ingestAndInsertImages(
   sources: IngestImageSource[],
   range?: SlashRange,
 ): Promise<void> {
-  const storage = imageStorage(editor);
-  const notePath = storage.notePath;
-  if (!notePath || sources.length === 0) {
+  const storage = getImageBlockStorage(editor);
+  const notePath = storage?.notePath;
+  if (!storage || !notePath || sources.length === 0) {
     return;
   }
 

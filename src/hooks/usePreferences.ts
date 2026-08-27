@@ -17,10 +17,13 @@ export function usePreferences() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadPreferences().then((loaded) => {
-      setPreferences(loaded);
-      setReady(true);
-    });
+    loadPreferences()
+      .then((loaded) => {
+        setPreferences(loaded);
+      })
+      .finally(() => {
+        setReady(true);
+      });
   }, []);
 
   const updatePreferences = useCallback((updater: (current: AppPreferences) => AppPreferences) => {

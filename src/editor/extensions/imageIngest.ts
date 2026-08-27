@@ -1,7 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { ingestAndInsertImages, insertImageBlocks } from '../insertImage';
+import { getImageBlockStorage, ingestAndInsertImages, insertImageBlocks } from '../insertImage';
 import { pathExists } from '../../lib/fs';
 import { isSupportedImageFilename, pastedImageFilename, resolveImageSrc } from '../../lib/image-assets';
 
@@ -58,7 +58,7 @@ export const ImageIngest = Extension.create({
             const images = files.filter(isImageFile);
             if (images.length === 0) {
               if (files.length > 0) {
-                editor.storage.imageBlock.onNotice?.('unsupported');
+                getImageBlockStorage(editor)?.onNotice?.('unsupported');
                 event.preventDefault();
                 return true;
               }
@@ -97,7 +97,7 @@ function handleImageClipboard(editor: Editor, event: ClipboardEvent): boolean {
     return true;
   }
   if (files.length > 0) {
-    editor.storage.imageBlock.onNotice?.('unsupported');
+    getImageBlockStorage(editor)?.onNotice?.('unsupported');
     event.preventDefault();
     return true;
   }
@@ -132,7 +132,7 @@ async function pasteHtmlImage(editor: Editor, src: string) {
     insertImageBlocks(editor, [{ src }]);
     return;
   }
-  const notePath = String(editor.storage.imageBlock.notePath ?? '');
+  const notePath = String(getImageBlockStorage(editor)?.notePath ?? '');
   const resolved = resolveImageSrc(src, notePath);
   if (resolved.kind === 'local' && (await pathExists(resolved.absPath))) {
     await ingestAndInsertImages(editor, [{ type: 'path', path: resolved.absPath }]);

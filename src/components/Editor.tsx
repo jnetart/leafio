@@ -4,7 +4,7 @@ import type { JSONContent } from '@tiptap/react';
 import { useLeafioEditor } from '../editor/schema';
 import type { EditorTabWidth } from '../lib/preferences';
 import { DEFAULT_COMPRESS_MAX_EDGE } from '../lib/image-assets';
-import type { ImageNoticeKey } from '../editor/insertImage';
+import { getImageBlockStorage, type ImageNoticeKey } from '../editor/insertImage';
 import { LEAFIO_MENU_EDIT_EVENT, type LeafioMenuEditAction } from '../lib/menu-edit';
 import { useEditorContextMenuOpen } from '../lib/editor-context-menu';
 import { EditorContextMenu } from './EditorContextMenu';
@@ -37,17 +37,23 @@ export function Editor({
     if (!editor) {
       return;
     }
-    editor.storage.codeBlockTab.tabSize = tabWidth;
+    if (editor.storage.codeBlockTab) {
+      editor.storage.codeBlockTab.tabSize = tabWidth;
+    }
   }, [editor, tabWidth]);
 
   useEffect(() => {
     if (!editor) {
       return;
     }
-    editor.storage.imageBlock.notePath = notePath;
-    editor.storage.imageBlock.compress = compressImages;
-    editor.storage.imageBlock.maxEdge = compressMaxEdge;
-    editor.storage.imageBlock.onNotice = onImageNotice;
+    const storage = getImageBlockStorage(editor);
+    if (!storage) {
+      return;
+    }
+    storage.notePath = notePath;
+    storage.compress = compressImages;
+    storage.maxEdge = compressMaxEdge;
+    storage.onNotice = onImageNotice;
   }, [editor, notePath, compressImages, compressMaxEdge, onImageNotice]);
 
   useEffect(() => {

@@ -13,6 +13,7 @@ export interface AppMenuState {
   canCloseDocument: boolean;
   canFind: boolean;
   canViewDocument: boolean;
+  tabCount: number;
 }
 
 export function deriveAppMenuState(input: {
@@ -22,6 +23,7 @@ export function deriveAppMenuState(input: {
   hasWorkspace: boolean;
   settingsOpen: boolean;
   welcomeScreen: boolean;
+  tabCount?: number;
 }): AppMenuState {
   const { textFocus, treeFocus, activeFile, hasWorkspace, settingsOpen, welcomeScreen } = input;
   const onFile = treeFocus?.type === 'file';
@@ -36,5 +38,6 @@ export function deriveAppMenuState(input: {
     canCloseDocument: hasDocument,
     canFind: hasWorkspace && !settingsOpen,
     canViewDocument: hasDocument,
+    tabCount: input.tabCount ?? (activeFile ? 1 : 0),
   };
 }

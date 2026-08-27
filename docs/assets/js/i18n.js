@@ -136,6 +136,7 @@ const I18N = {
   'guide.shortcuts.duplicate': { zh: '复制文档',  en: 'Duplicate document' },
   'guide.shortcuts.export': { zh: '导出',  en: 'Export' },
   'guide.shortcuts.close': { zh: '关闭文档',  en: 'Close document' },
+  'guide.shortcuts.tabs': { zh: '切换到第 1–9 个标签',  en: 'Switch to tab 1–9' },
   'guide.shortcuts.find': { zh: '查找',  en: 'Find' },
   'guide.shortcuts.toggleSidebar': { zh: '切换侧栏',  en: 'Toggle sidebar' },
   'guide.shortcuts.toggleOutline': { zh: '切换大纲',  en: 'Toggle outline' },
