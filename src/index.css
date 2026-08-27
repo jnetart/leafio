@@ -249,17 +249,21 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-/* Folder tabs: 24px capsules on the titlebar midline, aligned with the
-   sidebar toggle and native traffic lights. */
+/* Chrome-style folder tabs: sit on the paper, overlap neighbors, and
+   flare into the strip with concave bottom corners. */
 .editor-tabbar {
-  --tab-strip-bg: color-mix(in srgb, var(--window-bg) 72%, var(--paper));
-  --tab-height: 24px;
-  --tab-radius: 999px;
-  --tab-gap: 5px;
+  --tab-strip-bg: var(--sidebar-bg);
+  --tab-ceiling: 3px;
+  --tab-height: calc(var(--titlebar-height) - var(--tab-ceiling));
+  --tab-radius: 8px;
+  --tab-curve: 12px;
+  --tab-overlap: 8px;
+  --tab-preferred: 196px;
   position: relative;
   height: var(--titlebar-height);
   background: var(--tab-strip-bg);
-  border-bottom: 1px solid var(--separator);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .editor-tabbar-inner {
@@ -268,8 +272,8 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   display: flex;
   height: 100%;
   min-width: 0;
-  align-items: flex-start;
-  padding-top: var(--chrome-nudge-y);
+  align-items: flex-end;
+  padding-left: 6px;
 }
 
 .editor-tabbar--inset .editor-tabbar-inner {
@@ -278,10 +282,13 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .editor-tabbar-list {
   display: flex;
+  flex: 0 1 auto;
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
   height: var(--tab-height);
   align-items: stretch;
-  gap: var(--tab-gap);
+  padding: 0 var(--tab-curve);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -299,32 +306,75 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .editor-tab {
   position: relative;
+  z-index: 1;
   display: flex;
-  min-width: 72px;
-  max-width: 176px;
-  flex: 1 1 132px;
+  width: var(--tab-preferred);
+  min-width: 96px;
+  max-width: 240px;
+  flex: 1 1 var(--tab-preferred);
   align-items: stretch;
-  overflow: hidden;
-  border-radius: var(--tab-radius);
+  margin-left: calc(var(--tab-overlap) * -1);
+  padding: 0 var(--tab-overlap);
+  overflow: visible;
   color: var(--text-secondary);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: no-drag;
 }
 
-.editor-tab:not(.editor-tab--active) {
-  background: color-mix(in srgb, var(--paper) 62%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--separator) 70%, transparent);
+.editor-tab:first-child {
+  margin-left: 0;
 }
 
-.editor-tab:hover:not(.editor-tab--active) {
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
+.editor-tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--tab-radius) var(--tab-radius) 0 0;
+  transition: background-color 120ms ease;
+}
+
+.editor-tab::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 0;
+  bottom: 8px;
+  width: 1px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  opacity: 1;
+  transition: opacity 80ms ease;
+}
+
+.editor-tab:last-child::after,
+.editor-tab:hover::after,
+.editor-tab:has(+ .editor-tab:hover)::after,
+.editor-tab:has(+ .editor-tab--active)::after,
+.editor-tab--active::after {
+  opacity: 0;
+}
+
+.editor-tab:hover {
+  z-index: 2;
   color: var(--text);
 }
 
+.editor-tab:hover:not(.editor-tab--active)::before {
+  inset: 4px 10px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+}
+
 .editor-tab-button {
+  position: relative;
+  z-index: 1;
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
   align-items: center;
-  padding: 0 4px 0 10px;
+  padding: 0 2px 0 10px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -335,15 +385,18 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .editor-tab-close {
   position: relative;
+  z-index: 1;
   display: flex;
-  width: 20px;
-  flex: 0 0 20px;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
   align-items: center;
   justify-content: center;
-  margin: 2px 4px 2px 0;
+  align-self: center;
+  margin: 0 4px 0 0;
   padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: 50%;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -374,11 +427,12 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 }
 
 .editor-tab-close:hover {
-  background: color-mix(in srgb, var(--text) 8%, transparent);
+  background: color-mix(in srgb, var(--text) 10%, transparent);
   color: var(--text);
 }
 
 .editor-tab:hover .editor-tab-close-icon,
+.editor-tab--active:not(.editor-tab--dirty) .editor-tab-close-icon,
 .editor-tab--active:focus-within .editor-tab-close-icon {
   display: block;
 }
@@ -389,14 +443,46 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 }
 
 .editor-tab--active {
-  z-index: 1;
-  background: var(--paper);
+  z-index: 3;
   color: var(--text);
-  box-shadow: 0 0 0 1px var(--separator);
 }
 
-.editor-tab--active .editor-tab-title {
-  font-weight: 600;
+.editor-tab--active::before {
+  background: var(--paper);
+}
+
+.editor-tab-curve {
+  position: absolute;
+  bottom: 0;
+  width: var(--tab-curve);
+  height: var(--tab-curve);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1;
+}
+
+.editor-tab--active .editor-tab-curve {
+  opacity: 1;
+}
+
+.editor-tab-curve--start {
+  left: 0;
+  transform: translateX(-100%);
+  background: radial-gradient(
+    circle at 0 0,
+    transparent var(--tab-curve),
+    var(--paper) calc(var(--tab-curve) + 0.5px)
+  );
+}
+
+.editor-tab-curve--end {
+  right: 0;
+  transform: translateX(100%);
+  background: radial-gradient(
+    circle at 100% 0,
+    transparent var(--tab-curve),
+    var(--paper) calc(var(--tab-curve) + 0.5px)
+  );
 }
 
 .editor-tab-button:focus-visible,
@@ -407,6 +493,13 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .dark .editor-tab-dirty {
   background: #e6c35c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-tab::before,
+  .editor-tab::after {
+    transition: none;
+  }
 }
 
 .titlebar-btn:hover {
