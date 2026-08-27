@@ -715,18 +715,47 @@ html[data-platform='linux'] .editor-tab-close {
 .leafio-image-lightbox {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 48px 32px;
+  cursor: zoom-out;
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
 }
 
 .leafio-image-lightbox img {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: min(100%, calc(100vw - 64px));
+  max-height: min(100%, calc(100vh - 96px));
   object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.leafio-image-lightbox-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.leafio-image-lightbox-close:hover,
+.leafio-image-lightbox-close:focus-visible {
+  background: rgba(0, 0, 0, 0.62);
+  outline: none;
 }
 
 .leafio-editor pre {

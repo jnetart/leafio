@@ -1,22 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { attachLightboxDismiss } from '../lib/image-lightbox';
+import { IconClose } from './icons';
 
 interface ImageLightboxProps {
   src: string;
   alt: string;
+  closeLabel: string;
   onClose: () => void;
 }
 
-export function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
+export function ImageLightbox({ src, alt, closeLabel, onClose }: ImageLightboxProps) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    closeRef.current?.focus();
+    return attachLightboxDismiss(window, onClose);
   }, [onClose]);
 
   return createPortal(
@@ -24,10 +23,26 @@ export function ImageLightbox({ src, alt, onClose }: ImageLightboxProps) {
       className="leafio-image-lightbox"
       role="dialog"
       aria-modal="true"
-      aria-label={alt || 'image'}
-      onClick={onClose}
+      aria-label={alt || closeLabel}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClose();
+      }}
     >
-      <img src={src} alt={alt} onClick={(event) => event.stopPropagation()} />
+      <button
+        ref={closeRef}
+        type="button"
+        className="leafio-image-lightbox-close"
+        aria-label={closeLabel}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }}
+      >
+        <IconClose className="h-4 w-4" />
+      </button>
+      <img src={src} alt={alt} draggable={false} />
     </div>,
     document.body,
   );

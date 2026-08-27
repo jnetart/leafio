@@ -1,7 +1,7 @@
 import { NodeViewWrapper } from '@tiptap/react';
 import type { ReactNodeViewProps } from '@tiptap/react';
 import { convertFileSrc } from '@tauri-apps/api/core';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { getImageBlockStorage } from '../editor/insertImage';
 import { resolveImageSrc } from '../lib/image-assets';
 import { openInFileManager } from '../lib/shell';
@@ -30,6 +30,15 @@ export function ImageBlockView({ node, editor, selected, updateAttributes }: Rea
   const [failed, setFailed] = useState(false);
   const [lightbox, setLightbox] = useState(false);
   const dragRef = useRef({ active: false, moved: false, startX: 0, startWidth: 0, edge: 'right' as 'left' | 'right' });
+  const suppressOpenRef = useRef(false);
+
+  const closeLightbox = useCallback(() => {
+    suppressOpenRef.current = true;
+    setLightbox(false);
+    window.setTimeout(() => {
+      suppressOpenRef.current = false;
+    }, 400);
+  }, []);
 
   const resolved = useMemo(() => resolveImageSrc(src, notePath), [src, notePath]);
 
@@ -131,8 +140,9 @@ export function ImageBlockView({ node, editor, selected, updateAttributes }: Rea
             alt={alt}
             draggable={false}
             onError={() => setFailed(true)}
-            onClick={() => {
-              if (dragRef.current.moved) {
+            onClick={(event) => {
+              event.stopPropagation();
+              if (dragRef.current.moved || suppressOpenRef.current) {
                 dragRef.current.moved = false;
                 return;
               }
@@ -165,7 +175,9 @@ export function ImageBlockView({ node, editor, selected, updateAttributes }: Rea
           ) : null}
         </div>
       ) : null}
-      {lightbox && href ? <ImageLightbox src={href} alt={alt} onClose={() => setLightbox(false)} /> : null}
+      {lightbox && href ? (
+        <ImageLightbox src={href} alt={alt} closeLabel={t('image.lightbox.close')} onClose={closeLightbox} />
+      ) : null}
     </NodeViewWrapper>
   );
 }
