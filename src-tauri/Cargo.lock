@@ -2065,7 +2065,7 @@ dependencies = [
 
 [[package]]
 name = "leafio"
-version = "0.8.43"
+version = "0.8.71"
 dependencies = [
  "chrono",
  "notify",

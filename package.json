@@ -1,7 +1,7 @@
 {
   "name": "leafio",
   "private": true,
-  "version": "0.8.43",
+  "version": "0.8.71",
   "type": "module",
   "scripts": {
     "dev": "tauri dev",

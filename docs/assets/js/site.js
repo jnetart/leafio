@@ -6,7 +6,7 @@ import {
   versionFromLatestJson,
 } from './detect.mjs';
 
-const FALLBACK_VERSION = '0.8.43';
+const FALLBACK_VERSION = '0.8.71';
 const LATEST_JSON = 'https://github.com/jnetart/leafio/releases/latest/download/latest.json';
 const GITHUB_API = 'https://api.github.com/repos/jnetart/leafio/releases/latest';
 
