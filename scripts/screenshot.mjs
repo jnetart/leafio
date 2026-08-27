@@ -541,14 +541,15 @@ const SHOTS = ['welcome', 'editor', 'toolbar', 'slash', 'search', 'source', 'set
 // The browser render has no native window chrome, so the app's 78px
 // traffic-light drag zone reads as an empty gap and the sidebar toggle next
 // to it looks displaced. Draw the macOS traffic lights where the native
-// window would overlay them — tauri.conf.json trafficLightPosition (16, 28)
-// is the center of the red button; buttons are 12px with an 8px gap.
+// window would overlay them — tauri.conf.json trafficLightPosition (16, 22)
+// is the top inset used to size the overlay titlebar (button height + y);
+// buttons are 12px with an 8px gap, optically aligned with the 24px chrome.
 async function injectTrafficLights(page) {
   await page.evaluate(() => {
     const wrap = document.createElement('div');
     wrap.setAttribute('aria-hidden', 'true');
     wrap.style.cssText =
-      'position:fixed;left:10px;top:22px;z-index:99999;pointer-events:none;' +
+      'position:fixed;left:10px;top:14px;z-index:99999;pointer-events:none;' +
       'display:flex;gap:8px;';
     for (const color of ['#ff5f57', '#febc2e', '#28c840']) {
       const dot = document.createElement('span');

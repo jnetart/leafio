@@ -42,7 +42,7 @@ function SidebarChrome({ open, scoped = false, surface = 'paper', labels, onTogg
         onMouseDown={onMouseDown}
         aria-hidden="true"
       />
-      <div className="sidebar-chrome sidebar-chrome--floating flex min-w-0 flex-1 items-center gap-0.5 pr-2">
+      <div className="sidebar-chrome sidebar-chrome--floating flex min-w-0 flex-1 items-start gap-0.5 pr-2">
         <button
           type="button"
           className="titlebar-btn"

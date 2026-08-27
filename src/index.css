@@ -13,11 +13,12 @@
   --sidebar-tree-icon: rgba(0, 0, 0, 0.55);
   --separator: rgba(0, 0, 0, 0.08);
   --accent: #5b8c6f;
-  --titlebar-height: 52px;
+  --titlebar-height: 36px;
+  --chrome-nudge-y: 8px;
   --sidebar-width: 240px;
   --sidebar-content-gap: 4px;
   --traffic-light-offset: 78px;
-  --sidebar-chrome-padding-left: 0px;
+  --sidebar-chrome-padding-left: 8px;
   --settings-bg: #f3f3f3;
   --settings-nav-bg: #ebebeb;
   --settings-content-bg: #f9f9f9;
@@ -239,8 +240,8 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .titlebar-btn {
   display: inline-flex;
-  height: 28px;
-  min-width: 28px;
+  height: 24px;
+  min-width: 24px;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
@@ -248,9 +249,13 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-/* Editor tabs live in the titlebar: the active tab is the page itself. */
+/* Folder tabs: 24px capsules on the titlebar midline, aligned with the
+   sidebar toggle and native traffic lights. */
 .editor-tabbar {
   --tab-strip-bg: color-mix(in srgb, var(--window-bg) 72%, var(--paper));
+  --tab-height: 24px;
+  --tab-radius: 999px;
+  --tab-gap: 5px;
   position: relative;
   height: var(--titlebar-height);
   background: var(--tab-strip-bg);
@@ -263,17 +268,20 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   display: flex;
   height: 100%;
   min-width: 0;
-  align-items: stretch;
+  align-items: flex-start;
+  padding-top: var(--chrome-nudge-y);
 }
 
 .editor-tabbar--inset .editor-tabbar-inner {
-  padding-left: calc(var(--traffic-light-offset) + 44px);
+  padding-left: calc(var(--traffic-light-offset) + var(--sidebar-chrome-padding-left) + 44px);
 }
 
 .editor-tabbar-list {
   display: flex;
   min-width: 0;
+  height: var(--tab-height);
   align-items: stretch;
+  gap: var(--tab-gap);
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -286,6 +294,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 .editor-tabbar-rest {
   flex: 1 1 8px;
   min-width: 24px;
+  align-self: stretch;
 }
 
 .editor-tab {
@@ -295,14 +304,18 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   max-width: 176px;
   flex: 1 1 132px;
   align-items: stretch;
+  overflow: hidden;
+  border-radius: var(--tab-radius);
   color: var(--text-secondary);
 }
 
-.editor-tab + .editor-tab {
-  box-shadow: inset 1px 0 0 var(--separator);
+.editor-tab:not(.editor-tab--active) {
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--separator) 70%, transparent);
 }
 
 .editor-tab:hover:not(.editor-tab--active) {
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
   color: var(--text);
 }
 
@@ -310,8 +323,8 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
-  align-items: flex-end;
-  padding: 0 4px 10px 12px;
+  align-items: center;
+  padding: 0 4px 0 10px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -323,12 +336,14 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 .editor-tab-close {
   position: relative;
   display: flex;
-  width: 22px;
-  flex: 0 0 22px;
-  align-items: flex-end;
+  width: 20px;
+  flex: 0 0 20px;
+  align-items: center;
   justify-content: center;
-  padding: 0 8px 8px 0;
+  margin: 2px 4px 2px 0;
+  padding: 0;
   border: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -359,6 +374,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 }
 
 .editor-tab-close:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
   color: var(--text);
 }
 
@@ -376,23 +392,11 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   z-index: 1;
   background: var(--paper);
   color: var(--text);
-  box-shadow:
-    inset 1px 0 0 var(--separator),
-    inset -1px 0 0 var(--separator);
+  box-shadow: 0 0 0 1px var(--separator);
 }
 
 .editor-tab--active .editor-tab-title {
   font-weight: 600;
-}
-
-.editor-tab--active::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 1px;
-  background: var(--paper);
 }
 
 .editor-tab-button:focus-visible,
@@ -403,16 +407,6 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .dark .editor-tab-dirty {
   background: #e6c35c;
-}
-
-html[data-platform='windows'] .editor-tab-button,
-html[data-platform='linux'] .editor-tab-button {
-  padding-bottom: 6px;
-}
-
-html[data-platform='windows'] .editor-tab-close,
-html[data-platform='linux'] .editor-tab-close {
-  padding-bottom: 4px;
 }
 
 .titlebar-btn:hover {
@@ -1023,6 +1017,8 @@ html[data-platform='linux'] .editor-tab-close {
 .sidebar-chrome {
   height: var(--titlebar-height);
   min-width: 0;
+  align-items: flex-start;
+  padding-top: var(--chrome-nudge-y);
   padding-left: var(--sidebar-chrome-padding-left);
 }
 
