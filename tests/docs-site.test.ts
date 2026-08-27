@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   assetUrlFor,
@@ -7,6 +10,44 @@ import {
   versionFromGithubRelease,
   versionFromLatestJson,
 } from '../docs/assets/js/detect.mjs';
+
+const DOCS = join(dirname(fileURLToPath(import.meta.url)), '../docs');
+
+function walkHtml(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === 'superpowers' || entry.name === 'plans' || entry.name === 'specs') continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkHtml(full));
+    else if (entry.name.endsWith('.html')) out.push(full);
+  }
+  return out;
+}
+
+function collectDocsCss(): string {
+  const siteCss = readFileSync(join(DOCS, 'assets/css/site.css'), 'utf8');
+  const inline = walkHtml(DOCS)
+    .map((file) => readFileSync(file, 'utf8'))
+    .flatMap((html) => [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]))
+    .join('\n');
+  return `${siteCss}\n${inline}`;
+}
+
+function screenshotImgRuleBodies(css: string): string[] {
+  const bodies: string[] = [];
+  const re = /([^{}]+)\{([^{}]+)\}/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(css))) {
+    const selector = match[1].replace(/\/\*[\s\S]*?\*\//g, '').trim();
+    if (
+      /(^|,)\s*\.hero-shot(\s|,|$|:|\.)/.test(selector) ||
+      /(^|,)\s*\.shot\s+img(\s|,|$|:)/.test(selector)
+    ) {
+      bodies.push(match[2]);
+    }
+  }
+  return bodies;
+}
 
 describe('detectPlatform', () => {
   it('reads userAgentData.platform first', () => {
@@ -86,5 +127,24 @@ describe('release version and asset URLs', () => {
     expect(assetUrlFor('windows-x64', '0.9.0', null)).toBe(
       'https://github.com/jnetart/leafio/releases/download/v0.9.0/Leafio_0.9.0_Windows_x64-setup.exe',
     );
+  });
+});
+
+describe('docs screenshot scaling', () => {
+  it('does not stretch screenshot images with min-height', () => {
+    const bodies = screenshotImgRuleBodies(collectDocsCss());
+    expect(bodies.length).toBeGreaterThan(0);
+    for (const body of bodies) {
+      expect(body).not.toMatch(/min-height\s*:/);
+    }
+  });
+
+  it('lets screenshot images keep their intrinsic ratio', () => {
+    const bodies = screenshotImgRuleBodies(collectDocsCss());
+    const sizing = bodies.filter((body) => /\bwidth\s*:/.test(body) || /\bheight\s*:/.test(body));
+    expect(sizing.length).toBeGreaterThan(0);
+    for (const body of sizing) {
+      expect(body).toMatch(/height\s*:\s*auto\b/);
+    }
   });
 });

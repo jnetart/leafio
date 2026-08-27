@@ -185,6 +185,17 @@ html.dark .theme-toggle .icon-moon { display: none; }
 html.dark .shot.shot-light { display: none; }
 html.dark .shot.shot-dark { display: block; }
 
+/* Screenshots are 1200×800 (3:2). Scale by width; never stretch to a min-height. */
+.shot img,
+img.hero-shot {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+  display: block;
+}
+
 .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 section { padding: 64px 0; }
 h1, h2, h3 { line-height: 1.25; }

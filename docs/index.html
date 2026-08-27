@@ -16,7 +16,7 @@
   <meta name="twitter:description" data-i18n-content="footer.tagline" content="本地优先的 Markdown 编辑器">
   <meta name="twitter:image" content="https://raw.githubusercontent.com/jnetart/leafio/main/docs/assets/screenshots/editor-light.png">
   <link rel="icon" href="assets/img/favicon.png">
-  <link rel="stylesheet" href="assets/css/site.css?v=5">
+  <link rel="stylesheet" href="assets/css/site.css?v=6">
   <script>
     (function () {
       try {
@@ -66,10 +66,6 @@
     .hero-media { display: grid; }
     .hero-media > * { grid-area: 1 / 1; }
     .hero-shot {
-      width: 100%;
-      height: auto;
-      display: block;
-      min-height: 380px;
       background: var(--paper);
     }
     .hero-shot.shot-dark { visibility: hidden; }
@@ -168,9 +164,11 @@
             <div class="hero-media">
               <img class="hero-shot shot-light" src="assets/screenshots/editor-light.png"
                    srcset="assets/screenshots/editor-light.png 1x, assets/screenshots/editor-light@2x.png 2x"
+                   width="1200" height="800"
                    alt="Leafio 主界面截图(浅色)" data-i18n-alt="hero.shot.alt.light">
               <img class="hero-shot shot-dark" src="assets/screenshots/editor-dark.png"
                    srcset="assets/screenshots/editor-dark.png 1x, assets/screenshots/editor-dark@2x.png 2x"
+                   width="1200" height="800"
                    alt="Leafio 主界面截图(深色)" data-i18n-alt="hero.shot.alt.dark" aria-hidden="true">
             </div>
           </div>
