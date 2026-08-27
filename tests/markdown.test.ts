@@ -175,4 +175,75 @@ describe('markdown serialization', () => {
     const types = (doc.content ?? []).map((node) => node.type);
     expect(types).toEqual(['paragraph', 'image', 'paragraph']);
   });
+
+  it('does not encode trailing spaces on text nodes', () => {
+    const serialized = serializeMarkdown({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'hello  ' }],
+        },
+        {
+          type: 'orderedList',
+          content: [
+            {
+              type: 'listItem',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: 'sdfsdf ' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(serialized).not.toContain('&#x20;');
+    expect(serialized).toContain('hello');
+    expect(serialized).toContain('sdfsdf');
+  });
+
+  it('does not escape list-item text that looks like markdown syntax', () => {
+    const serialized = serializeMarkdown({
+      type: 'doc',
+      content: [
+        {
+          type: 'orderedList',
+          content: [
+            {
+              type: 'listItem',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: '1. sdfsdf ' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: '## 1. ' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph' }],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(serialized).not.toContain('1\\.');
+    expect(serialized).not.toContain('\\#');
+    expect(serialized).not.toContain('&#x20;');
+    expect(serialized).toContain('1. sdfsdf');
+    expect(serialized).toContain('## 1.');
+  });
 });

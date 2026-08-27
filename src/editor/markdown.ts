@@ -37,8 +37,34 @@ export function serializeMarkdown(doc: JSONContent): string {
     .use(remarkStringify, {
       bullet: '-',
       fences: true,
+      handlers: {
+        text(node, _parent, state, info) {
+          const value = typeof node.value === 'string' ? node.value : '';
+          if (!state.stack.includes('listItem')) {
+            return state.safe(value, info);
+          }
+
+          const original = state.unsafe;
+          state.unsafe = original.filter((pattern) => !isListItemSyntaxEscape(pattern));
+          try {
+            return state.safe(value, info);
+          } finally {
+            state.unsafe = original;
+          }
+        },
+      },
     })
     .stringify(tree as never);
+}
+
+function isListItemSyntaxEscape(pattern: { atBreak?: boolean; before?: string; character: string }): boolean {
+  if (!pattern.atBreak) {
+    return false;
+  }
+  if (pattern.character === '#') {
+    return true;
+  }
+  return (pattern.character === '.' || pattern.character === ')') && pattern.before === '\\d+';
 }
 
 function remarkToTiptap(tree: MdastRoot): JSONContent {
@@ -446,7 +472,33 @@ function tiptapInlineToRemark(nodes: JSONContent[]): MdastNode[] {
     result.push(current);
   }
 
+  trimTrailingTextWhitespace(result);
   return result;
+}
+
+function trimTrailingTextWhitespace(nodes: MdastNode[]): void {
+  while (nodes.length > 0) {
+    const node = nodes[nodes.length - 1];
+    if (node.type === 'text') {
+      const trimmed = (node.value ?? '').replace(/[ \t]+$/, '');
+      if (trimmed.length > 0) {
+        node.value = trimmed;
+        return;
+      }
+      nodes.pop();
+      continue;
+    }
+
+    if (node.children && node.children.length > 0) {
+      trimTrailingTextWhitespace(node.children);
+      if (node.children.length === 0) {
+        nodes.pop();
+        continue;
+      }
+    }
+
+    return;
+  }
 }
 
 function normalizeHighlightSyntax(md: string): string {
