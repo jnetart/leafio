@@ -57,7 +57,11 @@ export function serializeMarkdown(doc: JSONContent): string {
     .stringify(tree as never);
 }
 
-function isListItemSyntaxEscape(pattern: { atBreak?: boolean; before?: string; character: string }): boolean {
+function isListItemSyntaxEscape(pattern: {
+  atBreak?: boolean | null;
+  before?: string | null;
+  character: string;
+}): boolean {
   if (!pattern.atBreak) {
     return false;
   }
