@@ -1422,21 +1422,22 @@ export default function App() {
         onTreeFocus={setTreeFocus}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {showTabBar ? (
-          <EditorTabBar
-            tabs={tabSession.tabs}
-            activePath={tabSession.activePath}
-            insetForTrafficLights={!sidebarOpen}
-            labels={{
-              list: t('tabs.list'),
-              close: t('tabs.close'),
-            }}
-            onSelect={handleSelectTabPath}
-            onClose={closeEditorTab}
-          />
-        ) : null}
         <div className="flex min-h-0 flex-1 overflow-hidden">
-          {settingsOpen ? (
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            {showTabBar ? (
+              <EditorTabBar
+                tabs={tabSession.tabs}
+                activePath={tabSession.activePath}
+                insetForTrafficLights={!sidebarOpen}
+                labels={{
+                  list: t('tabs.list'),
+                  close: t('tabs.close'),
+                }}
+                onSelect={handleSelectTabPath}
+                onClose={closeEditorTab}
+              />
+            ) : null}
+            {settingsOpen ? (
             <SettingsView
               section={settingsSection}
               editorWidthMode={editorWidthMode}
@@ -1469,11 +1470,10 @@ export default function App() {
           ) : showWelcomeScreen ? (
             welcomeScreen
           ) : (
-            <>
-              <main
-                className="relative flex flex-1 flex-col overflow-hidden bg-[var(--paper)]"
-                onMouseMove={() => setEditorActivityAt(Date.now())}
-              >
+            <main
+              className="relative flex flex-1 flex-col overflow-hidden bg-[var(--paper)]"
+              onMouseMove={() => setEditorActivityAt(Date.now())}
+            >
                 {conflict && activeFile && conflict.path === activeFile.path ? (
                   <ExternalChangeBar
                     labels={{
@@ -1560,16 +1560,18 @@ export default function App() {
                     )}
                   </>
                 )}
-              </main>
-              <Inspector
-                headings={headings}
-                open={inspectorOpen}
-                documentKey={activeFile?.path ?? ''}
-                activeIndex={activeHeadingIndex}
-                onOpenChange={setInspectorOpen}
-                onHeadingClick={handleHeadingClick}
-              />
-            </>
+            </main>
+          )}
+          </div>
+          {settingsOpen || showWelcomeScreen ? null : (
+            <Inspector
+              headings={headings}
+              open={inspectorOpen}
+              documentKey={activeFile?.path ?? ''}
+              activeIndex={activeHeadingIndex}
+              onOpenChange={setInspectorOpen}
+              onHeadingClick={handleHeadingClick}
+            />
           )}
         </div>
         <StatusBar

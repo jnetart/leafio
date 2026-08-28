@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --window-bg: #f5f5f7;
-  --sidebar-bg: rgba(235, 235, 240, 0.75);
+  --window-bg: #f4f3f0;
+  --inspector-bg: rgba(238, 237, 234, 0.94);
+  --sidebar-bg: var(--inspector-bg);
   --paper: #ffffff;
   --text: #1d1d1f;
   --text-secondary: #6e6e73;
@@ -54,7 +55,6 @@
   --code-variable: #24292f;
   --code-tag: #116329;
   --code-accent: #5b8c6f;
-  --inspector-bg: rgba(252, 252, 250, 0.92);
   --inspector-rail: rgba(91, 140, 111, 0.22);
   --inspector-marker: rgba(91, 140, 111, 0.55);
   --inspector-item-hover: rgba(0, 0, 0, 0.035);
@@ -68,7 +68,8 @@
 
 .dark {
   --window-bg: #1d1d1f;
-  --sidebar-bg: rgba(45, 45, 48, 0.78);
+  --inspector-bg: rgba(24, 24, 26, 0.96);
+  --sidebar-bg: var(--inspector-bg);
   --paper: #1e1e1e;
   --text: #f5f5f7;
   --text-secondary: #98989d;
@@ -100,7 +101,6 @@
   --code-variable: #e6edf3;
   --code-tag: #7ee787;
   --code-accent: #6baa83;
-  --inspector-bg: rgba(28, 28, 30, 0.94);
   --inspector-rail: rgba(107, 170, 131, 0.28);
   --inspector-marker: rgba(107, 170, 131, 0.65);
   --inspector-item-hover: rgba(255, 255, 255, 0.05);
@@ -253,15 +253,12 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-/* Chrome-style folder tabs: sit on the paper, overlap neighbors, and
-   flare into the strip with concave bottom corners. */
+/* Document tabs: the open note is a sheet of paper; the rest are names. */
 .editor-tabbar {
   --tab-strip-bg: var(--sidebar-bg);
-  --tab-ceiling: 3px;
+  --tab-ceiling: 2px;
   --tab-height: calc(var(--titlebar-height) - var(--tab-ceiling));
-  --tab-radius: 8px;
-  --tab-curve: 12px;
-  --tab-overlap: 8px;
+  --tab-radius: 7px;
   --tab-preferred: 196px;
   position: relative;
   height: var(--titlebar-height);
@@ -277,7 +274,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   height: 100%;
   min-width: 0;
   align-items: flex-end;
-  padding-left: 6px;
+  padding-left: 8px;
 }
 
 .editor-tabbar--inset .editor-tabbar-inner {
@@ -292,7 +289,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   min-width: 0;
   height: var(--tab-height);
   align-items: stretch;
-  padding: 0 var(--tab-curve);
+  gap: 2px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -314,20 +311,14 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   display: flex;
   width: var(--tab-preferred);
   min-width: 96px;
-  max-width: 240px;
-  flex: 1 1 var(--tab-preferred);
+  max-width: 220px;
+  flex: 0 1 var(--tab-preferred);
   align-items: stretch;
-  margin-left: calc(var(--tab-overlap) * -1);
-  padding: 0 var(--tab-overlap);
-  overflow: visible;
+  overflow: hidden;
   color: var(--text-secondary);
   user-select: none;
   -webkit-user-select: none;
   -webkit-app-region: no-drag;
-}
-
-.editor-tab:first-child {
-  margin-left: 0;
 }
 
 .editor-tab::before {
@@ -339,36 +330,15 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   transition: background-color 120ms ease;
 }
 
-.editor-tab::after {
-  content: '';
-  position: absolute;
-  top: 8px;
-  right: 0;
-  bottom: 8px;
-  width: 1px;
-  pointer-events: none;
-  background: color-mix(in srgb, var(--text) 12%, transparent);
-  opacity: 1;
-  transition: opacity 80ms ease;
-}
-
-.editor-tab:last-child::after,
-.editor-tab:hover::after,
-.editor-tab:has(+ .editor-tab:hover)::after,
-.editor-tab:has(+ .editor-tab--active)::after,
-.editor-tab--active::after {
-  opacity: 0;
-}
-
 .editor-tab:hover {
   z-index: 2;
   color: var(--text);
 }
 
 .editor-tab:hover:not(.editor-tab--active)::before {
-  inset: 4px 10px 5px;
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--text) 9%, transparent);
+  inset: 4px 6px 4px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 .editor-tab-button {
@@ -378,7 +348,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   min-width: 0;
   flex: 1 1 auto;
   align-items: center;
-  padding: 0 2px 0 10px;
+  padding: 0 4px 0 12px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -397,7 +367,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   align-items: center;
   justify-content: center;
   align-self: center;
-  margin: 0 4px 0 0;
+  margin: 0 8px 0 0;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -455,38 +425,8 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   background: var(--paper);
 }
 
-.editor-tab-curve {
-  position: absolute;
-  bottom: 0;
-  width: var(--tab-curve);
-  height: var(--tab-curve);
-  pointer-events: none;
-  opacity: 0;
-  z-index: 1;
-}
-
-.editor-tab--active .editor-tab-curve {
-  opacity: 1;
-}
-
-.editor-tab-curve--start {
-  left: 0;
-  transform: translateX(-100%);
-  background: radial-gradient(
-    circle at 0 0,
-    transparent var(--tab-curve),
-    var(--paper) calc(var(--tab-curve) + 0.5px)
-  );
-}
-
-.editor-tab-curve--end {
-  right: 0;
-  transform: translateX(100%);
-  background: radial-gradient(
-    circle at 100% 0,
-    transparent var(--tab-curve),
-    var(--paper) calc(var(--tab-curve) + 0.5px)
-  );
+.editor-tab--active .editor-tab-title {
+  font-weight: 600;
 }
 
 .editor-tab-button:focus-visible,
@@ -500,8 +440,7 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .editor-tab::before,
-  .editor-tab::after {
+  .editor-tab::before {
     transition: none;
   }
 }
@@ -2237,8 +2176,14 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 .outline-panel--collapsed {
   width: 36px;
   align-items: center;
-  padding-top: 12px;
-  gap: 16px;
+  padding-top: 0;
+  gap: 8px;
+}
+
+.outline-panel--collapsed .outline-collapse-btn {
+  width: 100%;
+  height: var(--titlebar-height);
+  border-radius: 0;
 }
 
 .outline-resize-handle {
@@ -2258,11 +2203,12 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .outline-header {
   display: flex;
+  height: var(--titlebar-height);
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 14px 12px 10px 16px;
-  flex-shrink: 0;
+  padding: 0 10px 0 14px;
 }
 
 .outline-header-title {

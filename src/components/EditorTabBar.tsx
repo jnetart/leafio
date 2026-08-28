@@ -77,8 +77,6 @@ export function EditorTabBar({
                   tab.dirty ? ' editor-tab--dirty' : ''
                 }`}
               >
-                <span className="editor-tab-curve editor-tab-curve--start" aria-hidden="true" />
-                <span className="editor-tab-curve editor-tab-curve--end" aria-hidden="true" />
                 <button
                   type="button"
                   role="tab"
