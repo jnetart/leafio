@@ -368,6 +368,20 @@ export function IconLink({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+export function IconFootnote({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3.5 13h9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M8.4 3.2v6.2M7.2 4.4H8.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconUnlink({ className = 'h-4 w-4' }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">

@@ -13,6 +13,7 @@ import {
   IconHighlight,
   IconItalic,
   IconLink,
+  IconFootnote,
   IconOrderedList,
   IconQuote,
   IconStrikethrough,
@@ -22,6 +23,9 @@ import {
 } from './icons';
 import type { IconProps } from './icons';
 import { shouldShowTextFormatToolbar } from '../editor/tableSelection';
+import { insertFootnote } from '../editor/footnoteActions';
+import { useI18n } from '../hooks/useI18n';
+import { usePreferences } from '../hooks/usePreferences';
 
 interface FloatingToolbarProps {
   editor: Editor;
@@ -38,6 +42,8 @@ const HEADING_OPTIONS = [
 type HeadingLevel = (typeof HEADING_OPTIONS)[number]['level'];
 
 export function FloatingToolbar({ editor }: FloatingToolbarProps) {
+  const { language } = usePreferences();
+  const { t } = useI18n(language);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -174,6 +180,13 @@ export function FloatingToolbar({ editor }: FloatingToolbarProps) {
             active={isLinkActive || showLinkInput}
             onMouseDown={preventFocusLoss}
             onClick={openLinkEditor}
+          />
+          <ToolbarButton
+            label={t('footnote.insert')}
+            Icon={IconFootnote}
+            active={editor.isActive('footnoteReference')}
+            onMouseDown={preventFocusLoss}
+            onClick={() => insertFootnote(editor)}
           />
 
           <ToolbarDivider />

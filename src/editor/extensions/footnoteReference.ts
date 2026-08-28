@@ -45,6 +45,6 @@ export const FootnoteReference = Node.create({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(FootnoteReferenceView);
+    return ReactNodeViewRenderer(FootnoteReferenceView, { as: 'span' });
   },
 });
