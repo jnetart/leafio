@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import type { ThemeMode } from '../lib/preferences';
+import { applyDocumentTheme, resolveIsDark } from '../lib/theme';
 
 export function useTheme(theme: ThemeMode) {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
     const apply = () => {
-      const isDark = theme === 'dark' || (theme === 'system' && media.matches);
-      document.documentElement.classList.toggle('dark', isDark);
+      applyDocumentTheme(document.documentElement, resolveIsDark(theme, media.matches));
     };
 
     apply();

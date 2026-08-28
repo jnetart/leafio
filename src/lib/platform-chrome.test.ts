@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveChromeSurface } from './platform-chrome';
+import {
+  MACOS_TRAFFIC_LIGHTS,
+  resolveChromeSurface,
+  trafficLightDragZoneWidth,
+} from './platform-chrome';
 
 describe('resolveChromeSurface', () => {
   it('uses the tab strip when multiple tabs are open', () => {
@@ -47,5 +51,18 @@ describe('resolveChromeSurface', () => {
         showWelcomeScreen: false,
       }),
     ).toBe('settings');
+  });
+});
+
+describe('trafficLightDragZoneWidth', () => {
+  it('matches the Overlay CSS offset used to clear the native cluster', () => {
+    expect(MACOS_TRAFFIC_LIGHTS).toEqual({
+      x: 16,
+      y: 22,
+      button: 12,
+      gap: 8,
+      trailingGap: 10,
+    });
+    expect(trafficLightDragZoneWidth()).toBe(78);
   });
 });
