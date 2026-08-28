@@ -7,6 +7,7 @@ import {
   orderDefinitionsForSerialize,
   usedIdentifiers,
 } from '../src/editor/footnoteModel';
+import { parseMarkdown, serializeMarkdown } from '../src/editor/markdown';
 import type { JSONContent } from '@tiptap/react';
 
 function ref(identifier: string): JSONContent {
@@ -101,3 +102,101 @@ describe('definitionPlainText', () => {
     );
   });
 });
+
+describe('markdown footnotes', () => {
+  it('round-trips a numeric footnote', () => {
+    const md = 'This claim still holds.[^1]\n\n[^1]: From the 1912 marginalia.\n';
+    const doc = parseMarkdown(md);
+    const paragraph = doc.content?.[0];
+    expect(paragraph?.type).toBe('paragraph');
+    expect(paragraph?.content?.some((n) => n.type === 'footnoteReference' && n.attrs?.identifier === '1')).toBe(
+      true,
+    );
+    expect(doc.content?.at(-1)?.type).toBe('footnotes');
+    expect(doc.content?.at(-1)?.content?.[0]?.type).toBe('footnoteDefinition');
+    expect(doc.content?.at(-1)?.content?.[0]?.attrs?.identifier).toBe('1');
+
+    const out = serializeMarkdown(doc);
+    expect(out).toContain('[^1]');
+    expect(out).toContain('[^1]:');
+    expect(out).toContain('From the 1912 marginalia.');
+    expect(out).not.toContain('footnotes');
+    expect(out).not.toMatch(/Footnotes|脚注/);
+  });
+
+  it('preserves a named identifier', () => {
+    const md = 'See the later note.[^smith]\n\n[^smith]: Same as appendix B.\n';
+    const doc = parseMarkdown(md);
+    expect(
+      doc.content?.[0]?.content?.some((n) => n.type === 'footnoteReference' && n.attrs?.identifier === 'smith'),
+    ).toBe(true);
+    const out = serializeMarkdown(doc);
+    expect(out).toContain('[^smith]');
+    expect(out).toContain('[^smith]:');
+  });
+
+  it('shares one definition across two refs', () => {
+    const md = 'One.[^1] Two.[^1]\n\n[^1]: Shared.\n';
+    const doc = parseMarkdown(md);
+    const refs = (doc.content?.[0]?.content ?? []).filter((n) => n.type === 'footnoteReference');
+    expect(refs).toHaveLength(2);
+    expect(doc.content?.at(-1)?.content).toHaveLength(1);
+    expect(serializeMarkdown(doc)).toContain('Shared.');
+  });
+
+  it('moves a mid-file definition to the end on serialize', () => {
+    const md = '[^1]: Mid.\n\nBody.[^1]\n';
+    const doc = parseMarkdown(md);
+    expect(doc.content?.[0]?.type).toBe('paragraph');
+    expect(doc.content?.at(-1)?.type).toBe('footnotes');
+    const out = serializeMarkdown(doc).trim();
+    expect(out.startsWith('Body.')).toBe(true);
+    expect(out.indexOf('[^1]:')).toBeGreaterThan(out.indexOf('[^1]'));
+  });
+
+  it('keeps an orphan definition', () => {
+    const md = 'No refs.\n\n[^ghost]: Still here.\n';
+    const doc = parseMarkdown(md);
+    expect(doc.content?.at(-1)?.content?.[0]?.attrs?.identifier).toBe('ghost');
+    expect(serializeMarkdown(doc)).toContain('[^ghost]:');
+  });
+
+  it('keeps the first of duplicate definitions', () => {
+    const md = 'Cite.[^1]\n\n[^1]: First.\n\n[^1]: Second.\n';
+    const doc = parseMarkdown(md);
+    const defs = doc.content?.at(-1)?.content ?? [];
+    expect(defs).toHaveLength(1);
+    expect(serializeMarkdown(doc)).toContain('First.');
+    expect(serializeMarkdown(doc)).not.toContain('Second.');
+  });
+
+  it('strips an empty paragraph before the notes container', () => {
+    const doc = parseMarkdown('Body.[^1]\n\n[^1]: Note.\n');
+    const withGap = {
+      ...doc,
+      content: [
+        ...(doc.content ?? []).slice(0, -1),
+        { type: 'paragraph', content: [] },
+        (doc.content ?? []).at(-1)!,
+      ],
+    };
+    const out = serializeMarkdown(withGap);
+    expect(out).toContain('Body.');
+    expect(out).toContain('[^1]:');
+    expect(out).not.toMatch(/\n\n\n/);
+  });
+
+  it('serializes an empty definition so the ref does not dangle', () => {
+    const doc = {
+      type: 'doc',
+      content: attachFootnotes(
+        [{ type: 'paragraph', content: [{ type: 'text', text: 'Cite.' }, ref('1')] }],
+        [def('1')],
+      ),
+    };
+    const out = serializeMarkdown(doc);
+    expect(out).toContain('[^1]');
+    expect(out).toContain('[^1]:');
+  });
+});
+

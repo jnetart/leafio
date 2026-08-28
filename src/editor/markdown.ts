@@ -4,6 +4,13 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { stripEditorSpacingParagraphs } from './blockSpacing';
+import {
+  attachFootnotes,
+  FOOTNOTE_DEF,
+  FOOTNOTE_REF,
+  FOOTNOTES,
+  orderDefinitionsForSerialize,
+} from './footnoteModel';
 import { parseHtmlImage, serializeHtmlImage } from './imageHtml';
 import { parseHtmlTable, serializeTableAsHtml, tableHasCellBackground } from './tableHtml';
 
@@ -16,6 +23,8 @@ type MdastNode = {
   lang?: string | null;
   url?: string;
   alt?: string | null;
+  identifier?: string;
+  label?: string | null;
   align?: Array<'left' | 'right' | 'center' | null>;
   children?: MdastNode[];
 };
@@ -71,9 +80,42 @@ function isListItemSyntaxEscape(pattern: {
   return (pattern.character === '.' || pattern.character === ')') && pattern.before === '\\d+';
 }
 
+function footnoteId(node: MdastNode): string {
+  const label = typeof node.label === 'string' ? node.label : '';
+  const identifier = typeof node.identifier === 'string' ? node.identifier : '';
+  return label || identifier;
+}
+
+function convertFootnoteDefinition(node: MdastNode): JSONContent {
+  const content = (node.children ?? []).flatMap((child) => convertBlock(child));
+  return {
+    type: FOOTNOTE_DEF,
+    attrs: { identifier: footnoteId(node) },
+    content: content.length > 0 ? content : [{ type: 'paragraph' }],
+  };
+}
+
 function remarkToTiptap(tree: MdastRoot): JSONContent {
-  const content = tree.children.flatMap((node) => convertBlock(node));
-  return { type: 'doc', content };
+  const definitions: JSONContent[] = [];
+  const seen = new Set<string>();
+  const bodyNodes: MdastNode[] = [];
+
+  for (const child of tree.children) {
+    if (child.type === 'footnoteDefinition') {
+      const id = footnoteId(child);
+      const key = (child.identifier ?? id).toLowerCase();
+      if (!id || seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      definitions.push(convertFootnoteDefinition(child));
+      continue;
+    }
+    bodyNodes.push(child);
+  }
+
+  const body = bodyNodes.flatMap((node) => convertBlock(node));
+  return { type: 'doc', content: attachFootnotes(body, definitions) };
 }
 
 function convertBlock(node: MdastNode): JSONContent[] {
@@ -259,6 +301,14 @@ function inlineToTiptap(nodes: MdastNode[]): JSONContent[] {
       continue;
     }
 
+    if (node.type === 'footnoteReference') {
+      const identifier = footnoteId(node);
+      if (identifier) {
+        result.push({ type: FOOTNOTE_REF, attrs: { identifier } });
+      }
+      continue;
+    }
+
     const mark = markForNode(node);
     if (mark) {
       result.push(...applyMark(node.children ?? [], mark));
@@ -299,13 +349,27 @@ function applyMark(nodes: MdastNode[], mark: TiptapMark): JSONContent[] {
   });
 }
 
-function tiptapToRemark(doc: JSONContent): MdastRoot {
+function convertFootnoteDefToMdast(node: JSONContent): MdastNode {
+  const identifier = String(node.attrs?.identifier ?? '');
+  const children = (node.content ?? [])
+    .map((child) => convertTiptapBlock(child))
+    .filter((child): child is MdastNode => child !== null);
   return {
-    type: 'root',
-    children: (doc.content ?? [])
-      .map((node) => convertTiptapBlock(node))
-      .filter((node): node is MdastNode => node !== null),
+    type: 'footnoteDefinition',
+    identifier,
+    label: identifier,
+    children: children.length > 0 ? children : [{ type: 'paragraph', children: [] }],
   };
+}
+
+function tiptapToRemark(doc: JSONContent): MdastRoot {
+  const body = (doc.content ?? [])
+    .filter((node) => node.type !== FOOTNOTES)
+    .map((node) => convertTiptapBlock(node))
+    .filter((node): node is MdastNode => node !== null);
+
+  const definitions = orderDefinitionsForSerialize(doc).map(convertFootnoteDefToMdast);
+  return { type: 'root', children: [...body, ...definitions] };
 }
 
 function convertTiptapBlock(node: JSONContent): MdastNode | null {
@@ -375,6 +439,10 @@ function convertTiptapBlock(node: JSONContent): MdastNode | null {
         children: [{ type: 'image', url: src, alt, children: [] }],
       };
     }
+    case FOOTNOTES:
+      return null;
+    case FOOTNOTE_DEF:
+      return null;
     default:
       return null;
   }
@@ -443,6 +511,14 @@ function tiptapInlineToRemark(nodes: JSONContent[]): MdastNode[] {
   for (const node of nodes) {
     if (node.type === 'hardBreak') {
       result.push({ type: 'break' });
+      continue;
+    }
+
+    if (node.type === FOOTNOTE_REF) {
+      const identifier = String(node.attrs?.identifier ?? '');
+      if (identifier) {
+        result.push({ type: 'footnoteReference', identifier, label: identifier });
+      }
       continue;
     }
 

@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/react';
 
-export const PANEL_BLOCK_TYPES = new Set(['table', 'codeBlock', 'horizontalRule', 'image']);
+export const PANEL_BLOCK_TYPES = new Set(['table', 'codeBlock', 'horizontalRule', 'image', 'footnotes']);
 
 const TEXTBLOCK_TYPES = new Set(['paragraph', 'heading']);
 
@@ -27,6 +27,14 @@ export function stripEditorSpacingParagraphs(doc: JSONContent): JSONContent {
     content.pop();
   }
 
+  while (
+    content.length >= 2 &&
+    content[content.length - 1]?.type === 'footnotes' &&
+    isEmptyParagraphContent(content[content.length - 2]!)
+  ) {
+    content.splice(content.length - 2, 1);
+  }
+
   const filtered = content.filter((node, index) => {
     if (!isEmptyParagraphContent(node)) {
       return true;
@@ -35,6 +43,10 @@ export function stripEditorSpacingParagraphs(doc: JSONContent): JSONContent {
     const prev = content[index - 1];
     const next = content[index + 1];
     if (!prev?.type || !next?.type) {
+      return false;
+    }
+
+    if (next.type === 'footnotes') {
       return false;
     }
 
