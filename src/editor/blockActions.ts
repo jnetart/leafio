@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core';
+import { insertFootnote } from './footnoteActions';
 import { insertImagesFromPicker } from './insertImage';
 
 export type SlashRange = { from: number; to: number };
@@ -137,6 +138,16 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
       runWithOptionalRange(editor, range, (chain) =>
         chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }),
       );
+    },
+  },
+  {
+    id: 'footnote',
+    title: '脚注',
+    keywords: ['footnote', '脚注', 'fn', 'note'],
+    section: 'insert',
+    active: (editor) => editor.isActive('footnoteReference') || editor.isActive('footnoteDefinition'),
+    run: (editor, range) => {
+      insertFootnote(editor, range);
     },
   },
   {
