@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   attachFootnotes,
+  countRefs,
   definitionPlainText,
   displayNumbers,
   nextIdentifier,
@@ -100,6 +101,14 @@ describe('definitionPlainText', () => {
     expect(definitionPlainText(def('1', 'From the 1912 marginalia.'))).toBe(
       'From the 1912 marginalia.',
     );
+  });
+});
+
+describe('countRefs', () => {
+  it('countRefs counts matching references', () => {
+    const doc = docWith([{ type: 'paragraph', content: [ref('1'), ref('1')] }], [def('1', 'x')]);
+    expect(countRefs(doc, '1')).toBe(2);
+    expect(countRefs(doc, 'missing')).toBe(0);
   });
 });
 

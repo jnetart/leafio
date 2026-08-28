@@ -115,3 +115,13 @@ export function definitionPlainText(definition: JSONContent): string {
   });
   return parts.join('');
 }
+
+export function countRefs(doc: JSONContent, identifier: string): number {
+  let count = 0;
+  walkJson(doc, (node) => {
+    if (node.type === FOOTNOTE_REF && String(node.attrs?.identifier ?? '') === identifier) {
+      count += 1;
+    }
+  });
+  return count;
+}

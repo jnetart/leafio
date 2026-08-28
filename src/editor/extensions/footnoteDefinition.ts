@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import { FootnoteDefinitionView } from '../../components/FootnoteDefinitionView';
 
 export const FootnoteDefinition = Node.create({
   name: 'footnoteDefinition',
@@ -26,5 +28,9 @@ export const FootnoteDefinition = Node.create({
       }),
       0,
     ];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(FootnoteDefinitionView);
   },
 });

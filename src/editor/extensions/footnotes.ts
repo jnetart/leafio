@@ -1,7 +1,9 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import { Fragment } from '@tiptap/pm/model';
 import type { Node as ProseMirrorNode, NodeType } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { FootnotesView } from '../../components/FootnotesView';
 
 function refCounts(doc: ProseMirrorNode): Map<string, number> {
   const counts = new Map<string, number>();
@@ -97,6 +99,10 @@ export const Footnotes = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     return ['section', mergeAttributes(HTMLAttributes, { 'data-footnotes': '', class: 'leafio-footnotes' }), 0];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(FootnotesView);
   },
 
   addProseMirrorPlugins() {

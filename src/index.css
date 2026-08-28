@@ -64,6 +64,8 @@
   --revision-disk: rgba(91, 140, 111, 0.14);
   --revision-local-ink: #8a6414;
   --revision-disk-ink: #3b6b4e;
+  color-scheme: light;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.28);
 }
 
 .dark {
@@ -110,6 +112,8 @@
   --revision-disk: rgba(107, 170, 131, 0.16);
   --revision-local-ink: #e6c35c;
   --revision-disk-ink: #8fcea8;
+  color-scheme: dark;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.28);
 }
 
 html,
@@ -135,6 +139,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--window-bg);
   color: var(--text);
+}
+
+/* Native macOS "Always show scrollbars" ignores overlay chrome; theme these. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 /* Windows / Linux: no traffic lights — align sidebar chrome with Cursor-style layout */
@@ -622,6 +652,126 @@ html[data-platform='linux'] .traffic-light-drag-zone {
 
 .dark .leafio-editor mark {
   background: rgba(255, 214, 10, 0.24);
+}
+
+.leafio-editor .leafio-fn-ref {
+  display: inline;
+}
+
+.leafio-editor .leafio-fn-ref-btn {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.7em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  vertical-align: super;
+  cursor: pointer;
+}
+
+.leafio-editor .leafio-fn-ref-btn:hover {
+  transform: translateY(-1px);
+}
+
+.leafio-editor .leafio-fn-ref-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.leafio-editor .leafio-fn-ref--dangling .leafio-fn-ref-btn {
+  text-decoration: underline dotted var(--text-secondary);
+  text-underline-offset: 2px;
+}
+
+.leafio-fn-preview {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 8px));
+  z-index: 40;
+  max-width: 16rem;
+  max-height: 4.5em;
+  overflow: hidden;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--separator);
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  color: var(--text);
+  font-family: var(--editor-font);
+  font-size: calc(var(--editor-size) * 0.875);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.leafio-editor .leafio-footnotes {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--separator);
+}
+
+.leafio-editor .leafio-fn-def {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  column-gap: 0.35rem;
+  font-size: 0.875em;
+  line-height: 1.5;
+}
+
+.leafio-editor .leafio-fn-def + .leafio-fn-def {
+  margin-top: 0.5rem;
+}
+
+.leafio-editor .leafio-fn-def-mark {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  cursor: pointer;
+}
+
+.leafio-editor .leafio-fn-def-mark:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.leafio-editor .leafio-fn-def-body {
+  position: relative;
+  min-width: 0;
+}
+
+.leafio-editor .leafio-fn-def-placeholder {
+  position: absolute;
+  inset: 0;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.leafio-editor .leafio-fn-def--orphan {
+  opacity: 0.55;
+}
+
+.leafio-editor .leafio-fn-def--flash {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leafio-editor .leafio-fn-ref-btn:hover {
+    transform: none;
+  }
+
+  .leafio-editor .leafio-fn-def--flash {
+    background: transparent;
+  }
 }
 
 .leafio-editor blockquote {
