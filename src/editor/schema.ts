@@ -16,6 +16,9 @@ import { SlashCommandExtension } from './extensions/SlashCommand';
 import { TrailingNode } from './extensions/trailingNode';
 import { ImageBlock } from './extensions/imageBlock';
 import { ImageIngest } from './extensions/imageIngest';
+import { FootnoteReference } from './extensions/footnoteReference';
+import { FootnoteDefinition } from './extensions/footnoteDefinition';
+import { Footnotes } from './extensions/footnotes';
 
 export const extensions = [
   StarterKit.configure({
@@ -47,6 +50,9 @@ export const extensions = [
   TrailingNode,
   ImageBlock,
   ImageIngest,
+  FootnoteReference,
+  FootnoteDefinition,
+  Footnotes,
 ];
 
 export const useLeafioEditor = (
