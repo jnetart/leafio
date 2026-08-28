@@ -88,6 +88,7 @@ import {
   type EditorTabLivePatch,
   type EditorTabsState,
 } from './lib/editor-tabs';
+import { resolveChromeSurface } from './lib/platform-chrome';
 import type { SettingsSection } from './lib/settings-sections';
 import type { ViewMode } from './lib/view-mode';
 import { loadWorkspace, saveWorkspace } from './lib/workspace-store';
@@ -1378,11 +1379,11 @@ export default function App() {
     );
   }
 
-  const chromeSurface = settingsOpen
-    ? 'settings'
-    : showWelcomeScreen
-      ? 'window'
-      : 'paper';
+  const chromeSurface = resolveChromeSurface({
+    showTabBar,
+    settingsOpen,
+    showWelcomeScreen,
+  });
 
   return (
     <div className="relative flex h-full overflow-hidden bg-[var(--window-bg)] font-ui text-[var(--text)]">

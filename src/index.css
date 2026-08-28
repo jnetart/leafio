@@ -192,6 +192,10 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   background: var(--settings-content-bg);
 }
 
+.sidebar-chrome-shell--surface-tabs {
+  background: transparent;
+}
+
 .sidebar-chrome-shell:not(.sidebar-chrome-shell--scoped) .traffic-light-drag-zone {
   background: transparent;
 }

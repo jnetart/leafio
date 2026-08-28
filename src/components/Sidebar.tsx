@@ -11,6 +11,7 @@ import { ContextMenu, type ContextMenuItem } from './ContextMenu';
 import { FolderRow, useExpandedPaths, WorkspaceRootTree } from './FileTree';
 import { useWindowDrag } from '../hooks/useWindowDrag';
 import { basename } from '../lib/paths';
+import type { ChromeSurface } from '../lib/platform-chrome';
 import { IconAddWorkspace, IconPanelLeft, IconSearch, IconSettings, IconUpdate } from './icons';
 
 const WORKSPACE_ROOT_DEPTH = 0;
@@ -18,7 +19,7 @@ const WORKSPACE_ROOT_DEPTH = 0;
 interface SidebarChromeProps {
   open: boolean;
   scoped?: boolean;
-  surface?: 'window' | 'paper' | 'settings';
+  surface?: ChromeSurface;
   labels: {
     collapseSidebar: string;
     expandSidebar: string;
@@ -74,7 +75,7 @@ interface SidebarProps {
   activePath?: string;
   treeRefreshKey?: number;
   open?: boolean;
-  chromeSurface?: 'window' | 'paper' | 'settings';
+  chromeSurface?: ChromeSurface;
   settingsActive?: boolean;
   settingsSection?: SettingsSection;
   t: ReturnType<typeof createTranslator>;
