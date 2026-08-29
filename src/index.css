@@ -1966,6 +1966,60 @@ html[data-platform='linux'] .traffic-light-drag-zone {
   overscroll-behavior: contain;
 }
 
+.welcome-screen__scroll {
+  display: flex;
+  flex: 1 1 0%;
+  width: 100%;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  overflow-y: auto;
+  padding: 56px 32px 88px;
+}
+
+.welcome-screen__stage {
+  display: flex;
+  width: 100%;
+  max-width: 360px;
+  flex-direction: column;
+  align-items: center;
+}
+
+@keyframes welcome-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-screen__hero,
+.welcome-screen__actions,
+.welcome-screen__meta {
+  animation: welcome-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.welcome-screen__actions {
+  animation-delay: 70ms;
+}
+
+.welcome-screen__meta {
+  animation-delay: 140ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-screen__hero,
+  .welcome-screen__actions,
+  .welcome-screen__meta {
+    animation: none;
+  }
+}
+
 .editor-scroll {
   background: var(--paper);
 }
