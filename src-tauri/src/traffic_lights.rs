@@ -12,8 +12,9 @@ pub const TRAFFIC_LIGHT_X: f64 = 16.0;
 pub const TRAFFIC_LIGHT_Y: f64 = 22.0;
 
 /// wry/tao formula: title-bar container height = button height + y inset.
-pub fn title_bar_container_height(button_height: f64) -> f64 {
-    button_height + TRAFFIC_LIGHT_Y
+#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
+pub fn title_bar_container_height(button_height: f64, y_inset: f64) -> f64 {
+    button_height + y_inset
 }
 
 pub fn should_reapply(event: &WindowEvent) -> bool {
@@ -87,7 +88,7 @@ unsafe fn inset_traffic_lights(window: &objc2_app_kit::NSWindow, x: f64, y: f64)
     };
 
     let close_rect = NSView::frame(&close);
-    let title_bar_frame_height = close_rect.size.height + y;
+    let title_bar_frame_height = title_bar_container_height(close_rect.size.height, y);
     let mut title_bar_rect = NSView::frame(&title_bar_container_view);
     title_bar_rect.size.height = title_bar_frame_height;
     title_bar_rect.origin.y = window.frame().size.height - title_bar_frame_height;
@@ -113,7 +114,7 @@ mod tests {
 
     #[test]
     fn title_bar_uses_configured_y_inset() {
-        assert_eq!(title_bar_container_height(12.0), 34.0);
+        assert_eq!(title_bar_container_height(12.0, TRAFFIC_LIGHT_Y), 34.0);
     }
 
     #[test]
