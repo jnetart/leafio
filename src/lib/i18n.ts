@@ -1,4 +1,5 @@
 import type { LanguageMode, ResolvedLocale } from './preferences';
+import { platform as detectedPlatform, type Platform } from './platform';
 
 const messages = {
   'zh-CN': {
@@ -51,7 +52,7 @@ const messages = {
     'image.alt.placeholder': '添加说明',
     'image.resetWidth': '原始宽度',
     'image.missing': '文件不存在',
-    'image.reveal': '在文件夹中显示',
+    'image.reveal': '打开所在的文件夹',
     'image.lightbox.close': '关闭',
     'footnote.placeholder': '脚注',
     'footnote.missing': '没有对应的脚注',
@@ -88,11 +89,11 @@ const messages = {
     'context.renameFolder': '重命名文件夹',
     'context.renameWorkspace': '重命名工作区',
     'context.removeFromWorkspace': '从工作区移除',
-    'context.copy': '复制',
+    'context.copy': '复制副本',
     'context.move': '移动到…',
     'context.delete': '删除',
     'context.export': '导出…',
-    'context.openInFileManager': '在文件管理器中显示',
+    'context.openInFileManager': '打开所在的文件夹',
     'context.openInTerminal': '在终端中打开',
     'menu.file': '文件',
     'menu.edit': '编辑',
@@ -318,7 +319,7 @@ const messages = {
     'image.alt.placeholder': 'Add a description',
     'image.resetWidth': 'Original width',
     'image.missing': 'File not found',
-    'image.reveal': 'Reveal in File Manager',
+    'image.reveal': 'Open Containing Folder',
     'image.lightbox.close': 'Close',
     'footnote.placeholder': 'Footnote',
     'footnote.missing': 'No matching footnote',
@@ -359,7 +360,7 @@ const messages = {
     'context.move': 'Move to…',
     'context.delete': 'Delete',
     'context.export': 'Export…',
-    'context.openInFileManager': 'Reveal in File Manager',
+    'context.openInFileManager': 'Open Containing Folder',
     'context.openInTerminal': 'Open in Terminal',
     'menu.file': 'File',
     'menu.edit': 'Edit',
@@ -547,7 +548,30 @@ export function resolveLocale(language: LanguageMode): ResolvedLocale {
   return systemLang.startsWith('zh') ? 'zh-CN' : 'en';
 }
 
-export function createTranslator(locale: ResolvedLocale) {
+const REVEAL_IN_OS_KEYS = new Set<MessageKey>([
+  'context.openInFileManager',
+  'image.reveal',
+]);
+
+const REVEAL_IN_OS: Record<ResolvedLocale, Record<Platform, string>> = {
+  'zh-CN': {
+    mac: '在访达中显示',
+    windows: '打开文件位置',
+    linux: '打开所在的文件夹',
+  },
+  en: {
+    mac: 'Reveal in Finder',
+    windows: 'Open file location',
+    linux: 'Open Containing Folder',
+  },
+};
+
+export function createTranslator(locale: ResolvedLocale, os: Platform = detectedPlatform) {
   const table = messages[locale];
-  return (key: MessageKey) => table[key];
+  return (key: MessageKey) => {
+    if (REVEAL_IN_OS_KEYS.has(key)) {
+      return REVEAL_IN_OS[locale][os];
+    }
+    return table[key];
+  };
 }
