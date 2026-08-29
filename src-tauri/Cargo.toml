@@ -1,6 +1,6 @@
 [package]
 name = "leafio"
-version = "0.8.71"
+version = "0.8.87"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"

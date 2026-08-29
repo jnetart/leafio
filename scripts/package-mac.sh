@@ -114,19 +114,35 @@ build_one() {
   resolve_bundle_dirs "$target"
   publish_updater_archive "$arch_label"
 
-  local dest="$RELEASES/Leafio_${VERSION}_${OS_LABEL}_${arch_label}.dmg"
-  local dmg=""
-  if dmg="$(find_built_dmg "$arch_label")"; then
-    cp -f "$dmg" "$dest"
-    echo "Released $dest (ad-hoc signed during Tauri build)"
-    ls -lh "$dest"
-    return
-  fi
-
   local app="$BUNDLE_MACOS/Leafio.app"
+  # Always ad-hoc sign the .app and rebuild the DMG. Copying Tauri's DMG can
+  # ship an unsigned bundle (Gatekeeper "damaged" dialog) even when
+  # signingIdentity is "-".
   if [[ -d "$app" ]]; then
     sign_app "$app"
     publish_dmg "$arch_label" "$app"
+    return
+  fi
+
+  local dmg=""
+  if dmg="$(find_built_dmg "$arch_label")"; then
+    echo "warning: Leafio.app missing after build; extracting from Tauri DMG to ad-hoc sign"
+    local mount
+    mount="$(mktemp -d)"
+    hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount"
+    if [[ ! -d "$mount/Leafio.app" ]]; then
+      hdiutil detach "$mount" -quiet || true
+      echo "error: Leafio.app not found inside $dmg" >&2
+      exit 1
+    fi
+    local stage
+    stage="$(mktemp -d)"
+    cp -R "$mount/Leafio.app" "$stage/Leafio.app"
+    hdiutil detach "$mount" -quiet
+    rmdir "$mount" || true
+    sign_app "$stage/Leafio.app"
+    publish_dmg "$arch_label" "$stage/Leafio.app"
+    rm -rf "$stage"
     return
   fi
 
