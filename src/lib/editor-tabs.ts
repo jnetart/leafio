@@ -89,8 +89,8 @@ export function activeTab(state: EditorTabsState): EditorTab | null {
   return state.tabs.find((tab) => tab.path === state.activePath) ?? null;
 }
 
-export function shouldShowTabBar(state: EditorTabsState): boolean {
-  return state.tabs.length > 1;
+export function shouldShowTabBar(state: EditorTabsState, settingsOpen = false): boolean {
+  return !settingsOpen && state.tabs.length > 1;
 }
 
 function mergeLivePatch(tab: EditorTab, live: EditorTabLivePatch): EditorTab {

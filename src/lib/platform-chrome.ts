@@ -51,8 +51,9 @@ export function installPlatformChrome(): void {
 
 /**
  * Collapsed sidebar chrome sits on top of the title row.
+ * Settings replaces the document workspace, so it wins over the tab strip.
  * Multi-tab uses the tab strip, so the overlay must stay transparent
- * (paper/settings/window fills would flash as a white block).
+ * (paper/window fills would flash as a white block).
  * Single-tab has no strip — match the content surface underneath.
  */
 export function resolveChromeSurface(input: {
@@ -60,11 +61,11 @@ export function resolveChromeSurface(input: {
   settingsOpen: boolean;
   showWelcomeScreen: boolean;
 }): ChromeSurface {
-  if (input.showTabBar) {
-    return 'tabs';
-  }
   if (input.settingsOpen) {
     return 'settings';
+  }
+  if (input.showTabBar) {
+    return 'tabs';
   }
   if (input.showWelcomeScreen) {
     return 'window';

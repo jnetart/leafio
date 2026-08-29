@@ -33,6 +33,11 @@ describe('shouldShowTabBar', () => {
     const two = openOrActivateTab(one, tab('/b.md'));
     expect(shouldShowTabBar(two)).toBe(true);
   });
+
+  it('hides the bar while settings is open even with multiple tabs', () => {
+    const two = openOrActivateTab(openOrActivateTab(emptyEditorTabs(), tab('/a.md')), tab('/b.md'));
+    expect(shouldShowTabBar(two, true)).toBe(false);
+  });
 });
 
 describe('openOrActivateTab', () => {

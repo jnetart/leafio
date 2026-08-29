@@ -16,14 +16,14 @@ describe('resolveChromeSurface', () => {
     ).toBe('tabs');
   });
 
-  it('keeps tab-strip chrome even if settings is open underneath', () => {
+  it('uses settings chrome when settings is open, even if multiple tabs exist', () => {
     expect(
       resolveChromeSurface({
         showTabBar: true,
         settingsOpen: true,
         showWelcomeScreen: false,
       }),
-    ).toBe('tabs');
+    ).toBe('settings');
   });
 
   it('matches paper when a single tab has no tab bar', () => {

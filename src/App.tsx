@@ -220,7 +220,7 @@ export default function App() {
     const tab = activeTab(tabSession);
     return tab ? { name: tab.name, path: tab.path, is_dir: false } : null;
   }, [tabSession]);
-  const showTabBar = shouldShowTabBar(tabSession);
+  const showTabBar = shouldShowTabBar(tabSession, settingsOpen);
   const hasSidebar = hasWorkspace(workspace);
   const showWelcomeScreen = !activeFile && launchBehavior === 'welcome';
   const textFocus = useMenuTextFocus();
