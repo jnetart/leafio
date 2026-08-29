@@ -34,7 +34,7 @@ interface SearchDialogProps {
   homeDir?: string | null;
   labels: SearchDialogLabels;
   onClose: () => void;
-  onSelect: (path: string) => void;
+  onSelect: (path: string, query: ParsedSearchQuery) => void;
   onSearch: (query: ParsedSearchQuery) => Promise<SearchResult[]>;
 }
 
@@ -164,7 +164,7 @@ export function SearchDialog({
         event.preventDefault();
         const selected = results[activeIndex];
         if (selected) {
-          onSelect(selected.path);
+          onSelect(selected.path, parsed);
           onClose();
         }
       }
@@ -172,7 +172,7 @@ export function SearchDialog({
 
     window.addEventListener('keydown', onKeyDown, true);
     return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [open, onClose, onSelect, results, activeIndex]);
+  }, [open, onClose, onSelect, parsed, results, activeIndex]);
 
   if (!open) {
     return null;
@@ -184,7 +184,7 @@ export function SearchDialog({
   const activeId = results[activeIndex] ? `search-option-${activeIndex}` : undefined;
 
   const selectResult = (path: string) => {
-    onSelect(path);
+    onSelect(path, parsed);
     onClose();
   };
 

@@ -8,11 +8,13 @@ import {
   useState,
 } from 'react';
 import {
-  BLOCK_ACTION_SECTION_LABELS,
+  BLOCK_ACTION_SECTION_KEYS,
   filterBlockActions,
   type BlockActionSection,
   type EditorBlockAction,
 } from '../editor/blockActions';
+import { useI18n } from '../hooks/useI18n';
+import { usePreferences } from '../hooks/usePreferences';
 import { scrollChildIntoNearestView } from '../lib/scroll-into-view';
 
 export interface SlashCommandListProps {
@@ -27,6 +29,8 @@ export interface SlashCommandListHandle {
 
 export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandListProps>(
   function SlashCommandList({ query, command }, ref) {
+    const { language } = usePreferences();
+    const { t } = useI18n(language);
     const items = useMemo(() => filterBlockActions(query), [query]);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const listRef = useRef<HTMLDivElement>(null);
@@ -81,7 +85,7 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
     if (items.length === 0) {
       return (
         <div className="min-w-[180px] rounded-lg border border-[var(--separator)] bg-[var(--paper)] px-3 py-2 text-[12px] text-[var(--text-secondary)] shadow-[0_8px_28px_rgba(0,0,0,0.14)]">
-          无匹配命令
+          {t('slash.noMatch')}
         </div>
       );
     }
@@ -93,7 +97,7 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
         ref={listRef}
         className="max-h-[min(320px,50vh)] min-w-[196px] overflow-auto overscroll-contain rounded-lg border border-[var(--separator)] bg-[var(--paper)] py-1 shadow-[0_8px_28px_rgba(0,0,0,0.14)]"
         role="listbox"
-        aria-label="斜杠命令"
+        aria-label={t('slash.listLabel')}
       >
         {items.map((item, index) => {
           const showHeader = item.section !== lastSection;
@@ -102,7 +106,7 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
             <div key={item.id}>
               {showHeader ? (
                 <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)] first:pt-1">
-                  {BLOCK_ACTION_SECTION_LABELS[item.section]}
+                  {t(BLOCK_ACTION_SECTION_KEYS[item.section])}
                 </div>
               ) : null}
               <button
@@ -121,7 +125,7 @@ export const SlashCommandList = forwardRef<SlashCommandListHandle, SlashCommandL
                     : 'text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/[0.08]'
                 }`}
               >
-                <span>{item.title}</span>
+                <span>{t(item.titleKey)}</span>
                 <span className="text-[10px] text-[var(--text-secondary)]">/{item.keywords[0]}</span>
               </button>
             </div>

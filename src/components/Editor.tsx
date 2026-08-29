@@ -10,6 +10,7 @@ import { useEditorContextMenuOpen } from '../lib/editor-context-menu';
 import { EditorContextMenu } from './EditorContextMenu';
 import { FloatingToolbar } from './FloatingToolbar';
 import { TableBubbleMenu } from './TableBubbleMenu';
+import { useEditorFindReveal } from '../hooks/useEditorFindReveal';
 
 interface EditorProps {
   content: JSONContent;
@@ -19,6 +20,10 @@ interface EditorProps {
   compressImages?: boolean;
   compressMaxEdge?: number;
   onImageNotice?: (key: ImageNoticeKey) => void;
+  findQuery?: string | null;
+  findIndex?: number;
+  onFindMatchCount?: (count: number) => void;
+  spellCheck?: boolean;
 }
 
 export function Editor({
@@ -29,9 +34,21 @@ export function Editor({
   compressImages = false,
   compressMaxEdge = DEFAULT_COMPRESS_MAX_EDGE,
   onImageNotice,
+  findQuery = null,
+  findIndex = 0,
+  onFindMatchCount,
+  spellCheck = false,
 }: EditorProps) {
   const editor = useLeafioEditor(content, true, onChange);
   const { contextMenuOpen, onMenuOpenChange } = useEditorContextMenuOpen();
+  useEditorFindReveal(editor, findQuery, findIndex, onFindMatchCount ?? (() => undefined));
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.view.dom.setAttribute('spellcheck', spellCheck ? 'true' : 'false');
+  }, [editor, spellCheck]);
 
   useEffect(() => {
     if (!editor) {

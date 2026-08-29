@@ -1,8 +1,24 @@
 import { writeFile } from './fs';
+import type { ExportFormat } from './preferences';
+
+export function stripYamlFrontmatter(markdown: string): string {
+  const match = markdown.match(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*\r?\n?/);
+  if (!match) {
+    return markdown;
+  }
+  return markdown.slice(match[0].length).replace(/^\r?\n/, '');
+}
+
+export function exportBody(source: string, format: ExportFormat, includeFrontmatter: boolean): string {
+  if (format === 'markdown' && !includeFrontmatter) {
+    return stripYamlFrontmatter(source);
+  }
+  return source;
+}
 
 export async function exportFile(
   path: string,
-  format: 'markdown' | 'html',
+  format: ExportFormat,
   content: string,
 ) {
   const target =

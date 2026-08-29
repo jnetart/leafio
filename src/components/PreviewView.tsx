@@ -3,13 +3,23 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import { useEffect } from 'react';
 import { getImageBlockStorage } from '../editor/insertImage';
 import { extensions } from '../editor/schema';
+import { useEditorFindReveal } from '../hooks/useEditorFindReveal';
 
 interface PreviewViewProps {
   content: JSONContent;
   notePath: string;
+  findQuery?: string | null;
+  findIndex?: number;
+  onFindMatchCount?: (count: number) => void;
 }
 
-export function PreviewView({ content, notePath }: PreviewViewProps) {
+export function PreviewView({
+  content,
+  notePath,
+  findQuery = null,
+  findIndex = 0,
+  onFindMatchCount,
+}: PreviewViewProps) {
   const editor = useEditor({
     extensions,
     content,
@@ -20,6 +30,7 @@ export function PreviewView({ content, notePath }: PreviewViewProps) {
       },
     },
   });
+  useEditorFindReveal(editor, findQuery, findIndex, onFindMatchCount ?? (() => undefined));
 
   useEffect(() => {
     if (!editor) {

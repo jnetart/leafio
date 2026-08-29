@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   DEFAULT_PREFERENCES,
   type AppPreferences,
+  type AutoSaveInterval,
   type EditorFontFamily,
   type EditorFontSize,
   type EditorTabWidth,
   type EditorWidthMode,
+  type ExportFormat,
   type LanguageMode,
   type LaunchBehavior,
   type ThemeMode,
@@ -111,6 +113,34 @@ export function usePreferences() {
     [updatePreferences],
   );
 
+  const setAutoSaveInterval = useCallback(
+    (autoSaveInterval: AutoSaveInterval) => {
+      updatePreferences((current) => ({ ...current, autoSaveInterval }));
+    },
+    [updatePreferences],
+  );
+
+  const setSpellCheck = useCallback(
+    (spellCheck: boolean) => {
+      updatePreferences((current) => ({ ...current, spellCheck }));
+    },
+    [updatePreferences],
+  );
+
+  const setDefaultExportFormat = useCallback(
+    (defaultExportFormat: ExportFormat) => {
+      updatePreferences((current) => ({ ...current, defaultExportFormat }));
+    },
+    [updatePreferences],
+  );
+
+  const setIncludeFrontmatter = useCallback(
+    (includeFrontmatter: boolean) => {
+      updatePreferences((current) => ({ ...current, includeFrontmatter }));
+    },
+    [updatePreferences],
+  );
+
   return {
     ...preferences,
     ready,
@@ -125,6 +155,10 @@ export function usePreferences() {
     setLastUpdateCheckAt,
     setCompressImages,
     setCompressMaxEdge,
+    setAutoSaveInterval,
+    setSpellCheck,
+    setDefaultExportFormat,
+    setIncludeFrontmatter,
     setPreferences: updatePreferences,
   };
 }

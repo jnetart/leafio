@@ -1,7 +1,11 @@
 import { load } from '@tauri-apps/plugin-store';
 import {
   DEFAULT_PREFERENCES,
+  resolveAutoSaveInterval,
   resolveAutoUpdateEnabled,
+  resolveDefaultExportFormat,
+  resolveIncludeFrontmatter,
+  resolveSpellCheck,
   type AppPreferences,
 } from './preferences';
 
@@ -21,6 +25,10 @@ export async function loadPreferences(): Promise<AppPreferences> {
       ...DEFAULT_PREFERENCES,
       ...rest,
       autoUpdateEnabled: resolveAutoUpdateEnabled({ autoUpdateEnabled, updateCheckInterval }),
+      autoSaveInterval: resolveAutoSaveInterval(stored.autoSaveInterval),
+      spellCheck: resolveSpellCheck(stored.spellCheck),
+      defaultExportFormat: resolveDefaultExportFormat(stored.defaultExportFormat),
+      includeFrontmatter: resolveIncludeFrontmatter(stored.includeFrontmatter),
     };
   } catch {
     return DEFAULT_PREFERENCES;

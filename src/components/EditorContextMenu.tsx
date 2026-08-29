@@ -2,13 +2,15 @@ import type { Editor } from '@tiptap/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   applyLink,
-  BLOCK_ACTION_SECTION_LABELS,
+  BLOCK_ACTION_SECTION_KEYS,
   EDITOR_BLOCK_ACTIONS,
   type BlockActionSection,
   type EditorBlockAction,
 } from '../editor/blockActions';
 import { TABLE_STRUCTURE_ACTIONS, type TableAction } from '../editor/tableActions';
+import { useI18n } from '../hooks/useI18n';
 import { useNotifyContextMenuOpen } from '../lib/editor-context-menu';
+import { usePreferences } from '../hooks/usePreferences';
 import { scrollChildIntoNearestView } from '../lib/scroll-into-view';
 
 interface EditorContextMenuState {
@@ -35,6 +37,8 @@ function menuItemClassName(selected: boolean, active = false): string {
 }
 
 export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMenuProps) {
+  const { language } = usePreferences();
+  const { t } = useI18n(language);
   const [menu, setMenu] = useState<EditorContextMenuState | null>(null);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -46,10 +50,10 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
   const groupedActions = useMemo(() => {
     return SECTION_ORDER.map((section) => ({
       section,
-      label: BLOCK_ACTION_SECTION_LABELS[section],
+      label: t(BLOCK_ACTION_SECTION_KEYS[section]),
       items: EDITOR_BLOCK_ACTIONS.filter((action) => action.section === section),
     })).filter((group) => group.items.length > 0);
-  }, []);
+  }, [t]);
 
   const isInTable = editor.isActive('table');
   const selectableCount = isInTable
@@ -289,7 +293,7 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
                     onMouseEnter={() => setSelectedIndex(index)}
                     className={menuItemClassName(index === selectedIndex, Boolean(action.active?.(editor)))}
                   >
-                    <span>{action.title}</span>
+                    <span>{t(action.titleKey)}</span>
                     {action.id.startsWith('heading-') ? (
                       <span className="text-[10px] text-[var(--text-secondary)]">
                         H{action.id.replace('heading-', '')}
@@ -306,7 +310,7 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
       {!isInTable && showLinkInput ? (
         <div className="border-t border-[var(--separator)] px-2 py-2">
           <div className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-            链接地址
+            {t('toolbar.linkUrl')}
           </div>
           <div className="flex items-center gap-1">
             <input
@@ -324,8 +328,8 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
                   closeMenu();
                 }
               }}
-              placeholder="粘贴或输入链接"
-              aria-label="链接地址"
+              placeholder={t('toolbar.linkPlaceholder')}
+              aria-label={t('toolbar.linkUrl')}
               className="min-w-0 flex-1 rounded-md border border-[var(--separator)] bg-[var(--settings-input-bg)] px-2 py-1 text-[12px] text-[var(--text)] outline-none transition-[border-color,box-shadow] focus:border-[var(--accent)] focus:shadow-[0_0_0_2px_rgba(91,140,111,0.18)]"
             />
             <button
@@ -333,7 +337,7 @@ export function EditorContextMenu({ editor, onMenuOpenChange }: EditorContextMen
               onClick={submitLink}
               className="rounded-md bg-[var(--accent)] px-2 py-1 text-[11px] font-semibold text-white transition-opacity hover:opacity-90"
             >
-              确定
+              {t('toolbar.linkApply')}
             </button>
           </div>
         </div>

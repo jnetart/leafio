@@ -6,21 +6,27 @@ const FADE_DELAY_MS = 7000;
 
 const VIEW_MODES: Array<{
   mode: ViewMode;
-  label: string;
+  labelKey: 'edit' | 'source' | 'preview';
   Icon: typeof IconEdit;
 }> = [
-  { mode: 'edit', label: '编辑', Icon: IconEdit },
-  { mode: 'source', label: '源码', Icon: IconSource },
-  { mode: 'preview', label: '预览', Icon: IconPreview },
+  { mode: 'edit', labelKey: 'edit', Icon: IconEdit },
+  { mode: 'source', labelKey: 'source', Icon: IconSource },
+  { mode: 'preview', labelKey: 'preview', Icon: IconPreview },
 ];
 
 interface ViewModeFloaterProps {
   view: ViewMode;
   onViewChange: (view: ViewMode) => void;
   activityAt?: number;
+  labels: {
+    edit: string;
+    source: string;
+    preview: string;
+    modes: string;
+  };
 }
 
-export function ViewModeFloater({ view, onViewChange, activityAt }: ViewModeFloaterProps) {
+export function ViewModeFloater({ view, onViewChange, activityAt, labels }: ViewModeFloaterProps) {
   const [faded, setFaded] = useState(false);
   const timerRef = useRef<number | null>(null);
 
@@ -57,19 +63,19 @@ export function ViewModeFloater({ view, onViewChange, activityAt }: ViewModeFloa
         faded ? 'opacity-35' : 'opacity-100'
       }`}
       role="tablist"
-      aria-label="视图模式"
+      aria-label={labels.modes}
       onMouseEnter={() => setFaded(false)}
       onMouseLeave={scheduleFade}
       onFocus={wake}
     >
-      {VIEW_MODES.map(({ mode, label, Icon }) => (
+      {VIEW_MODES.map(({ mode, labelKey, Icon }) => (
         <button
           key={mode}
           type="button"
           role="tab"
           aria-selected={view === mode}
-          aria-label={label}
-          title={label}
+          aria-label={labels[labelKey]}
+          title={labels[labelKey]}
           onClick={() => {
             onViewChange(mode);
             wake();

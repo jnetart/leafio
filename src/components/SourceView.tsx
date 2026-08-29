@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tabStringForSize } from '../editor/codeBlockIndent';
 import type { EditorTabWidth } from '../lib/preferences';
+import { findMatches } from '../lib/document-find';
 import { LEAFIO_MENU_EDIT_EVENT, type LeafioMenuEditAction } from '../lib/menu-edit';
 
 interface SourceViewProps {
   value: string;
   onChange: (value: string) => void;
   tabWidth: EditorTabWidth;
+  findQuery?: string | null;
+  findIndex?: number;
+  onFindMatchCount?: (count: number) => void;
 }
 
 function escapeHtml(text: string): string {
@@ -67,7 +71,14 @@ function highlightMarkdown(text: string): string {
     .join('\n');
 }
 
-export function SourceView({ value, onChange, tabWidth }: SourceViewProps) {
+export function SourceView({
+  value,
+  onChange,
+  tabWidth,
+  findQuery = null,
+  findIndex = 0,
+  onFindMatchCount,
+}: SourceViewProps) {
   const [draft, setDraft] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
@@ -76,6 +87,26 @@ export function SourceView({ value, onChange, tabWidth }: SourceViewProps) {
   useEffect(() => {
     setDraft(value);
   }, [value]);
+
+  useEffect(() => {
+    if (!findQuery?.trim()) {
+      onFindMatchCount?.(0);
+      return;
+    }
+    const matches = findMatches(draft, findQuery);
+    onFindMatchCount?.(matches.length);
+    const match = matches[findIndex] ?? matches[0];
+    const textarea = textareaRef.current;
+    if (!textarea || !match) {
+      return;
+    }
+    textarea.focus();
+    textarea.setSelectionRange(match.from, match.to);
+    const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 24;
+    const line = draft.slice(0, match.from).split('\n').length - 1;
+    textarea.scrollTop = Math.max(0, line * lineHeight - textarea.clientHeight / 3);
+    textarea.dispatchEvent(new Event('scroll'));
+  }, [draft, findQuery, findIndex, onFindMatchCount]);
 
   useEffect(() => {
     const onMenuEdit = (event: Event) => {

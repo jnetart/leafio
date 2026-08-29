@@ -43,6 +43,17 @@ export function isSearchQueryEmpty(query: ParsedSearchQuery): boolean {
   return query.terms.length === 0 && query.tags.length === 0 && query.paths.length === 0;
 }
 
+/** Text to highlight after opening a search hit. Empty when the query has no body needle. */
+export function searchRevealNeedle(query: ParsedSearchQuery): string {
+  if (query.terms[0]) {
+    return query.terms[0];
+  }
+  if (query.tags[0]) {
+    return `#${query.tags[0]}`;
+  }
+  return '';
+}
+
 export function searchNeedles(query: ParsedSearchQuery): string[] {
   return [...query.terms, ...query.tags, ...query.paths];
 }

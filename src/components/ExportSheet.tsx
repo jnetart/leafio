@@ -1,11 +1,39 @@
+import { useEffect, useState } from 'react';
+import type { ExportFormat } from '../lib/preferences';
+
+interface ExportSheetLabels {
+  title: string;
+  format: string;
+  location: string;
+  cancel: string;
+  confirm: string;
+}
+
 interface ExportSheetProps {
   open: boolean;
   defaultPath: string;
+  defaultFormat: ExportFormat;
+  labels: ExportSheetLabels;
   onClose: () => void;
-  onExport: (format: 'markdown' | 'html', targetPath: string) => void;
+  onExport: (format: ExportFormat, targetPath: string) => void;
 }
 
-export function ExportSheet({ open, defaultPath, onClose, onExport }: ExportSheetProps) {
+export function ExportSheet({
+  open,
+  defaultPath,
+  defaultFormat,
+  labels,
+  onClose,
+  onExport,
+}: ExportSheetProps) {
+  const [format, setFormat] = useState<ExportFormat>(defaultFormat);
+
+  useEffect(() => {
+    if (open) {
+      setFormat(defaultFormat);
+    }
+  }, [open, defaultFormat]);
+
   if (!open) {
     return null;
   }
@@ -13,34 +41,39 @@ export function ExportSheet({ open, defaultPath, onClose, onExport }: ExportShee
   return (
     <div className="absolute inset-0 z-20 flex items-start justify-center bg-black/20 pt-16">
       <form
-        className="w-[360px] rounded-[10px] border border-[var(--separator)] bg-white/95 p-5 shadow-2xl backdrop-blur-xl"
+        className="w-[360px] rounded-[10px] border border-[var(--separator)] bg-white/95 p-5 shadow-2xl backdrop-blur-xl dark:bg-[var(--paper)]/95"
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
-          const format = String(form.get('format')) as 'markdown' | 'html';
           const path = String(form.get('path'));
           onExport(format, path);
           onClose();
         }}
       >
-        <h3 className="mb-4 text-[15px] font-semibold">导出文档</h3>
+        <h3 className="mb-4 text-[15px] font-semibold">{labels.title}</h3>
 
-        <label className="mb-4 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-          格式
+        <div className="mb-4 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+          {labels.format}
           <div className="mt-2 flex gap-2">
-            <label className="rounded-full bg-[rgba(91,140,111,0.14)] px-3 py-1 text-xs font-medium text-[#3B6B4E]">
-              <input type="radio" name="format" value="markdown" defaultChecked className="sr-only" />
-              Markdown
-            </label>
-            <label className="rounded-full bg-black/5 px-3 py-1 text-xs">
-              <input type="radio" name="format" value="html" className="sr-only" />
-              HTML
-            </label>
+            {(['markdown', 'html'] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFormat(option)}
+                className={`rounded-full px-3 py-1 text-xs ${
+                  format === option
+                    ? 'bg-[rgba(91,140,111,0.14)] font-medium text-[#3B6B4E]'
+                    : 'bg-black/5'
+                }`}
+              >
+                {option === 'markdown' ? 'Markdown' : 'HTML'}
+              </button>
+            ))}
           </div>
-        </label>
+        </div>
 
         <label className="mb-4 block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-          保存位置
+          {labels.location}
           <input
             name="path"
             defaultValue={defaultPath}
@@ -54,13 +87,13 @@ export function ExportSheet({ open, defaultPath, onClose, onExport }: ExportShee
             onClick={onClose}
             className="rounded-md bg-black/5 px-4 py-2 text-[13px]"
           >
-            取消
+            {labels.cancel}
           </button>
           <button
             type="submit"
             className="rounded-md bg-leaf-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-leaf-accent-hover"
           >
-            导出
+            {labels.confirm}
           </button>
         </div>
       </form>

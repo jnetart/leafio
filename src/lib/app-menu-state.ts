@@ -12,6 +12,8 @@ export interface AppMenuState {
   canExport: boolean;
   canCloseDocument: boolean;
   canFind: boolean;
+  canFindInWorkspace: boolean;
+  canSave: boolean;
   canViewDocument: boolean;
   tabCount: number;
 }
@@ -36,7 +38,9 @@ export function deriveAppMenuState(input: {
     canNewFolder: onFolder,
     canExport: hasDocument,
     canCloseDocument: hasDocument,
-    canFind: hasWorkspace && !settingsOpen,
+    canFind: hasDocument,
+    canFindInWorkspace: hasWorkspace && !settingsOpen,
+    canSave: hasDocument,
     canViewDocument: hasDocument,
     tabCount: input.tabCount ?? (activeFile ? 1 : 0),
   };

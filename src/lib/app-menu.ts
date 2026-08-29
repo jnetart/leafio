@@ -16,6 +16,8 @@ export type AppMenuAction =
   | 'export'
   | 'close-document'
   | 'find'
+  | 'find-in-workspace'
+  | 'save'
   | 'undo'
   | 'redo'
   | 'cut'
@@ -55,6 +57,8 @@ export const MENU_ITEM_IDS = {
   export: 'menu-export',
   closeDocument: 'menu-close',
   find: 'menu-find',
+  findInWorkspace: 'menu-find-workspace',
+  save: 'menu-save',
   undo: 'menu-undo',
   redo: 'menu-redo',
   cut: 'menu-cut',
@@ -147,6 +151,8 @@ const ITEM_LABEL_KEYS: Partial<Record<string, MessageKey>> = {
   [MENU_ITEM_IDS.export]: 'menu.export',
   [MENU_ITEM_IDS.closeDocument]: 'menu.closeDocument',
   [MENU_ITEM_IDS.find]: 'menu.find',
+  [MENU_ITEM_IDS.findInWorkspace]: 'menu.findInWorkspace',
+  [MENU_ITEM_IDS.save]: 'menu.save',
   [MENU_ITEM_IDS.undo]: 'menu.undo',
   [MENU_ITEM_IDS.redo]: 'menu.redo',
   [MENU_ITEM_IDS.cut]: 'menu.cut',
@@ -252,6 +258,7 @@ export async function buildAppMenu(
       'CmdOrCtrl+D',
     ),
     { item: 'Separator' as const },
+    await customItem(MENU_ITEM_IDS.save, t('menu.save'), onAction, 'save', 'CmdOrCtrl+S'),
     await customItem(
       MENU_ITEM_IDS.export,
       t('menu.export'),
@@ -311,6 +318,13 @@ export async function buildAppMenu(
     ),
     { item: 'Separator' as const },
     await customItem(MENU_ITEM_IDS.find, t('menu.find'), onAction, 'find', 'CmdOrCtrl+F'),
+    await customItem(
+      MENU_ITEM_IDS.findInWorkspace,
+      t('menu.findInWorkspace'),
+      onAction,
+      'find-in-workspace',
+      'CmdOrCtrl+Shift+F',
+    ),
   ];
 
   for (const entry of editItemDefs) {
@@ -430,6 +444,10 @@ function enabledForItem(id: string, state: AppMenuState): boolean {
       return state.canCloseDocument;
     case MENU_ITEM_IDS.find:
       return state.canFind;
+    case MENU_ITEM_IDS.findInWorkspace:
+      return state.canFindInWorkspace;
+    case MENU_ITEM_IDS.save:
+      return state.canSave;
     case MENU_ITEM_IDS.undo:
     case MENU_ITEM_IDS.redo:
     case MENU_ITEM_IDS.cut:

@@ -3,6 +3,7 @@ import type { JSONContent } from '@tiptap/react';
 import { Editor } from './components/Editor';
 import { EditorTabBar } from './components/EditorTabBar';
 import { ExportSheet } from './components/ExportSheet';
+import { FindBar } from './components/FindBar';
 import { ExternalChangeBar } from './components/ExternalChangeBar';
 import { ExternalChangeCompare } from './components/ExternalChangeCompare';
 import { Inspector } from './components/Inspector';
@@ -41,7 +42,8 @@ import { deriveAppMenuState, type TreeFocusTarget } from './lib/app-menu-state';
 import { dispatchMenuEditAction } from './lib/menu-edit';
 import { pickFolder, pickMarkdownFile, confirmTrash } from './lib/dialog';
 import { classifyExternalChange } from './lib/external-change';
-import { documentToHtml, exportFile } from './lib/export';
+import { documentToHtml, exportBody, exportFile } from './lib/export';
+import { cycleSearchIndex, searchRevealNeedle, type ParsedSearchQuery } from './lib/searchQuery';
 import { alignMarkdownDiff, countChangedRows } from './lib/line-diff';
 import {
   addRecentFile,
@@ -64,7 +66,6 @@ import {
   writeFile,
   type FileEntry,
 } from './lib/fs';
-import type { ParsedSearchQuery } from './lib/searchQuery';
 import { extractHeadings, OUTLINE_HEADING_SELECTOR } from './lib/headings';
 import { basename, dirname, expandUserPath, formatDisplayPath, replacePathPrefix } from './lib/paths';
 import {
@@ -122,6 +123,10 @@ export default function App() {
     editorFontSize,
     editorTabWidth,
     compressImages,
+    autoSaveInterval,
+    spellCheck,
+    defaultExportFormat,
+    includeFrontmatter,
     theme,
     language,
     launchBehavior,
@@ -133,6 +138,10 @@ export default function App() {
     setEditorFontSize,
     setEditorTabWidth,
     setCompressImages,
+    setAutoSaveInterval,
+    setSpellCheck,
+    setDefaultExportFormat,
+    setIncludeFrontmatter,
     setTheme,
     setLanguage,
     setLaunchBehavior,
@@ -185,6 +194,11 @@ export default function App() {
   const [exportOpen, setExportOpen] = useState(false);
   const [exportTarget, setExportTarget] = useState<FileEntry | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const [findQuery, setFindQuery] = useState('');
+  const [findIndex, setFindIndex] = useState(0);
+  const [findMatchCount, setFindMatchCount] = useState(0);
+  const [findEpoch, setFindEpoch] = useState(0);
   const [renameTarget, setRenameTarget] = useState<FileEntry | null>(null);
   const [renameRootTarget, setRenameRootTarget] = useState<WorkspaceRoot | null>(null);
   const [newFolderState, setNewFolderState] = useState<{
@@ -332,10 +346,41 @@ export default function App() {
     setTreeFocus({ type: 'file', file: { name, path, is_dir: false } });
   }, []);
 
+  const openDocumentFind = useCallback(() => {
+    if (!activeFile || settingsOpen) {
+      return;
+    }
+    setSearchOpen(false);
+    setFindOpen(true);
+    setFindEpoch((value) => value + 1);
+  }, [activeFile, settingsOpen]);
+
+  const openWorkspaceSearch = useCallback(() => {
+    if (!hasSidebar || settingsOpen) {
+      return;
+    }
+    setFindOpen(false);
+    setSearchOpen(true);
+  }, [hasSidebar, settingsOpen]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && findOpen) {
+        setFindOpen(false);
+        return;
+      }
       if (event.key === 'Escape' && settingsOpen) {
         setSettingsOpen(false);
+      }
+      const modifier = event.metaKey || event.ctrlKey;
+      if (modifier && event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          openWorkspaceSearch();
+        } else {
+          openDocumentFind();
+        }
+        return;
       }
       const digit = parseTabShortcut(event);
       if (digit === null) {
@@ -356,7 +401,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [settingsOpen, applyTabSession, focusTabFile]);
+  }, [settingsOpen, findOpen, applyTabSession, focusTabFile, openDocumentFind, openWorkspaceSearch]);
 
   const contentClass =
     editorWidthMode === 'wide'
@@ -941,7 +986,7 @@ export default function App() {
     }
     const content =
       format === 'markdown'
-        ? sourceMarkdown
+        ? exportBody(sourceMarkdown, 'markdown', includeFrontmatter)
         : documentToHtml(title, sourceMarkdown.replace(/\n/g, '<br />'));
     await exportFile(expandUserPath(targetPath, userHomeDir), format, content);
     setExportTarget(null);
@@ -1022,6 +1067,24 @@ export default function App() {
     closeEditorTab(file.path);
   }, [closeEditorTab]);
 
+  const handleKeepLocal = useCallback(async () => {
+    const file = activeFileRef.current;
+    if (!file) {
+      return;
+    }
+    checkGenerationRef.current += 1;
+    writingRef.current = true;
+    try {
+      await writeFile(file.path, markdownRef.current);
+      diskBaselineRef.current = markdownRef.current;
+      setDirty(false);
+      setSaved(true);
+      setConflict(null);
+    } finally {
+      writingRef.current = false;
+    }
+  }, []);
+
   const handleMenuAction = useCallback(
     (action: AppMenuAction) => {
       const tabDigit = selectTabDigitFromAction(action);
@@ -1076,7 +1139,13 @@ export default function App() {
           handleCloseDocument();
           return;
         case 'find':
-          setSearchOpen(true);
+          openDocumentFind();
+          return;
+        case 'find-in-workspace':
+          openWorkspaceSearch();
+          return;
+        case 'save':
+          void handleKeepLocal();
           return;
         case 'undo':
           dispatchMenuEditAction('undo');
@@ -1124,10 +1193,25 @@ export default function App() {
       handleCloseDocument,
       handleSelectTabPath,
       handleViewChange,
+      openDocumentFind,
+      openWorkspaceSearch,
+      handleKeepLocal,
     ],
   );
 
   useAppMenu(ready && workspaceReady, t, menuState, handleMenuAction);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.key.toLowerCase() !== 's') {
+        return;
+      }
+      event.preventDefault();
+      void handleKeepLocal();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleKeepLocal]);
 
   const handleReloadExternal = useCallback(() => {
     const openConflict = conflictRef.current;
@@ -1138,24 +1222,6 @@ export default function App() {
     applyDiskContent(openConflict.diskContent);
   }, [applyDiskContent]);
 
-  const handleKeepLocal = useCallback(async () => {
-    const file = activeFileRef.current;
-    if (!file) {
-      return;
-    }
-    checkGenerationRef.current += 1;
-    writingRef.current = true;
-    try {
-      await writeFile(file.path, markdownRef.current);
-      diskBaselineRef.current = markdownRef.current;
-      setDirty(false);
-      setSaved(true);
-      setConflict(null);
-    } finally {
-      writingRef.current = false;
-    }
-  }, []);
-
   const handleToggleCompare = useCallback(() => {
     setConflict((current) =>
       current ? { ...current, comparing: !current.comparing } : current,
@@ -1163,7 +1229,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!activeFile || !dirty || conflict) {
+    if (!activeFile || !dirty || conflict || autoSaveInterval === 0) {
       return;
     }
     const timer = window.setTimeout(async () => {
@@ -1176,9 +1242,9 @@ export default function App() {
       } finally {
         writingRef.current = false;
       }
-    }, 2000);
+    }, autoSaveInterval * 1000);
     return () => window.clearTimeout(timer);
-  }, [activeFile, dirty, markdown, conflict]);
+  }, [activeFile, dirty, markdown, conflict, autoSaveInterval]);
 
   const conflictChangedCount = useMemo(() => {
     if (!conflict) {
@@ -1249,12 +1315,23 @@ export default function App() {
     <>
       <ExportSheet
         open={exportOpen}
+        defaultFormat={defaultExportFormat}
+        labels={{
+          title: t('export.title'),
+          format: t('export.format'),
+          location: t('export.location'),
+          cancel: t('export.cancel'),
+          confirm: t('export.confirm'),
+        }}
         defaultPath={formatDisplayPath(
           (exportTarget ?? activeFile)
-            ? (exportTarget ?? activeFile)!.path.replace(/\.md$/i, '.html')
+            ? (exportTarget ?? activeFile)!.path.replace(
+                /\.(html|md)$/i,
+                defaultExportFormat === 'html' ? '.html' : '.md',
+              )
             : userHomeDir
-              ? `${userHomeDir}/Downloads/leafio-export.html`
-              : '~/Downloads/leafio-export.html',
+              ? `${userHomeDir}/Downloads/leafio-export.${defaultExportFormat === 'html' ? 'html' : 'md'}`
+              : `~/Downloads/leafio-export.${defaultExportFormat === 'html' ? 'html' : 'md'}`,
           userHomeDir,
         )}
         onClose={() => {
@@ -1356,7 +1433,18 @@ export default function App() {
         }}
         onClose={() => setSearchOpen(false)}
         onSearch={handleSearch}
-        onSelect={(path) => void loadFile(path)}
+        onSelect={(path, query) => {
+          void loadFile(path).then(() => {
+            const needle = searchRevealNeedle(query);
+            if (!needle) {
+              return;
+            }
+            setFindQuery(needle);
+            setFindIndex(0);
+            setFindOpen(true);
+            setFindEpoch((value) => value + 1);
+          });
+        }}
       />
     </>
   );
@@ -1406,7 +1494,7 @@ export default function App() {
         labels={sidebarLabels}
         updateAvailable={Boolean(availableVersion) || updateStatus === 'available'}
         updateInstalling={updateStatus === 'downloading'}
-        onSearch={() => setSearchOpen(true)}
+        onSearch={openWorkspaceSearch}
         onExport={handleExportFile}
         onToggle={() => setSidebarOpen((value) => !value)}
         onAddFolder={() => void handleAddFolder()}
@@ -1445,6 +1533,10 @@ export default function App() {
               editorFontSize={editorFontSize}
               editorTabWidth={editorTabWidth}
               compressImages={compressImages}
+              autoSaveInterval={autoSaveInterval}
+              spellCheck={spellCheck}
+              defaultExportFormat={defaultExportFormat}
+              includeFrontmatter={includeFrontmatter}
               theme={theme}
               language={language}
               launchBehavior={launchBehavior}
@@ -1460,6 +1552,10 @@ export default function App() {
               onEditorFontSizeChange={setEditorFontSize}
               onEditorTabWidthChange={setEditorTabWidth}
               onCompressImagesChange={setCompressImages}
+              onAutoSaveIntervalChange={setAutoSaveInterval}
+              onSpellCheckChange={setSpellCheck}
+              onDefaultExportFormatChange={setDefaultExportFormat}
+              onIncludeFrontmatterChange={setIncludeFrontmatter}
               onThemeChange={setTheme}
               onLanguageChange={setLanguage}
               onLaunchBehaviorChange={setLaunchBehavior}
@@ -1523,6 +1619,10 @@ export default function App() {
                           tabWidth={editorTabWidth}
                           compressImages={compressImages}
                           onImageNotice={handleImageNotice}
+                          spellCheck={spellCheck}
+                          findQuery={findOpen ? findQuery : null}
+                          findIndex={findIndex}
+                          onFindMatchCount={setFindMatchCount}
                         />
                       ) : null}
                       {view === 'source' && activeFile ? (
@@ -1530,6 +1630,9 @@ export default function App() {
                           value={markdown}
                           onChange={handleSourceChange}
                           tabWidth={editorTabWidth}
+                          findQuery={findOpen ? findQuery : null}
+                          findIndex={findIndex}
+                          onFindMatchCount={setFindMatchCount}
                         />
                       ) : null}
                       {view === 'preview' && activeFile ? (
@@ -1537,6 +1640,9 @@ export default function App() {
                           key={`${activeFile.path}:${editorEpoch}`}
                           content={doc}
                           notePath={activeFile.path}
+                          findQuery={findOpen ? findQuery : null}
+                          findIndex={findIndex}
+                          onFindMatchCount={setFindMatchCount}
                         />
                       ) : null}
                       {!activeFile ? (
@@ -1549,11 +1655,45 @@ export default function App() {
                       <div
                         className={`pointer-events-none absolute inset-x-0 top-0 z-20 ${floaterAnchorClass}`}
                       >
-                        <div className="flex justify-end pt-4">
+                        <div className="flex items-start justify-between gap-3 pt-4">
+                          {findOpen ? (
+                            <FindBar
+                              key={findEpoch}
+                              query={findQuery}
+                              index={findIndex}
+                              matchCount={findMatchCount}
+                              labels={{
+                                placeholder: t('find.placeholder'),
+                                noResults: t('find.noResults'),
+                                next: t('find.next'),
+                                previous: t('find.previous'),
+                                close: t('find.close'),
+                              }}
+                              onQueryChange={(next) => {
+                                setFindQuery(next);
+                                setFindIndex(0);
+                              }}
+                              onNext={() =>
+                                setFindIndex((current) => cycleSearchIndex(current, findMatchCount, 1))
+                              }
+                              onPrevious={() =>
+                                setFindIndex((current) => cycleSearchIndex(current, findMatchCount, -1))
+                              }
+                              onClose={() => setFindOpen(false)}
+                            />
+                          ) : (
+                            <span />
+                          )}
                           <ViewModeFloater
                             view={view}
                             onViewChange={handleViewChange}
                             activityAt={editorActivityAt}
+                            labels={{
+                              edit: t('view.edit'),
+                              source: t('view.source'),
+                              preview: t('view.preview'),
+                              modes: t('view.modes'),
+                            }}
                           />
                         </div>
                       </div>

@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core';
+import type { MessageKey } from '../lib/i18n';
 import { insertFootnote } from './footnoteActions';
 import { insertImagesFromPicker } from './insertImage';
 
@@ -8,17 +9,17 @@ export type BlockActionSection = 'convert' | 'list' | 'insert';
 
 export interface EditorBlockAction {
   id: string;
-  title: string;
+  titleKey: MessageKey;
   keywords: string[];
   section: BlockActionSection;
   active?: (editor: Editor) => boolean;
   run: (editor: Editor, range?: SlashRange) => void;
 }
 
-export const BLOCK_ACTION_SECTION_LABELS: Record<BlockActionSection, string> = {
-  convert: '转换为',
-  list: '列表',
-  insert: '插入',
+export const BLOCK_ACTION_SECTION_KEYS: Record<BlockActionSection, MessageKey> = {
+  convert: 'block.section.convert',
+  list: 'block.section.list',
+  insert: 'block.section.insert',
 };
 
 function runWithOptionalRange(
@@ -36,8 +37,8 @@ function runWithOptionalRange(
 export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   {
     id: 'paragraph',
-    title: '正文',
-    keywords: ['paragraph', 'text', '段落', 'p'],
+    titleKey: 'block.paragraph',
+    keywords: ['paragraph', 'text', '段落', '正文', 'p'],
     section: 'convert',
     active: (editor) =>
       editor.isActive('paragraph') &&
@@ -50,7 +51,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'heading-1',
-    title: '标题 1',
+    titleKey: 'block.heading1',
     keywords: ['heading', 'h1', 'title', '一级标题'],
     section: 'convert',
     active: (editor) => editor.isActive('heading', { level: 1 }),
@@ -60,7 +61,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'heading-2',
-    title: '标题 2',
+    titleKey: 'block.heading2',
     keywords: ['heading', 'h2', '二级标题'],
     section: 'convert',
     active: (editor) => editor.isActive('heading', { level: 2 }),
@@ -70,7 +71,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'heading-3',
-    title: '标题 3',
+    titleKey: 'block.heading3',
     keywords: ['heading', 'h3', '三级标题'],
     section: 'convert',
     active: (editor) => editor.isActive('heading', { level: 3 }),
@@ -80,7 +81,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'heading-4',
-    title: '标题 4',
+    titleKey: 'block.heading4',
     keywords: ['heading', 'h4', '四级标题'],
     section: 'convert',
     active: (editor) => editor.isActive('heading', { level: 4 }),
@@ -90,7 +91,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'blockquote',
-    title: '引用',
+    titleKey: 'block.blockquote',
     keywords: ['quote', 'blockquote', '引用块'],
     section: 'convert',
     active: (editor) => editor.isActive('blockquote'),
@@ -100,7 +101,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'bullet-list',
-    title: '无序列表',
+    titleKey: 'block.bulletList',
     keywords: ['bullet', 'ul', 'list', '无序'],
     section: 'list',
     active: (editor) => editor.isActive('bulletList'),
@@ -110,7 +111,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'ordered-list',
-    title: '有序列表',
+    titleKey: 'block.orderedList',
     keywords: ['ordered', 'ol', 'number', '有序', '编号'],
     section: 'list',
     active: (editor) => editor.isActive('orderedList'),
@@ -120,7 +121,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'task-list',
-    title: '任务列表',
+    titleKey: 'block.taskList',
     keywords: ['task', 'todo', 'checkbox', '待办', '任务'],
     section: 'list',
     active: (editor) => editor.isActive('taskList'),
@@ -130,7 +131,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'table',
-    title: '表格',
+    titleKey: 'block.table',
     keywords: ['table', 'grid', '表格'],
     section: 'insert',
     active: (editor) => editor.isActive('table'),
@@ -142,7 +143,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'footnote',
-    title: '脚注',
+    titleKey: 'block.footnote',
     keywords: ['footnote', '脚注', 'fn', 'note'],
     section: 'insert',
     active: (editor) => editor.isActive('footnoteReference') || editor.isActive('footnoteDefinition'),
@@ -152,7 +153,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'code-block',
-    title: '代码块',
+    titleKey: 'block.codeBlock',
     keywords: ['code', 'snippet', '代码'],
     section: 'insert',
     active: (editor) => editor.isActive('codeBlock'),
@@ -162,7 +163,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'divider',
-    title: '分隔线',
+    titleKey: 'block.divider',
     keywords: ['divider', 'hr', 'line', '分隔', '横线'],
     section: 'insert',
     run: (editor, range) => {
@@ -171,7 +172,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'link',
-    title: '链接',
+    titleKey: 'block.link',
     keywords: ['link', 'url', 'hyperlink', '超链接'],
     section: 'insert',
     active: (editor) => editor.isActive('link'),
@@ -184,7 +185,7 @@ export const EDITOR_BLOCK_ACTIONS: EditorBlockAction[] = [
   },
   {
     id: 'image',
-    title: '图片',
+    titleKey: 'block.image',
     keywords: ['image', 'img', '图片'],
     section: 'insert',
     active: (editor) => editor.isActive('image'),
@@ -200,7 +201,7 @@ export function filterBlockActions(query: string): EditorBlockAction[] {
     return EDITOR_BLOCK_ACTIONS;
   }
   return EDITOR_BLOCK_ACTIONS.filter((action) => {
-    const haystack = [action.title, ...action.keywords].join(' ').toLowerCase();
+    const haystack = [action.id, ...action.keywords].join(' ').toLowerCase();
     return haystack.includes(normalized);
   });
 }

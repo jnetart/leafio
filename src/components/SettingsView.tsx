@@ -1,12 +1,14 @@
-import { useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type { createTranslator } from '../lib/i18n';
 import type { SettingsSection } from '../lib/settings-sections';
 import { SETTINGS_SECTIONS } from '../lib/settings-sections';
 import type {
+  AutoSaveInterval,
   EditorFontFamily,
   EditorFontSize,
   EditorTabWidth,
   EditorWidthMode,
+  ExportFormat,
   LanguageMode,
   LaunchBehavior,
   ThemeMode,
@@ -20,6 +22,10 @@ interface SettingsViewProps {
   editorFontSize: EditorFontSize;
   editorTabWidth: EditorTabWidth;
   compressImages: boolean;
+  autoSaveInterval: AutoSaveInterval;
+  spellCheck: boolean;
+  defaultExportFormat: ExportFormat;
+  includeFrontmatter: boolean;
   theme: ThemeMode;
   language: LanguageMode;
   launchBehavior: LaunchBehavior;
@@ -35,6 +41,10 @@ interface SettingsViewProps {
   onEditorFontSizeChange: (size: EditorFontSize) => void;
   onEditorTabWidthChange: (width: EditorTabWidth) => void;
   onCompressImagesChange: (enabled: boolean) => void;
+  onAutoSaveIntervalChange: (interval: AutoSaveInterval) => void;
+  onSpellCheckChange: (enabled: boolean) => void;
+  onDefaultExportFormatChange: (format: ExportFormat) => void;
+  onIncludeFrontmatterChange: (include: boolean) => void;
   onThemeChange: (theme: ThemeMode) => void;
   onLanguageChange: (language: LanguageMode) => void;
   onLaunchBehaviorChange: (behavior: LaunchBehavior) => void;
@@ -50,6 +60,10 @@ export function SettingsView({
   editorFontSize,
   editorTabWidth,
   compressImages,
+  autoSaveInterval,
+  spellCheck,
+  defaultExportFormat,
+  includeFrontmatter,
   theme,
   language,
   launchBehavior,
@@ -65,6 +79,10 @@ export function SettingsView({
   onEditorFontSizeChange,
   onEditorTabWidthChange,
   onCompressImagesChange,
+  onAutoSaveIntervalChange,
+  onSpellCheckChange,
+  onDefaultExportFormatChange,
+  onIncludeFrontmatterChange,
   onThemeChange,
   onLanguageChange,
   onLaunchBehaviorChange,
@@ -72,11 +90,6 @@ export function SettingsView({
   onCheckForUpdates,
   onInstallUpdate,
 }: SettingsViewProps) {
-  const [autoSaveInterval, setAutoSaveInterval] = useState('2');
-  const [spellCheck, setSpellCheck] = useState('off');
-  const [defaultExportFormat, setDefaultExportFormat] = useState('html');
-  const [includeFrontmatter, setIncludeFrontmatter] = useState('yes');
-
   const activeNav = SETTINGS_SECTIONS.find((item) => item.id === section) ?? SETTINGS_SECTIONS[0];
 
   return (
@@ -182,8 +195,10 @@ export function SettingsView({
                       { value: '5', label: t('settings.autosave.5s') },
                       { value: 'off', label: t('settings.autosave.off') },
                     ]}
-                    value={autoSaveInterval}
-                    onChange={setAutoSaveInterval}
+                    value={autoSaveInterval === 0 ? 'off' : String(autoSaveInterval)}
+                    onChange={(value) =>
+                      onAutoSaveIntervalChange(value === 'off' ? 0 : (Number(value) as AutoSaveInterval))
+                    }
                   />
                 </SettingRow>
               </SettingsGroup>
@@ -205,8 +220,8 @@ export function SettingsView({
                       { value: 'on', label: t('settings.spell.on') },
                       { value: 'off', label: t('settings.spell.off') },
                     ]}
-                    value={spellCheck}
-                    onChange={setSpellCheck}
+                    value={spellCheck ? 'on' : 'off'}
+                    onChange={(value) => onSpellCheckChange(value === 'on')}
                   />
                 </SettingRow>
               </SettingsGroup>
@@ -235,7 +250,7 @@ export function SettingsView({
                     { value: 'markdown', label: 'Markdown' },
                   ]}
                   value={defaultExportFormat}
-                  onChange={setDefaultExportFormat}
+                  onChange={(value) => onDefaultExportFormatChange(value as ExportFormat)}
                 />
               </SettingRow>
               <SettingRow
@@ -247,8 +262,8 @@ export function SettingsView({
                     { value: 'yes', label: t('settings.frontmatter.yes') },
                     { value: 'no', label: t('settings.frontmatter.no') },
                   ]}
-                  value={includeFrontmatter}
-                  onChange={setIncludeFrontmatter}
+                  value={includeFrontmatter ? 'yes' : 'no'}
+                  onChange={(value) => onIncludeFrontmatterChange(value === 'yes')}
                 />
               </SettingRow>
             </SettingsGroup>
