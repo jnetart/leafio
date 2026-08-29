@@ -5,7 +5,8 @@ const ASSET_PATTERNS = {
   'macos-x64': /macOS_x64\.dmg$/i,
   'windows-x64': /Windows_x64-setup\.exe$/i,
   'windows-arm': /Windows_arm64-setup\.exe$/i,
-  'linux-x64': /Linux.*\.AppImage$/i,
+  'linux-x64': /Linux_x64\.AppImage$/i,
+  'linux-arm': /Linux_arm64\.AppImage$/i,
 };
 
 const ASSET_FILES = {
@@ -14,6 +15,7 @@ const ASSET_FILES = {
   'windows-x64': (version) => `Leafio_${version}_Windows_x64-setup.exe`,
   'windows-arm': (version) => `Leafio_${version}_Windows_arm64-setup.exe`,
   'linux-x64': (version) => `Leafio_${version}_Linux_x64.AppImage`,
+  'linux-arm': (version) => `Leafio_${version}_Linux_arm64.AppImage`,
 };
 
 export function detectPlatform(info = {}) {
@@ -52,6 +54,11 @@ export function detectArch(info = {}, os) {
     if (/Apple/i.test(renderer)) return 'arm';
     // Safari reports MacIntel / "Intel Mac OS X" on Apple Silicon too.
     return 'arm';
+  }
+
+  if (os === 'linux') {
+    if (/aarch64|arm64|armv8/i.test(ua)) return 'arm';
+    return 'x64';
   }
 
   return 'x64';

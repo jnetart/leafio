@@ -98,6 +98,11 @@ describe('detectArch', () => {
     expect(detectArch({ userAgent: 'Windows NT 10.0; Win64; x64' }, 'windows')).toBe('x64');
     expect(detectArch({ userAgent: 'Windows NT 10.0; ARM64' }, 'windows')).toBe('arm');
   });
+
+  it('defaults Linux to x64 unless UA says ARM', () => {
+    expect(detectArch({ userAgent: 'X11; Linux x86_64' }, 'linux')).toBe('x64');
+    expect(detectArch({ userAgent: 'X11; Linux aarch64' }, 'linux')).toBe('arm');
+  });
 });
 
 describe('release version and asset URLs', () => {
@@ -126,6 +131,12 @@ describe('release version and asset URLs', () => {
     );
     expect(assetUrlFor('windows-x64', '0.9.0', null)).toBe(
       'https://github.com/jnetart/leafio/releases/download/v0.9.0/Leafio_0.9.0_Windows_x64-setup.exe',
+    );
+    expect(assetUrlFor('linux-x64', '0.9.0', null)).toBe(
+      'https://github.com/jnetart/leafio/releases/download/v0.9.0/Leafio_0.9.0_Linux_x64.AppImage',
+    );
+    expect(assetUrlFor('linux-arm', '0.9.0', null)).toBe(
+      'https://github.com/jnetart/leafio/releases/download/v0.9.0/Leafio_0.9.0_Linux_arm64.AppImage',
     );
   });
 });

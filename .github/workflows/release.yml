@@ -1,0 +1,438 @@
+# Build Mac / Windows / Linux installers and publish a GitHub Release.
+#
+# Trigger: push a v* tag whose name matches package.json (e.g. v0.8.87),
+# or run this workflow manually on that tagged commit.
+#
+# Updater signing private key must be the Repository secret
+# TAURI_SIGNING_PRIVATE_KEY (contents of gitignored .tauri/leafio.key).
+# Never commit the key, never upload it as an artifact, never echo it.
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tag: ${{ steps.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - id: meta
+        name: Resolve version
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+          if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" != "$TAG" ]]; then
+            echo "error: git tag ${{ github.ref_name }} does not match package.json ${TAG}" >&2
+            exit 1
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Building ${TAG}"
+
+  macos:
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            arch: aarch64
+          - target: x86_64-apple-darwin
+            arch: x64
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Require updater signing secret
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [[ -z "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
+            echo "error: repository secret TAURI_SIGNING_PRIVATE_KEY is not set" >&2
+            exit 1
+          fi
+
+      - name: Build app + DMG
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npm run tauri -- build --target ${{ matrix.target }} --bundles app,dmg
+
+      - name: Stage release files
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          OUT="${GITHUB_WORKSPACE}/releases/${VERSION}"
+          BUNDLE="${GITHUB_WORKSPACE}/src-tauri/target/${TARGET}/release/bundle"
+          mkdir -p "$OUT"
+
+          shopt -s nullglob
+          tar_src=""
+          for cand in "$BUNDLE/macos/Leafio.app.tar.gz" "$BUNDLE/macos"/Leafio*.app.tar.gz; do
+            if [[ -f "$cand" && "$cand" != *.sig ]]; then
+              tar_src="$cand"
+              break
+            fi
+          done
+          if [[ -z "$tar_src" ]]; then
+            echo "error: updater archive not found under $BUNDLE/macos" >&2
+            ls -la "$BUNDLE/macos" || true
+            exit 1
+          fi
+          if [[ ! -f "${tar_src}.sig" ]]; then
+            echo "error: missing updater signature ${tar_src}.sig" >&2
+            exit 1
+          fi
+          dest_tar="$OUT/Leafio_${VERSION}_macOS_${ARCH}.app.tar.gz"
+          cp -f "$tar_src" "$dest_tar"
+          cp -f "${tar_src}.sig" "${dest_tar}.sig"
+
+          app="$BUNDLE/macos/Leafio.app"
+          if [[ ! -d "$app" ]]; then
+            echo "warning: Leafio.app missing after build; extracting from Tauri DMG to ad-hoc sign"
+            dmg=""
+            for cand in "$BUNDLE/dmg/Leafio_${VERSION}_${ARCH}.dmg" "$BUNDLE/dmg"/Leafio_"${VERSION}"_*.dmg; do
+              if [[ -f "$cand" ]]; then
+                dmg="$cand"
+                break
+              fi
+            done
+            if [[ -z "$dmg" ]]; then
+              echo "error: neither Leafio.app nor DMG found" >&2
+              exit 1
+            fi
+            mount="$(mktemp -d)"
+            hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount"
+            cp -R "$mount/Leafio.app" "$BUNDLE/macos/Leafio.app"
+            hdiutil detach "$mount" -quiet
+            rmdir "$mount" || true
+            app="$BUNDLE/macos/Leafio.app"
+          fi
+
+          echo "==> Ad-hoc signing $app"
+          codesign --force --deep --sign - "$app"
+          codesign --verify --deep --strict "$app"
+
+          dest_dmg="$OUT/Leafio_${VERSION}_macOS_${ARCH}.dmg"
+          stage="$(mktemp -d)"
+          cp -R "$app" "$stage/Leafio.app"
+          ln -sf /Applications "$stage/Applications"
+          hdiutil create -volname "Leafio" -srcfolder "$stage" -ov -format UDZO "$dest_dmg"
+          rm -rf "$stage"
+          ls -lh "$OUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: releases/**
+          if-no-files-found: error
+
+  windows:
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            arch: x64
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Require updater signing secret
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
+            echo "error: repository secret TAURI_SIGNING_PRIVATE_KEY is not set" >&2
+            exit 1
+          fi
+
+      - name: Build NSIS + MSI
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npm run tauri -- build --target ${{ matrix.target }} --bundles nsis,msi
+
+      - name: Stage release files
+        shell: bash
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          OUT="${GITHUB_WORKSPACE}/releases/${VERSION}"
+          mkdir -p "$OUT"
+          NSIS="src-tauri/target/${TARGET}/release/bundle/nsis"
+          MSI="src-tauri/target/${TARGET}/release/bundle/msi"
+          setup_src=$(ls "$NSIS"/Leafio_"${VERSION}"_*-setup.exe | head -n 1)
+          dest_setup="$OUT/Leafio_${VERSION}_Windows_${ARCH}-setup.exe"
+          cp -f "$setup_src" "$dest_setup"
+          if [[ -f "${setup_src}.sig" ]]; then
+            cp -f "${setup_src}.sig" "${dest_setup}.sig"
+          else
+            echo "error: missing updater signature ${setup_src}.sig" >&2
+            echo "  Set repository secret TAURI_SIGNING_PRIVATE_KEY to the contents of .tauri/leafio.key" >&2
+            exit 1
+          fi
+          shopt -s nullglob
+          msi=( "$MSI"/Leafio_"${VERSION}"_*.msi )
+          if ((${#msi[@]} == 0)); then
+            echo "error: no MSI under $MSI" >&2
+            ls -la "$MSI" || true
+            exit 1
+          fi
+          cp -f "${msi[0]}" "$OUT/Leafio_${VERSION}_Windows_${ARCH}.msi"
+          ls -lh "$OUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}
+          path: releases/**
+          if-no-files-found: error
+
+  linux:
+    needs: version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            arch: x64
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux build deps
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            rpm
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Require updater signing secret
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [[ -z "${TAURI_SIGNING_PRIVATE_KEY}" ]]; then
+            echo "error: repository secret TAURI_SIGNING_PRIVATE_KEY is not set" >&2
+            exit 1
+          fi
+
+      - name: Build AppImage + deb + rpm
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          NO_STRIP: "true"
+        run: npm run tauri -- build --target ${{ matrix.target }} --bundles appimage,deb,rpm
+
+      - name: Stage release files
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          OUT="${GITHUB_WORKSPACE}/releases/${VERSION}"
+          BUNDLE="${GITHUB_WORKSPACE}/src-tauri/target/${TARGET}/release/bundle"
+          mkdir -p "$OUT"
+          shopt -s nullglob
+
+          appimage=""
+          for cand in "$BUNDLE/appimage"/*.AppImage; do
+            [[ "$cand" == *.sig ]] && continue
+            appimage="$cand"
+            break
+          done
+          if [[ -z "$appimage" ]]; then
+            echo "error: AppImage not found under $BUNDLE/appimage" >&2
+            ls -la "$BUNDLE/appimage" || true
+            exit 1
+          fi
+          dest_app="$OUT/Leafio_${VERSION}_Linux_${ARCH}.AppImage"
+          cp -f "$appimage" "$dest_app"
+          if [[ -f "${appimage}.sig" ]]; then
+            cp -f "${appimage}.sig" "${dest_app}.sig"
+          else
+            echo "error: missing updater signature ${appimage}.sig" >&2
+            exit 1
+          fi
+
+          debs=( "$BUNDLE/deb"/*.deb )
+          if ((${#debs[@]} == 0)); then
+            echo "error: no .deb under $BUNDLE/deb" >&2
+            ls -la "$BUNDLE/deb" || true
+            exit 1
+          fi
+          cp -f "${debs[0]}" "$OUT/Leafio_${VERSION}_Linux_${ARCH}.deb"
+
+          rpms=( "$BUNDLE/rpm"/*.rpm )
+          if ((${#rpms[@]} == 0)); then
+            echo "error: no .rpm under $BUNDLE/rpm" >&2
+            ls -la "$BUNDLE/rpm" || true
+            exit 1
+          fi
+          cp -f "${rpms[0]}" "$OUT/Leafio_${VERSION}_Linux_${ARCH}.rpm"
+          ls -lh "$OUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: releases/**
+          if-no-files-found: error
+
+  publish:
+    needs: [version, macos, windows, linux]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: ${{ github.workspace }}
+
+      - name: Build latest.json
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: node scripts/build-latest-json.mjs "releases/${VERSION}"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.version }}
+          TAG: ${{ needs.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          DIR="releases/${VERSION}"
+          ls -lh "$DIR"
+
+          files=(
+            "$DIR/Leafio_${VERSION}_macOS_aarch64.dmg"
+            "$DIR/Leafio_${VERSION}_macOS_x64.dmg"
+            "$DIR/Leafio_${VERSION}_Windows_x64-setup.exe"
+            "$DIR/Leafio_${VERSION}_Windows_arm64-setup.exe"
+            "$DIR/Leafio_${VERSION}_Windows_x64.msi"
+            "$DIR/Leafio_${VERSION}_Windows_arm64.msi"
+            "$DIR/Leafio_${VERSION}_Linux_x64.AppImage"
+            "$DIR/Leafio_${VERSION}_Linux_arm64.AppImage"
+            "$DIR/Leafio_${VERSION}_Linux_x64.deb"
+            "$DIR/Leafio_${VERSION}_Linux_arm64.deb"
+            "$DIR/Leafio_${VERSION}_Linux_x64.rpm"
+            "$DIR/Leafio_${VERSION}_Linux_arm64.rpm"
+            "$DIR/Leafio_${VERSION}_macOS_aarch64.app.tar.gz"
+            "$DIR/Leafio_${VERSION}_macOS_aarch64.app.tar.gz.sig"
+            "$DIR/Leafio_${VERSION}_macOS_x64.app.tar.gz"
+            "$DIR/Leafio_${VERSION}_macOS_x64.app.tar.gz.sig"
+            "$DIR/Leafio_${VERSION}_Windows_x64-setup.exe.sig"
+            "$DIR/Leafio_${VERSION}_Windows_arm64-setup.exe.sig"
+            "$DIR/Leafio_${VERSION}_Linux_x64.AppImage.sig"
+            "$DIR/Leafio_${VERSION}_Linux_arm64.AppImage.sig"
+            "$DIR/latest.json"
+          )
+          for f in "${files[@]}"; do
+            if [[ ! -f "$f" ]]; then
+              echo "error: missing release asset $f" >&2
+              exit 1
+            fi
+          done
+
+          notes="Leafio ${VERSION}"$'\n\n'"Signed in-app updates use GitHub Releases (\`latest.json\` + updater artifacts). macOS installers are ad-hoc signed."
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${files[@]}" --clobber
+          else
+            create_args=(--title "Leafio ${VERSION}" --notes "$notes")
+            if [[ "${{ github.ref_type }}" == "tag" ]]; then
+              create_args+=(--verify-tag)
+            else
+              create_args+=(--target "$GITHUB_SHA")
+            fi
+            gh release create "$TAG" "${create_args[@]}" "${files[@]}"
+          fi

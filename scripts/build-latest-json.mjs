@@ -25,6 +25,7 @@ const candidates = [
   ['windows-x86_64', `Leafio_${version}_Windows_x64-setup.exe`],
   ['windows-aarch64', `Leafio_${version}_Windows_arm64-setup.exe`],
   ['linux-x86_64', `Leafio_${version}_Linux_x64.AppImage`],
+  ['linux-aarch64', `Leafio_${version}_Linux_arm64.AppImage`],
 ];
 
 const platforms = {};

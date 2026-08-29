@@ -130,15 +130,20 @@ function setVersions(version) {
 }
 
 function smartLabel(os, arch) {
-  const platformKey = os === 'windows' ? 'download.windows' : 'download.macos';
+  const platformKey =
+    os === 'windows' ? 'download.windows' : os === 'linux' ? 'download.linux' : 'download.macos';
   const archKey =
     os === 'windows'
       ? arch === 'arm'
         ? 'download.windows.arm64'
         : 'download.windows.x64'
-      : arch === 'arm'
-        ? 'download.macos.arm'
-        : 'download.macos.intel';
+      : os === 'linux'
+        ? arch === 'arm'
+          ? 'download.linux.arm64'
+          : 'download.linux.x64'
+        : arch === 'arm'
+          ? 'download.macos.arm'
+          : 'download.macos.intel';
   const tpl =
     t('download.smart') ||
     (currentLang() === 'en' ? 'Download {platform} · {arch}' : '下载 {platform} · {arch}');
@@ -148,6 +153,7 @@ function smartLabel(os, arch) {
 function assetKey(os, arch) {
   if (os === 'macos') return arch === 'arm' ? 'macos-arm' : 'macos-x64';
   if (os === 'windows') return arch === 'arm' ? 'windows-arm' : 'windows-x64';
+  if (os === 'linux') return arch === 'arm' ? 'linux-arm' : 'linux-x64';
   return null;
 }
 
@@ -182,7 +188,7 @@ function highlightDetected(os, arch) {
     else card.removeAttribute('aria-current');
     const badge = card.querySelector('.detected-badge');
     if (badge) badge.hidden = !detected;
-    if (detected && (os === 'macos' || os === 'windows')) emphasizeArch(card, arch);
+    if (detected && (os === 'macos' || os === 'windows' || os === 'linux')) emphasizeArch(card, arch);
   });
 
   const cta = document.querySelector('[data-smart-cta]');
@@ -204,7 +210,7 @@ async function initDownload(release) {
   let arch = os ? detectArch(navigatorInfo(), os) : 'x64';
   applyReleaseUrls(release.version, release.assets);
   highlightDetected(os, arch);
-  if (os === 'macos' || os === 'windows') {
+  if (os === 'macos' || os === 'windows' || os === 'linux') {
     const refined = await refineArchitecture(os);
     if (refined && refined !== arch) {
       arch = refined;
