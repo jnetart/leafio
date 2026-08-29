@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { createTranslator } from '../lib/i18n';
 import type { FileEntry } from '../lib/fs';
 import type { WorkspaceRoot } from '../lib/workspace';
@@ -6,6 +6,7 @@ import { workspaceDisplayName, workspaceRootSubtitle } from '../lib/workspace';
 import { openInFileManager, openInTerminal } from '../lib/shell';
 import { clearTextSelection } from '../lib/filename-input';
 import type { TreeFocusTarget } from '../lib/app-menu-state';
+import { searchSettings, type SettingsSearchHit } from '../lib/settings-search';
 import { SETTINGS_SECTIONS, type SettingsSection } from '../lib/settings-sections';
 import { ContextMenu, type ContextMenuItem } from './ContextMenu';
 import { FolderRow, useExpandedPaths, WorkspaceRootTree } from './FileTree';
@@ -110,6 +111,8 @@ interface SidebarProps {
   onOpenSettings?: () => void;
   onInstallUpdate?: () => void;
   onSettingsSectionChange?: (section: SettingsSection) => void;
+  onSettingsSearchSelect?: (hit: SettingsSearchHit) => void;
+  searchFocusEpoch?: number;
   onToggle?: () => void;
   onSearch?: () => void;
   onAddFolder?: () => void;
@@ -142,6 +145,8 @@ export function Sidebar({
   onOpenSettings,
   onInstallUpdate,
   onSettingsSectionChange,
+  onSettingsSearchSelect,
+  searchFocusEpoch = 0,
   onToggle,
   onSearch,
   onAddFolder,
@@ -158,9 +163,24 @@ export function Sidebar({
   onTreeFocus,
 }: SidebarProps) {
   const [menu, setMenu] = useState<MenuState | null>(null);
+  const [settingsQuery, setSettingsQuery] = useState('');
+  const settingsSearchRef = useRef<HTMLInputElement>(null);
   const [expandedRootPath, setExpandedRootPath] = useState<string | null>(null);
   const rootPaths = roots.map((root) => root.path);
   const [expandedPaths, setExpandedPaths, expandDir] = useExpandedPaths(activePath, rootPaths);
+
+  useEffect(() => {
+    if (!settingsActive) {
+      setSettingsQuery('');
+    }
+  }, [settingsActive]);
+
+  useEffect(() => {
+    if (!settingsActive || searchFocusEpoch === 0) {
+      return;
+    }
+    settingsSearchRef.current?.focus();
+  }, [searchFocusEpoch, settingsActive]);
 
   useEffect(() => {
     if (!activePath) {
@@ -328,6 +348,9 @@ export function Sidebar({
             ]
           : [];
 
+  const settingsHits = searchSettings(settingsQuery);
+  const settingsSearching = settingsQuery.trim().length > 0;
+
   return (
     <>
       {!open ? (
@@ -358,27 +381,87 @@ export function Sidebar({
           {settingsActive ? (
             <div className="flex flex-1 flex-col overflow-hidden">
               <nav className="sidebar-top-nav">
-                <div className="sidebar-nav-item sidebar-search-item pointer-events-none" aria-hidden="true">
+                <label className="sidebar-nav-item sidebar-search-item">
                   <IconSearch className="h-4 w-4 shrink-0 opacity-70" />
-                  <span>{t('settings.search')}</span>
-                </div>
+                  <input
+                    ref={settingsSearchRef}
+                    type="search"
+                    className="sidebar-search-input"
+                    placeholder={t('settings.search')}
+                    aria-label={t('settings.search')}
+                    autoComplete="off"
+                    spellCheck={false}
+                    value={settingsQuery}
+                    onChange={(event) => setSettingsQuery(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (settingsQuery) {
+                          setSettingsQuery('');
+                        } else {
+                          event.currentTarget.blur();
+                        }
+                      }
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        const first = searchSettings(settingsQuery)[0];
+                        if (first) {
+                          onSettingsSearchSelect?.(first);
+                        }
+                      }
+                    }}
+                  />
+                </label>
               </nav>
               <nav className="scroll-pane flex flex-1 flex-col gap-0.5 overflow-auto px-2 pb-2">
-                {SETTINGS_SECTIONS.map((item) => {
-                  const active = item.id === settingsSection;
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => onSettingsSectionChange?.(item.id)}
-                      className={`sidebar-nav-item ${active ? 'sidebar-nav-item--active' : ''}`}
-                    >
-                      <Icon className="h-4 w-4 shrink-0 opacity-70" />
-                      {t(item.labelKey)}
-                    </button>
-                  );
-                })}
+                {settingsSearching ? (
+                  settingsHits.length === 0 ? (
+                    <p className="sidebar-search-empty">{t('settings.search.noResults')}</p>
+                  ) : (
+                    settingsHits.map((hit) => {
+                      const section = SETTINGS_SECTIONS.find((item) => item.id === hit.section);
+                      if (!section) {
+                        return null;
+                      }
+                      const Icon = section.icon;
+                      return (
+                        <button
+                          key={hit.id}
+                          type="button"
+                          onClick={() => onSettingsSearchSelect?.(hit)}
+                          className="sidebar-nav-item"
+                        >
+                          <Icon className="h-4 w-4 shrink-0 opacity-70" />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate">{t(hit.titleKey)}</span>
+                            {hit.kind === 'setting' ? (
+                              <span className="sidebar-search-result-meta">
+                                {t(section.labelKey)}
+                              </span>
+                            ) : null}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )
+                ) : (
+                  SETTINGS_SECTIONS.map((item) => {
+                    const active = item.id === settingsSection;
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => onSettingsSectionChange?.(item.id)}
+                        className={`sidebar-nav-item ${active ? 'sidebar-nav-item--active' : ''}`}
+                      >
+                        <Icon className="h-4 w-4 shrink-0 opacity-70" />
+                        {t(item.labelKey)}
+                      </button>
+                    );
+                  })
+                )}
               </nav>
             </div>
           ) : (

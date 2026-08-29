@@ -189,6 +189,8 @@ export default function App() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSection, setSettingsSection] = useState<SettingsSection>('general');
+  const [settingsReveal, setSettingsReveal] = useState<{ id: string; epoch: number } | null>(null);
+  const [settingsSearchFocusEpoch, setSettingsSearchFocusEpoch] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -375,6 +377,10 @@ export default function App() {
       const modifier = event.metaKey || event.ctrlKey;
       if (modifier && event.key.toLowerCase() === 'f') {
         event.preventDefault();
+        if (settingsOpen) {
+          setSettingsSearchFocusEpoch((value) => value + 1);
+          return;
+        }
         if (event.shiftKey) {
           openWorkspaceSearch();
         } else {
@@ -1490,7 +1496,17 @@ export default function App() {
         }}
         onOpenSettings={() => setSettingsOpen((value) => !value)}
         onInstallUpdate={() => void installUpdate()}
-        onSettingsSectionChange={setSettingsSection}
+        onSettingsSectionChange={(section) => {
+          setSettingsSection(section);
+          setSettingsReveal(null);
+        }}
+        onSettingsSearchSelect={(hit) => {
+          setSettingsSection(hit.section);
+          setSettingsReveal(
+            hit.kind === 'setting' ? { id: hit.id, epoch: Date.now() } : null,
+          );
+        }}
+        searchFocusEpoch={settingsSearchFocusEpoch}
         labels={sidebarLabels}
         updateAvailable={Boolean(availableVersion) || updateStatus === 'available'}
         updateInstalling={updateStatus === 'downloading'}
@@ -1528,6 +1544,8 @@ export default function App() {
             {settingsOpen ? (
             <SettingsView
               section={settingsSection}
+              revealId={settingsReveal?.id ?? null}
+              revealEpoch={settingsReveal?.epoch ?? 0}
               editorWidthMode={editorWidthMode}
               editorFontFamily={editorFontFamily}
               editorFontSize={editorFontSize}

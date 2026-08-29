@@ -1,7 +1,8 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import type { createTranslator } from '../lib/i18n';
 import type { SettingsSection } from '../lib/settings-sections';
 import { SETTINGS_SECTIONS } from '../lib/settings-sections';
+import { settingDomId } from '../lib/settings-search';
 import type {
   AutoSaveInterval,
   EditorFontFamily,
@@ -17,6 +18,8 @@ import type { UpdateStatus } from '../hooks/useAppUpdate';
 
 interface SettingsViewProps {
   section: SettingsSection;
+  revealId?: string | null;
+  revealEpoch?: number;
   editorWidthMode: EditorWidthMode;
   editorFontFamily: EditorFontFamily;
   editorFontSize: EditorFontSize;
@@ -55,6 +58,8 @@ interface SettingsViewProps {
 
 export function SettingsView({
   section,
+  revealId = null,
+  revealEpoch = 0,
   editorWidthMode,
   editorFontFamily,
   editorFontSize,
@@ -92,6 +97,14 @@ export function SettingsView({
 }: SettingsViewProps) {
   const activeNav = SETTINGS_SECTIONS.find((item) => item.id === section) ?? SETTINGS_SECTIONS[0];
 
+  useEffect(() => {
+    if (!revealId) {
+      return;
+    }
+    const el = document.getElementById(settingDomId(revealId));
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [revealId, revealEpoch, section]);
+
   return (
     <div className="settings-content flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <header className="settings-header">
@@ -103,7 +116,12 @@ export function SettingsView({
           {section === 'general' ? (
             <>
               <SettingsGroup label={t('settings.group.startup')}>
-                <SettingRow title={t('settings.language.title')} description={t('settings.language.desc')}>
+                <SettingRow
+                  settingId="language"
+                  revealed={revealId === 'language'}
+                  title={t('settings.language.title')}
+                  description={t('settings.language.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'system', label: t('language.system') },
@@ -114,7 +132,12 @@ export function SettingsView({
                     onChange={(value) => onLanguageChange(value as LanguageMode)}
                   />
                 </SettingRow>
-                <SettingRow title={t('settings.launch.title')} description={t('settings.launch.desc')}>
+                <SettingRow
+                  settingId="launch"
+                  revealed={revealId === 'launch'}
+                  title={t('settings.launch.title')}
+                  description={t('settings.launch.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'welcome', label: t('settings.launch.welcome') },
@@ -131,7 +154,12 @@ export function SettingsView({
           {section === 'appearance' ? (
             <>
               <SettingsGroup label={t('settings.group.theme')}>
-                <SettingRow title={t('settings.theme.title')} description={t('settings.theme.desc')}>
+                <SettingRow
+                  settingId="theme"
+                  revealed={revealId === 'theme'}
+                  title={t('settings.theme.title')}
+                  description={t('settings.theme.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'system', label: t('theme.system') },
@@ -145,7 +173,12 @@ export function SettingsView({
               </SettingsGroup>
 
               <SettingsGroup label={t('settings.group.layout')}>
-                <SettingRow title={t('settings.width.title')} description={t('settings.width.desc')}>
+                <SettingRow
+                  settingId="width"
+                  revealed={revealId === 'width'}
+                  title={t('settings.width.title')}
+                  description={t('settings.width.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'centered', label: t('settings.width.centered') },
@@ -158,7 +191,12 @@ export function SettingsView({
               </SettingsGroup>
 
               <SettingsGroup label={t('settings.group.typography')}>
-                <SettingRow title={t('settings.font.title')} description={t('settings.font.desc')}>
+                <SettingRow
+                  settingId="font"
+                  revealed={revealId === 'font'}
+                  title={t('settings.font.title')}
+                  description={t('settings.font.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'sans', label: t('settings.font.sans') },
@@ -169,7 +207,12 @@ export function SettingsView({
                     onChange={(value) => onEditorFontFamilyChange(value as EditorFontFamily)}
                   />
                 </SettingRow>
-                <SettingRow title={t('settings.fontSize.title')} description={t('settings.fontSize.desc')}>
+                <SettingRow
+                  settingId="fontSize"
+                  revealed={revealId === 'fontSize'}
+                  title={t('settings.fontSize.title')}
+                  description={t('settings.fontSize.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'compact', label: t('settings.fontSize.compact') },
@@ -188,7 +231,12 @@ export function SettingsView({
           {section === 'editor' ? (
             <>
               <SettingsGroup label={t('settings.group.save')}>
-                <SettingRow title={t('settings.autosave.title')} description={t('settings.autosave.desc')}>
+                <SettingRow
+                  settingId="autosave"
+                  revealed={revealId === 'autosave'}
+                  title={t('settings.autosave.title')}
+                  description={t('settings.autosave.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: '2', label: t('settings.autosave.2s') },
@@ -204,7 +252,12 @@ export function SettingsView({
               </SettingsGroup>
 
               <SettingsGroup label={t('settings.group.editing')}>
-                <SettingRow title={t('settings.tab.title')} description={t('settings.tab.desc')}>
+                <SettingRow
+                  settingId="tab"
+                  revealed={revealId === 'tab'}
+                  title={t('settings.tab.title')}
+                  description={t('settings.tab.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: '2', label: t('settings.tab.2') },
@@ -214,7 +267,12 @@ export function SettingsView({
                     onChange={(value) => onEditorTabWidthChange(Number(value) as EditorTabWidth)}
                   />
                 </SettingRow>
-                <SettingRow title={t('settings.spell.title')} description={t('settings.spell.desc')}>
+                <SettingRow
+                  settingId="spell"
+                  revealed={revealId === 'spell'}
+                  title={t('settings.spell.title')}
+                  description={t('settings.spell.desc')}
+                >
                   <SegmentedControl
                     options={[
                       { value: 'on', label: t('settings.spell.on') },
@@ -228,6 +286,8 @@ export function SettingsView({
 
               <SettingsGroup label={t('settings.group.images')}>
                 <SettingRow
+                  settingId="images-compress"
+                  revealed={revealId === 'images-compress'}
                   title={t('settings.images.compress.title')}
                   description={t('settings.images.compress.desc')}
                 >
@@ -243,7 +303,12 @@ export function SettingsView({
 
           {section === 'export' ? (
             <SettingsGroup label={t('settings.group.export')}>
-              <SettingRow title={t('settings.format.title')} description={t('settings.format.desc')}>
+              <SettingRow
+                settingId="format"
+                revealed={revealId === 'format'}
+                title={t('settings.format.title')}
+                description={t('settings.format.desc')}
+              >
                 <SegmentedControl
                   options={[
                     { value: 'html', label: 'HTML' },
@@ -254,6 +319,8 @@ export function SettingsView({
                 />
               </SettingRow>
               <SettingRow
+                settingId="frontmatter"
+                revealed={revealId === 'frontmatter'}
                 title={t('settings.frontmatter.title')}
                 description={t('settings.frontmatter.desc')}
               >
@@ -272,6 +339,8 @@ export function SettingsView({
           {section === 'updates' ? (
             <SettingsGroup label={t('settings.group.updates')}>
               <SettingRow
+                settingId="updateCheck"
+                revealed={revealId === 'updateCheck'}
                 title={t('settings.updateCheck.title')}
                 description={t('settings.updateCheck.desc')}
               >
@@ -281,10 +350,17 @@ export function SettingsView({
                   onChange={onAutoUpdateEnabledChange}
                 />
               </SettingRow>
-              <SettingRow title={t('settings.version.title')} description={t('settings.version.desc')}>
+              <SettingRow
+                settingId="version"
+                revealed={revealId === 'version'}
+                title={t('settings.version.title')}
+                description={t('settings.version.desc')}
+              >
                 <span className="settings-version-badge">v{appVersion}</span>
               </SettingRow>
               <SettingRow
+                settingId="updateAction"
+                revealed={revealId === 'updateAction'}
                 title={t('settings.updateAction.title')}
                 description={
                   updateStatus === 'error' && updateError
@@ -382,16 +458,23 @@ function SettingsGroup({ label, children }: { label: string; children: ReactNode
 }
 
 function SettingRow({
+  settingId,
+  revealed = false,
   title,
   description,
   children,
 }: {
+  settingId: string;
+  revealed?: boolean;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
-    <div className="settings-row">
+    <div
+      id={settingDomId(settingId)}
+      className={`settings-row${revealed ? ' settings-row--reveal' : ''}`}
+    >
       <div className="settings-row-text">
         <div className="settings-row-title">{title}</div>
         <div className="settings-row-desc">{description}</div>
