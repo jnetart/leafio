@@ -3,60 +3,46 @@
   Leafio
 </h1>
 
-在本地 Markdown 文件中自由写作。
+**English** · [中文](README.zh-CN.md)
 
-打开任意文件夹，像写富文本一样写标题、列表、表格、代码。磁盘上留下的始终是标准 `.md`——没有库、没有账号、没有专有格式。
+Write freely in local Markdown files.
+
+Open any folder and write headings, lists, tables, and code the way you would in a rich-text editor. What lands on disk is always standard `.md` — no library, no account, no proprietary format.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/editor-dark.png">
-  <img src="docs/assets/screenshots/editor-light.png" alt="Leafio 主界面：左侧文件树，中间为正在编辑的 Markdown 文档" width="920">
+  <img src="docs/assets/screenshots/editor-light.png" alt="Leafio editor: file tree on the left, a Markdown document on the page" width="920">
 </picture>
 
-## 下载
+## Download
 
-macOS、Windows、Linux 安装包在 [Releases](https://github.com/jnetart/leafio/releases/latest)。
+macOS, Windows, and Linux builds are on [Releases](https://github.com/jnetart/leafio/releases/latest).
 
-| 系统 | 安装包 |
+| Platform | Package |
 | --- | --- |
 | macOS 12+ | `.dmg` · Apple Silicon / Intel |
-| Windows 10+ | 安装程序 · x64 / ARM64 |
-| Linux | `.AppImage` · x64 / ARM64（Release 另有 `.deb` / `.rpm`） |
+| Windows 10+ | installer · x64 / ARM64 |
+| Linux | `.AppImage` · x64 / ARM64 (Release also has `.deb` / `.rpm`) |
 
-macOS 若提示无法打开，在访达里右键该应用，选择「打开」。
+If macOS says the app cannot be opened, Control-click it in Finder and choose Open.
 
-## 写作
+## Writing
 
-输入 `/` 插入或转换块。选中文字会出现格式条。编辑、源码、预览随时切换。
+Type `/` to insert or convert blocks. Select text and a format bar appears. Switch Edit, Source, and Preview at any time.
 
-工作区搜索文件名和正文，也可用 `tag:会议`、`path:notes` 收窄结果。图片写进笔记旁的本地目录，导出是标准 Markdown 或自包含 HTML。
+Search filenames and body text across the workspace, or narrow with `tag:meeting` and `path:notes`. Images are stored in a folder next to the note. Export is standard Markdown or self-contained HTML.
 
-更细的界面与快捷键见 [`docs/features`](docs/features/index.html) 与 [`docs/guide`](docs/guide/index.html)。
+More UI detail and shortcuts: [`docs/features`](docs/features/index.html) and [`docs/guide`](docs/guide/index.html).
 
-## 从源码运行
+## Run from source
 
-需要 **Node.js 22** 和稳定版 **Rust** 工具链。
-
-```bash
-npm install
-npm run dev
-```
-
-只跑前端：`npm run dev:web`。测试：`npm test`。打包：`npm run build`。
-
-桌面壳是 Tauri 2，编辑器是 TipTap。文件读写走本机文件系统，核心编辑不依赖网络。
-
-<details>
-<summary>English</summary>
-
-Leafio is a local-first WYSIWYG Markdown desktop editor. Open a folder, write like rich text, save standard `.md` — no library, no account, no proprietary format.
-
-macOS, Windows, and Linux builds are on [Releases](https://github.com/jnetart/leafio/releases/latest). Type `/` to insert blocks, switch Edit / Source / Preview, and search across workspaces with `tag:` and `path:`.
+Needs **Node.js 22** and a stable **Rust** toolchain.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Requires Node.js 22 and a stable Rust toolchain.
+Frontend only: `npm run dev:web`. Tests: `npm test`. Package: `npm run build`.
 
-</details>
+The desktop shell is Tauri 2; the editor is TipTap. Files are read and written on disk. Core editing does not need a network.
